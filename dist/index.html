@@ -1,0 +1,30 @@
+<!doctype html>
+<head>
+    <title>Game</title>
+    <style>
+        * {
+            padding: 0px;
+            margin: 0px;
+        }
+        body {
+            overflow: hidden;
+            background-color: black;
+        }
+        canvas {
+            width: 100vw;
+            max-width: 133vh;
+            height: 100vh;
+            max-height: 75vw;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+    <script src="./node_modules/pixi.js/dist/pixi.js"></script>
+</head>
+<body>
+    <script>
+        let main = require("./js/main");
+        main.main();
+    </script>
+</body>

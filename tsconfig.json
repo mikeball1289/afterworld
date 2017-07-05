@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "outDir": "dist/js",
+        "inlineSourceMap": true,
+        "inlineSources": true,
+        "strictNullChecks": true,
+        "noImplicitAny": true
+    },
+    "files": [
+        "typings/index.d.ts"
+    ],
+    "include": [
+        "src/**/*.ts"
+    ]
+}
