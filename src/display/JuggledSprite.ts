@@ -1,4 +1,4 @@
-import { juggler } from "./root";
+import { juggler } from "../root";
 
 export class JuggledSprite extends PIXI.Sprite {
 
@@ -6,7 +6,7 @@ export class JuggledSprite extends PIXI.Sprite {
 
     constructor(texture?: PIXI.Texture | undefined) {
         super(texture);
-        this._oef = this.onEnterFrame.bind(this);
+        this._oef = () => this.onEnterFrame();
         juggler.add(this._oef);
     }
 

@@ -21,10 +21,15 @@
         }
     </style>
     <script src="./node_modules/pixi.js/dist/pixi.js"></script>
+    <script src="./node_modules/pixi-display/bin/pixi-display.js"></script>
 </head>
 <body>
     <script>
-        let main = require("./js/main");
-        main.main();
+        function start() {
+            let main = require("./js/main");
+            main.preload(true);
+        }
+
+        start();
     </script>
 </body>

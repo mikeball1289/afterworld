@@ -1,17 +1,3 @@
-// let _stage: PIXI.Container;
-
-// export function InitStage(stage: PIXI.Container) {
-//     if (!_stage) _stage = stage;
-//     else throw new Error("Stage has already been initialized");
-// }
-
-// export var root = {
-//     get stage() {
-//         if (!_stage) throw new Error("Stage has not been initialized");
-//         return _stage;
-//     }
-// }
-
 class Juggler {
     enterFrameFunctions: (() => void)[] = [];
 
@@ -36,4 +22,21 @@ class Juggler {
 
 }
 
-export var juggler = new Juggler(60);
+export let juggler = new Juggler(60);
+
+class Keyboard {
+
+    private keys: boolean[] = [];
+
+    constructor() {
+        window.addEventListener("keydown", (e) => this.keys[e.keyCode] = true );
+        window.addEventListener("keyup", (e) => this.keys[e.keyCode] = false );
+    }
+
+    isKeyDown(keycode: number) {
+        return this.keys[keycode] || false;
+    }
+
+}
+
+export let keyboard = new Keyboard();
