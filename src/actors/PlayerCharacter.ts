@@ -1,4 +1,4 @@
-import JuggledSprite from "../JuggledSprite";
+import JuggledSprite from "../display/JuggledSprite";
 
 export default class PlayerCharacter extends JuggledSprite {
 

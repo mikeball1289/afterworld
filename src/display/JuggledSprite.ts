@@ -1,4 +1,4 @@
-import { juggler } from "./root";
+import { juggler } from "../root";
 
 export default class JuggledSprite extends PIXI.Sprite {
 

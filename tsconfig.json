@@ -3,13 +3,15 @@
         "target": "es5",
         "module": "commonjs",
         "outDir": "dist/js",
+        "lib": ["es2015.core", "dom", "es5"],
         "inlineSourceMap": true,
         "inlineSources": true,
         "strictNullChecks": true,
         "noImplicitAny": true
     },
     "files": [
-        "typings/index.d.ts"
+        "typings/index.d.ts",
+        "dist/node_modules/pixi-display/bin/pixi-display.d.ts"
     ],
     "include": [
         "src/**/*.ts"
