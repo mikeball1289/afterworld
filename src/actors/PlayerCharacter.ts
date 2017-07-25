@@ -1,5 +1,13 @@
-import { JuggledSprite } from "../JuggledSprite";
+import JuggledSprite from "../JuggledSprite";
 
-export class PlayerCharacter extends JuggledSprite {
-    
-} 
+export default class PlayerCharacter extends JuggledSprite {
+
+    constructor() {
+        super();
+
+    }
+
+    onEnterFrame() {
+        console.log("I'm doing things");
+    }
+}
