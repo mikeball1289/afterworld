@@ -55,6 +55,21 @@ class Root {
     }
 }
 
-let root = new Root()
+export let root = new Root()
 
-export default root;
+class Keyboard {
+
+    private keys: boolean[] = [];
+
+    constructor() {
+        window.addEventListener("keydown", (e) => this.keys[e.keyCode] = true );
+        window.addEventListener("keyup", (e) => this.keys[e.keyCode] = false );
+    }
+
+    isKeyDown(keycode: number) {
+        return this.keys[keycode] || false;
+    }
+
+}
+
+export let keyboard = new Keyboard(); 
