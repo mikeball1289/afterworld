@@ -1,5 +1,5 @@
-import Map from "./world/Map";
-import PlayerCharacter from "./actors/PlayerCharacter";
+import update from "./world/driver";
+import World from "./world/World";
 import * as root from "./root";
 import * as fs from "fs";
 
@@ -26,11 +26,16 @@ export function preload(arg: boolean | string[]) {
 function main(app: PIXI.Application) {
     root.root.setStage(app.stage);
 
-    let map = new Map(PIXI.loader.resources["/images/map.png"].texture);
-    root.root.stage.addChild(map);
+    let world = new World();
+    app.stage.addChild(world);
 
-    let player = new PlayerCharacter();
-    root.root.stage.addChild(player);
-
-    
+    root.juggler.add( () => {
+        update(world);
+        let targetX = -world.player.x + app.view.width / 2 - world.player.size.x / 2;
+        let targetY = -world.player.y + app.view.height / 2 - world.player.size.y / 2;
+        world.x += (targetX - world.x) / 20;
+        world.y += (targetY - world.y) / 20;
+        world.x = Math.min(Math.max(world.x, -world.map.digitalWidth + app.view.width), 0);
+        world.y = Math.min(Math.max(world.y, -world.map.digitalHeight + app.view.height), 0);
+    } );
 }

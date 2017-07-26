@@ -1,8 +1,7 @@
-import JuggledSprite from "../display/JuggledSprite";
+// import JuggledSprite from "../display/JuggledSprite";
+import Actor from "./Actor";
 
-export default class PlayerCharacter extends JuggledSprite {
-
-    public velocity = new PIXI.Point(0, 0);
+export default class PlayerCharacter extends Actor {
 
     constructor() {
         super();
@@ -11,21 +10,7 @@ export default class PlayerCharacter extends JuggledSprite {
         graphics.drawRect(0, 0, 50, 50);
         graphics.endFill();
         this.addChild(graphics);
-    }
-
-    get top() {
-        return this.y;
-    }
-
-    get bottom() {
-        return this.y + 50;
-    }
-
-    get left() {
-        return this.x;
-    }
-
-    get right() {
-        return this.x + 50;
+        this.size.x = 50;
+        this.size.y = 50;
     }
 }
