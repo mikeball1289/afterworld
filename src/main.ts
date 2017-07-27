@@ -6,7 +6,7 @@ import * as fs from "fs";
 export function preload(images: string[]): void;
 export function preload(all: boolean): void;
 export function preload(arg: boolean | string[]) {
-    let app = new PIXI.Application(800, 600, { backgroundColor: 0x42f4e8, antialias: false });
+    let app = new PIXI.Application(1072, 603, { backgroundColor: 0x42f4e8, antialias: false });
     PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST
     document.body.appendChild(app.view);
 

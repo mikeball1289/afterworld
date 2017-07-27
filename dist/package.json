@@ -3,8 +3,8 @@
   "main": "index.html",
   "window": {
     "title": "Something",
-    "width": 800,
-    "height": 600,
+    "width": 1072,
+    "height": 603,
     "resizable": true
   },
   "version": "1.0.0",
