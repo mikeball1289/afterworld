@@ -7,8 +7,13 @@ export default class World extends PIXI.Sprite {
     public map: Map;
 
     constructor() {
-        super();        
-        this.map = new Map(PIXI.loader.resources["/images/map.png"].texture);
+        super();
+        try {
+            this.map = new Map(PIXI.loader.resources["/images/map.png"].texture);
+        } catch(e) {
+            console.log(e);
+            throw e;
+        }
         this.addChild(this.map);
 
         this.player = new PlayerCharacter();

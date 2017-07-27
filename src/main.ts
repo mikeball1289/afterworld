@@ -2,6 +2,8 @@ import update from "./world/driver";
 import World from "./world/World";
 import * as root from "./root";
 import * as fs from "fs";
+import Animator from "./display/Animator";
+import * as Key from "./Key";
 
 export function preload(images: string[]): void;
 export function preload(all: boolean): void;
@@ -29,13 +31,27 @@ function main(app: PIXI.Application) {
     let world = new World();
     app.stage.addChild(world);
 
+    let skelly = new Animator(PIXI.loader.resources["/images/skelly_sheet.png"].texture, new PIXI.Point(64, 64), {
+                                    idle: [0, 4],
+                                    walk: [1, 4],
+                                    attack: [2, 4],
+                                    die: [3, 7],
+                                }, "idle");
+    app.stage.addChild(skelly);
+    
+    skelly.play("attack");
+
     root.juggler.add( () => {
+        skelly.update(0.1);
         update(world);
+        // camera control
         let targetX = -world.player.x + app.view.width / 2 - world.player.size.x / 2;
         let targetY = -world.player.y + app.view.height / 2 - world.player.size.y / 2;
         world.x += (targetX - world.x) / 15;
         world.y += (targetY - world.y) / 15;
         world.x = Math.min(Math.max(world.x, -world.map.digitalWidth + app.view.width), 0);
         world.y = Math.min(Math.max(world.y, -world.map.digitalHeight + app.view.height), 0);
+
+        if (root.keyboard.isKeyDown(Key.ESCAPE)) window.close();
     } );
 }

@@ -1,6 +1,6 @@
-import JuggledSprite from "../display/JuggledSprite";
+import Map from "../world/Map";
 
-export default class Actor extends JuggledSprite {
+abstract class Actor extends PIXI.Sprite {
 
     public size: PIXI.Point = new PIXI.Point;
     public velocity = new PIXI.Point(0, 0);
@@ -24,4 +24,9 @@ export default class Actor extends JuggledSprite {
     get right() {
         return this.x + this.size.y;
     }
+
+    abstract updateImpulse(map: Map): void;
+    abstract handleCollisions(collisions: [boolean, boolean]): void;
 }
+
+export default Actor;
