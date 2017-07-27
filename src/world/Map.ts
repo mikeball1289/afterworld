@@ -1,6 +1,8 @@
 export enum GroundType {
     AIR,
-    SOLID
+    SOLID,
+    PASSABLE_SOLID,
+    PASSABLE_RAMP,
 }
 
 export default class Map extends PIXI.Sprite {
@@ -23,9 +25,11 @@ export default class Map extends PIXI.Sprite {
         ctx.drawImage(mapDataTex.baseTexture.source, 0, 0);
         let data = ctx.getImageData(0, 0, mapDataTex.width, mapDataTex.height);
         for (let i = 0; i < data.data.length; i += 4) { // packed as RGBA, so bump by 4 each iteration
-            if (data.data[i] === 0x00) this.mapData.push(GroundType.SOLID);
-            else if (data.data[i] === 0xFF) this.mapData.push(GroundType.AIR);
-            else this.mapData.push(GroundType.AIR);
+            if (data.data[i] === 0x00 && data.data[i + 1] === 0x00 && data.data[i + 2] === 0x00) this.mapData.push(GroundType.SOLID);
+            else if (data.data[i] === 0xFF && data.data[i + 1] === 0xFF && data.data[i + 2] === 0xFF) this.mapData.push(GroundType.AIR);
+            else if (data.data[i] === 0xFF && data.data[i + 1] === 0x00 && data.data[i + 2] === 0x00) this.mapData.push(GroundType.PASSABLE_SOLID);
+            else if (data.data[i] === 0x00 && data.data[i + 1] === 0xFF && data.data[i + 2] === 0x00) this.mapData.push(GroundType.PASSABLE_RAMP);
+            else throw new Error("Invalid map data");
         }
     }
 
@@ -36,11 +40,23 @@ export default class Map extends PIXI.Sprite {
         return this.mapData[y * this.mapWidth + x];
     }
 
-    static isWalkable(type: GroundType) {
+    static isSolid(type: GroundType) {
         return type === GroundType.SOLID;
+    }
+
+    static isWalkable(type: GroundType) {
+        return type === GroundType.SOLID || type === GroundType.PASSABLE_SOLID || type === GroundType.PASSABLE_RAMP;
     }
     
     static isWalled(type: GroundType) {
         return type === GroundType.SOLID;
     }
-}
+
+    static isPassable(type: GroundType) {
+        return type === GroundType.PASSABLE_SOLID || type === GroundType.PASSABLE_RAMP;
+    }
+    
+    static isPassableRamp(type: GroundType) {
+        return type === GroundType.PASSABLE_RAMP;
+    }
+} 

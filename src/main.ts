@@ -33,8 +33,8 @@ function main(app: PIXI.Application) {
         update(world);
         let targetX = -world.player.x + app.view.width / 2 - world.player.size.x / 2;
         let targetY = -world.player.y + app.view.height / 2 - world.player.size.y / 2;
-        world.x += (targetX - world.x) / 20;
-        world.y += (targetY - world.y) / 20;
+        world.x += (targetX - world.x) / 15;
+        world.y += (targetY - world.y) / 15;
         world.x = Math.min(Math.max(world.x, -world.map.digitalWidth + app.view.width), 0);
         world.y = Math.min(Math.max(world.y, -world.map.digitalHeight + app.view.height), 0);
     } );
