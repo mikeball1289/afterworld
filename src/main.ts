@@ -39,7 +39,10 @@ function main(app: PIXI.Application) {
                                 }, "idle");
     app.stage.addChild(skelly);
     
-    skelly.play("attack");
+    // skelly.play("attack");
+    setInterval(() => {
+        skelly.play("attack", false);
+    }, 3000);
 
     root.juggler.add( () => {
         skelly.update(0.1);

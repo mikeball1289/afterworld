@@ -31,7 +31,7 @@ export default class PlayerCharacter extends Actor {
             }
             if (Math.abs(this.velocity.x) > PC.HORIZONTAL_THRESHOLD) this.velocity.x *= PC.FULL_HORIZONTAL_DECAY;
             if (keyboard.isKeyDown(Key.SPACE)) {
-                if (keyboard.isKeyDown(Key.DOWN) &&
+                if (keyboard.isKeyDown(Key.DOWN) && !keyboard.isKeyDown(Key.LEFT) && !keyboard.isKeyDown(Key.RIGHT) &&
                     !Map.testLine({ x: this.left, y: this.bottom }, { x: this.right - PC.EPSILON, y: this.bottom },
                                 (x, y) => Map.isSolid(map.getPixelData(x, y)), 2))
                 {
