@@ -46,7 +46,7 @@ export default class PlayerCharacter extends Actor {
                     this.velocity.y = -PC.JUMP_POWER;
                 }
             } else if (keyboard.isKeyDown(Key.UP)) {
-                //TODO
+                this.world.attemptMapTransition();
             }
 
         } else { // we're flying through the sky!

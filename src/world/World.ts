@@ -29,11 +29,11 @@ export default class World extends PIXI.Sprite {
         this.addChild(this.player);
     }
 
-    attemptMapTransition(player: PlayerCharacter) {
+    attemptMapTransition() {
         for (let exitName in this.currentMapData.exits) {
             let exit = this.currentMapData.exits[exitName];
-            if (exit[0] > player.left && exit[0] < player.right && exit[1] > player.top && exit[1] < player.bottom) {
-
+            if (exit[0] > this.player.left && exit[0] < this.player.right && exit[1] > this.player.top && exit[1] < this.player.bottom) {
+                this.mapTransition(<keyof typeof mapData> exitName);
             }
         }
     }
