@@ -104,7 +104,7 @@ export default class Map extends PIXI.Sprite {
                     {
                         movingX = false;
                         collisions[0] = true;
-                        actor.position.x = Math.floor(actor.position.x);
+                        actor.position.x = Math.floor(actor.position.x - EPSILON);
                     }
                 }
                 if (!movingY) { // we're walking along the ground, detect 1px slopes
