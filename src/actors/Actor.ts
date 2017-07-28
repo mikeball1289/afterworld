@@ -1,11 +1,13 @@
+import World from "../world/World";
 import Map from "../world/Map";
+import * as EventEmitter from "events";
 
 abstract class Actor extends PIXI.Sprite {
 
     public size: PIXI.Point = new PIXI.Point;
     public velocity = new PIXI.Point(0, 0);
 
-    constructor() {
+    constructor(public world: World) {
         super();
     }
     

@@ -15,7 +15,7 @@ export enum GroundType {
 
 export default class Map extends PIXI.Sprite {
 
-    private mapData: GroundType[] = [];
+    private mapData: Uint8Array;
     private mapWidth: number = 0;
     private mapHeight: number = 0;
 
@@ -32,13 +32,19 @@ export default class Map extends PIXI.Sprite {
         if (!ctx || !mapDataTex.baseTexture.source) throw new Error("Failed to generate map data");
         ctx.drawImage(mapDataTex.baseTexture.source, 0, 0);
         let data = ctx.getImageData(0, 0, mapDataTex.width, mapDataTex.height);
+        this.mapData = new Uint8Array(data.data.length / 4);
         for (let i = 0; i < data.data.length; i += 4) { // packed as RGBA, so bump by 4 each iteration
-            if (data.data[i] === 0x00 && data.data[i + 1] === 0x00 && data.data[i + 2] === 0x00) this.mapData.push(GroundType.SOLID);
-            else if (data.data[i] === 0xFF && data.data[i + 1] === 0xFF && data.data[i + 2] === 0xFF) this.mapData.push(GroundType.AIR);
-            else if (data.data[i] === 0xFF && data.data[i + 1] === 0x00 && data.data[i + 2] === 0x00) this.mapData.push(GroundType.PASSABLE_SOLID);
-            else if (data.data[i] === 0x00 && data.data[i + 1] === 0xFF && data.data[i + 2] === 0x00) this.mapData.push(GroundType.PASSABLE_RAMP);
-            else throw new Error("Invalid map data at " + ((i / 4) % this.mapWidth) + ", " + Math.floor(i / 4 / this.mapWidth));
+            if (data.data[i] === 0x00 && data.data[i + 1] === 0x00 && data.data[i + 2] === 0x00) this.mapData[i / 4] = GroundType.SOLID;
+            else if (data.data[i] === 0xFF && data.data[i + 1] === 0xFF && data.data[i + 2] === 0xFF) this.mapData[i / 4] = GroundType.AIR;
+            else if (data.data[i] === 0xFF && data.data[i + 1] === 0x00 && data.data[i + 2] === 0x00) this.mapData[i / 4] = GroundType.PASSABLE_SOLID;
+            else if (data.data[i] === 0x00 && data.data[i + 1] === 0xFF && data.data[i + 2] === 0x00) this.mapData[i / 4] = GroundType.PASSABLE_RAMP;
+            else throw new Error("Invalid map data at " + ((i / 4) % this.mapWidth) + ", " + Math.floor((i / 4) / this.mapWidth));
         }
+    }
+
+    destroy(options?: boolean | PIXI.DestroyOptions) {
+        super.destroy(options);
+        this.mapData = new Uint8Array(0); // clear the map data on destruction
     }
 
     getPixelData(x: number, y: number) {
@@ -56,7 +62,8 @@ export default class Map extends PIXI.Sprite {
         let onSolidGround = Map.testLine({ x: actor.left, y: actor.bottom }, { x: actor.right - EPSILON, y: actor.bottom  },
             (x, y) => Map.isSolid(this.getPixelData(x, y)), 2);
         if (onSolidGround) return true;
-        let passingThroughPassable = Map.testLine({ x: actor.left, y: actor.bottom - 2 }, { x: actor.right - EPSILON, y: actor.bottom - 2 }, // if we're inside of a passable solid, then we haven't actually gotten through
+        // if we're inside of a passable solid, then we haven't actually gotten through
+        let passingThroughPassable = Map.testLine({ x: actor.left, y: actor.bottom - 2 }, { x: actor.right - EPSILON, y: actor.bottom - 2 },
             (x, y) => Map.isPassable(this.getPixelData(x, y)), actor.right - actor.left);
         if (passingThroughPassable) return false;
         return true;

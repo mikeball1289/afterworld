@@ -28,32 +28,50 @@ export function preload(arg: boolean | string[]) {
 function main(app: PIXI.Application) {
     root.root.setStage(app.stage);
 
-    let world = new World();
+    let world = new World("map1");
     app.stage.addChild(world);
+    if (world.map.digitalWidth > app.view.width) {
+        world.x = -world.player.x + app.view.width / 2 - world.player.size.x / 2;
+    } else {
+        world.x = app.view.width / 2 - world.map.digitalWidth / 2;
+    }
+    if (world.map.digitalHeight > app.view.height) {
+        world.y = -world.player.y + app.view.height / 2 - world.player.size.y / 2;
+    } else {
+        world.y = app.view.height / 2 - world.map.digitalHeight / 2;
+    }
 
-    let skelly = new Animator(PIXI.loader.resources["/images/skelly_sheet.png"].texture, new PIXI.Point(64, 64), {
-                                    idle: [0, 4],
-                                    walk: [1, 4],
-                                    attack: [2, 4],
-                                    die: [3, 7],
-                                }, "idle");
-    app.stage.addChild(skelly);
+    // let skelly = new Animator(PIXI.loader.resources["/images/skelly_sheet.png"].texture, new PIXI.Point(64, 64), {
+    //                                 idle: [0, 4],
+    //                                 walk: [1, 4],
+    //                                 attack: [2, 4],
+    //                                 die: [3, 7],
+    //                             }, "idle");
+    // app.stage.addChild(skelly);
     
-    // skelly.play("attack");
-    setInterval(() => {
-        skelly.play("attack", false);
-    }, 3000);
+    // // skelly.play("attack");
+    // setInterval(() => {
+    //     skelly.play("attack", false);
+    // }, 3000);
 
     root.juggler.add( () => {
-        skelly.update(0.1);
+        // skelly.update(0.1);
         update(world);
         // camera control
-        let targetX = -world.player.x + app.view.width / 2 - world.player.size.x / 2;
-        let targetY = -world.player.y + app.view.height / 2 - world.player.size.y / 2;
-        world.x += (targetX - world.x) / 15;
-        world.y += (targetY - world.y) / 15;
-        world.x = Math.min(Math.max(world.x, -world.map.digitalWidth + app.view.width), 0);
-        world.y = Math.min(Math.max(world.y, -world.map.digitalHeight + app.view.height), 0);
+        if (world.map.digitalWidth > app.view.width) {
+            let targetX = -world.player.x + app.view.width / 2 - world.player.size.x / 2;
+            world.x += (targetX - world.x) / 15;
+            world.x = Math.min(Math.max(world.x, -world.map.digitalWidth + app.view.width), 0);
+        } else {
+            world.x = app.view.width / 2 - world.map.digitalWidth / 2;
+        }
+        if (world.map.digitalHeight > app.view.height) {
+            let targetY = -world.player.y + app.view.height / 2 - world.player.size.y / 2;
+            world.y += (targetY - world.y) / 15;
+            world.y = Math.min(Math.max(world.y, -world.map.digitalHeight + app.view.height), 0);
+        } else {
+            world.y = app.view.height / 2 - world.map.digitalHeight / 2;
+        }
 
         if (root.keyboard.isKeyDown(Key.ESCAPE)) window.close();
     } );

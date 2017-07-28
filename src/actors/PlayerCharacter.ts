@@ -1,13 +1,18 @@
 import { keyboard } from "../root";
 import * as Key from "../Key";
+import World from "../world/World";
 import Map from "../world/Map";
 import Actor from "./Actor";
 import * as PC from "../world/physicalConstants";
 
+export enum PlayerEvents {
+    MAP_TRAVEL = "map_travel"
+}
+
 export default class PlayerCharacter extends Actor {
 
-    constructor() {
-        super();
+    constructor(world: World) {
+        super(world);
         let graphics = new PIXI.Graphics();
         graphics.beginFill(0xCC0555);
         graphics.drawRect(0, 0, 50, 50);
@@ -31,14 +36,17 @@ export default class PlayerCharacter extends Actor {
             }
             if (Math.abs(this.velocity.x) > PC.HORIZONTAL_THRESHOLD) this.velocity.x *= PC.FULL_HORIZONTAL_DECAY;
             if (keyboard.isKeyDown(Key.SPACE)) {
-                if (keyboard.isKeyDown(Key.DOWN) &&
-                    !Map.testLine({ x: this.left, y: this.bottom }, { x: this.right - PC.EPSILON, y: this.bottom },
-                                (x, y) => Map.isSolid(map.getPixelData(x, y)), 2))
-                {
-                    this.position.y += 2;
+                if (keyboard.isKeyDown(Key.DOWN)) {
+                    if (!Map.testLine({ x: this.left, y: this.bottom }, { x: this.right - PC.EPSILON, y: this.bottom },
+                            (x, y) => Map.isSolid(map.getPixelData(x, y)), 2))
+                    {
+                        this.position.y += 2;
+                    }
                 } else {
                     this.velocity.y = -PC.JUMP_POWER;
                 }
+            } else if (keyboard.isKeyDown(Key.UP)) {
+                //TODO
             }
 
         } else { // we're flying through the sky!
