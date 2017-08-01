@@ -58,6 +58,7 @@ export default class Skelly extends NonPlayerActor {
     updateImpulse(map: Map, player?: PlayerCharacter): void {
         if (!map.isGrounded(this)) {
             this.velocity.y += GRAVITY;
+            return;
         }
 
         switch(this.state) {
@@ -71,6 +72,14 @@ export default class Skelly extends NonPlayerActor {
                     this.state = MovementStates.WALKING;
                     if (Math.random() < 1 / 2) {
                         this.direction *= -1;
+                    }
+                } else {
+                    if (!Map.isWalkable(map.getPixelData(this.left, this.bottom))) {
+                        this.state = MovementStates.WALKING;
+                        this.direction = 1;
+                    } else if (this.direction > 0 && !Map.isWalkable(map.getPixelData(this.right, this.bottom))) {
+                        this.state = MovementStates.WALKING;
+                        this.direction = -1;
                     }
                 }
                 

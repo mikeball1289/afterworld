@@ -6,6 +6,8 @@ import NPC from "../display/NPC";
 import NPCText from "../display/NPCText";
 import Actor from "../actors/Actor";
 import NonPlayerActor from "../actors/NonPlayerActor";
+import mergeSort from "../mergeSort";
+import { repulsionForce } from "./physicalConstants";
 
 type MapName = keyof typeof mapData;
 
@@ -23,7 +25,7 @@ export default class World extends PIXI.Sprite {
     
     // layers
     private actorLayer: PIXI.Container;
-    private playerLayer: PIXI.Container;
+    // private playerLayer: PIXI.Container;
     
     private virtualPosition = { x: 0, y: 0 };
 
@@ -57,21 +59,22 @@ export default class World extends PIXI.Sprite {
 
         this.actorLayer = new PIXI.Container();
         this.worldContainer.addChild(this.actorLayer);
-        this.playerLayer = new PIXI.Container();
-        this.worldContainer.addChild(this.playerLayer);
+        // this.playerLayer = new PIXI.Container();
+        // this.worldContainer.addChild(this.playerLayer);
         this.currentMapName = startingMap;
         this.currentMapData = mapData[startingMap];
 
         this.player = new PlayerCharacter(this);
         this.setPlayerSpawn(this.currentMapData.entrances.default);
-        this.playerLayer.addChild(this.player);
+        this.actorLayer.addChild(this.player);
+        // this.playerLayer.addChild(this.player);
 
         // load up the starting map
         this.loadMap(this.currentMapData, () => {
             this.positionCamera();
             this.queueMapTransition = undefined;
 
-            for (let i = 0; i < 100; i ++) {
+            for (let i = 0; i < 5; i ++) {
                 let skelly = new Skelly(this);
                 skelly.x = 500 + Math.random() * 400;
                 skelly.y = 1123 - skelly.size.y;
@@ -189,6 +192,32 @@ export default class World extends PIXI.Sprite {
         for (let npa of this.npas) {
             npa.updateImpulse(this.map, this.player);
         }
+        // this.npas.sort( (a, b) => a.horizontalCenter - b.horizontalCenter );
+        this.npas = mergeSort(this.npas, (a, b) => a.horizontalCenter - b.horizontalCenter);
+        for (let i = 0; i < this.npas.length - 1; i ++) {
+            let a = this.npas[i];
+            for (let j = i + 1; j < this.npas.length; j ++) {
+                let b = this.npas[j];
+                if (a.left <= b.right && a.right >= b.left) {
+                    if (Math.abs(a.bottom - b.bottom) < 15) {
+                        let dist = a.horizontalCenter - b.horizontalCenter;
+                        let force = repulsionForce(dist);
+                        if (dist < 0) {
+                            a.velocity.x -= force;
+                            b.velocity.x += force;
+                        } else {
+                            a.velocity.x += force;
+                            b.velocity.x -= force;
+                        }
+                    }
+                } else {
+                    break;
+                }
+            }
+        }
+
+        // this.actorLayer.children.sort( (a: Actor, b: Actor) => a.bottom - b.bottom );
+        this.actorLayer.children = mergeSort(this.actorLayer.children, (a: Actor, b: Actor) => a.bottom - b.bottom);
 
         this.player.handleCollisions(this.map.move(this.player));
         for (let npa of this.npas) {

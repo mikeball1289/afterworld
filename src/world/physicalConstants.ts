@@ -11,3 +11,7 @@ export const TERMINAL_VELOCITY = 16;
 export const AERIAL_DRAG = 0.88;
 export const AERIAL_IMPULSE = 0.15;
 export const AERIAL_HORIZONTAL_DECAY = 0.2;
+
+export function repulsionForce(dist: number) {
+    return (Math.PI / 2 - Math.atan(Math.abs(dist / 50))) / (Math.PI * 7)
+}
