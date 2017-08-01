@@ -153,6 +153,7 @@ export default class World extends PIXI.Sprite {
 
     // perform an instantaneous map transition
     mapTransition(mapName: MapName) {
+        // TODO: Handle NPAs
         if (!this.map) return;
         let previousMapName = this.currentMapName;
         
