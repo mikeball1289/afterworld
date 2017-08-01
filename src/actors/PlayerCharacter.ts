@@ -5,10 +5,6 @@ import Actor from "./Actor";
 import * as PC from "../world/physicalConstants";
 import Animator from "../display/Animator";
 
-export enum PlayerEvents {
-    MAP_TRAVEL = "map_travel"
-}
-
 type PlayerAnimations = {
     idle: [number, number];
     walk: [number, number];

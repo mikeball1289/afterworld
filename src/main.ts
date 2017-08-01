@@ -29,24 +29,31 @@ function main(app: PIXI.Application) {
 
     let world = new World("map1", app.view.width, app.view.height);
     app.stage.addChild(world);
-
-    // let skelly = new Animator(PIXI.loader.resources["/images/skelly_sheet.png"].texture, new PIXI.Point(64, 64), {
-    //                                 idle: [0, 4],
-    //                                 walk: [1, 4],
-    //                                 attack: [2, 4],
-    //                                 die: [3, 7],
-    //                             }, "idle");
-    // app.stage.addChild(skelly);
-    
-    // // skelly.play("attack");
-    // setInterval(() => {
-    //     skelly.play("attack", false);
-    // }, 3000);
+    let fps = 60;
+    let lastTick = 0;
+    let fpsDisplay = new PIXI.Text("0", { align: "right", fontFamily: "SilkscreenNormal", fontSize: 17 } );
+    fpsDisplay.anchor.set(1);
+    fpsDisplay.x = app.view.width;
+    fpsDisplay.y = app.view.height;
+    app.stage.addChild(fpsDisplay);
 
     root.juggler.add( () => {
-        // skelly.update(0.1);
         world.update();
         
+        if (lastTick > 0) {
+            let tick = Date.now();
+            if (!isFinite(fps)) {
+                fps = 1000 / (tick - lastTick);
+            } else {
+                fps = fps * 0.99 + (1000 / (tick - lastTick)) * 0.01;
+            }
+            lastTick = tick;
+        } else {
+            lastTick = Date.now();
+        }
+
+        fpsDisplay.text = fps.toFixed(1);
+
         if (root.keyboard.isKeyDown(Key.ESCAPE) || root.controller.getButton(root.ControllerButton.START)) window.close();
     } );
 }

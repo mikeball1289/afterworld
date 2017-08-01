@@ -4,8 +4,8 @@ import * as EventEmitter from "events";
 
 abstract class Actor extends PIXI.Sprite {
 
-    public size: PIXI.Point = new PIXI.Point;
-    public velocity = new PIXI.Point(0, 0);
+    public size: PIXI.Point = new PIXI.Point();
+    public velocity = new PIXI.Point();
     public fallthrough?: number;
 
     constructor(public world: World) {

@@ -1,31 +1,46 @@
+import Skelly from "../actors/Skelly";
 import mapData, {MapDataObject} from "./mapData";
-import PlayerCharacter, {PlayerEvents} from "../actors/PlayerCharacter";
+import PlayerCharacter from "../actors/PlayerCharacter";
 import Map from "./Map";
 import NPC from "../display/NPC";
 import NPCText from "../display/NPCText";
+import Actor from "../actors/Actor";
+import NonPlayerActor from "../actors/NonPlayerActor";
 
 type MapName = keyof typeof mapData;
 
 // contain the info for the game world, this doesn't include UI
 export default class World extends PIXI.Sprite {
+    
     public player: PlayerCharacter;
+    
+    // map and transition data
     public map?: Map;
     private currentMapData: MapDataObject;
     private currentMapName: MapName;
     private queueMapTransition?: keyof typeof mapData;
     public transitionTimer = 1;
+    
+    // layers
     private actorLayer: PIXI.Container;
     private playerLayer: PIXI.Container;
+    
     private virtualPosition = { x: 0, y: 0 };
 
+    // high level sprites
     private worldContainer: PIXI.Container;
     private fadeBlocker: PIXI.Graphics;
 
+    // NPC data
     private npcs: NPC[] = [];
     private npcText: NPCText;
 
+    // NPA (non-player actor) data
+    private npas: NonPlayerActor[] = [];
+
     constructor(startingMap: MapName, public screenWidth: number, public screenHeight: number) {
         super();
+        // setup containers and UI
         this.worldContainer = new PIXI.Container();
         this.addChild(this.worldContainer);
 
@@ -46,21 +61,33 @@ export default class World extends PIXI.Sprite {
         this.worldContainer.addChild(this.playerLayer);
         this.currentMapName = startingMap;
         this.currentMapData = mapData[startingMap];
-        this.loadMap(this.currentMapData, () => {
-            this.positionCamera();
-            this.queueMapTransition = undefined;
-        } );
 
         this.player = new PlayerCharacter(this);
         this.setPlayerSpawn(this.currentMapData.entrances.default);
         this.playerLayer.addChild(this.player);
+
+        // load up the starting map
+        this.loadMap(this.currentMapData, () => {
+            this.positionCamera();
+            this.queueMapTransition = undefined;
+
+            for (let i = 0; i < 100; i ++) {
+                let skelly = new Skelly(this);
+                skelly.x = 500 + Math.random() * 400;
+                skelly.y = 1123 - skelly.size.y;
+                this.npas.push(skelly);
+                this.actorLayer.addChild(skelly);
+            }
+        } );
     }
 
+    // align the player with spawn information
     setPlayerSpawn(entrance: [number, number]) {
         this.player.x = entrance[0] - this.player.size.x / 2;
         this.player.y = entrance[1] - this.player.size.y;
     }
 
+    // asyncronously load a map and all its extra data
     loadMap(mapDataObject: MapDataObject, done?: () => void) {
         this.map = undefined;
         let loader = new PIXI.loaders.Loader();
@@ -87,6 +114,7 @@ export default class World extends PIXI.Sprite {
         } );
     }
 
+    // lock camera position to player if the map is large enough, and the map if it's too small
     positionCamera() {
         if (!this.map) return;
         if (this.map.digitalWidth > this.screenWidth) {
@@ -101,6 +129,7 @@ export default class World extends PIXI.Sprite {
         }
     }
 
+    // if the player is eligible for a map transition, queue that transition
     attemptMapTransition() {
         if (this.queueMapTransition) return;
         for (let exitName in this.currentMapData.exits) {
@@ -111,20 +140,23 @@ export default class World extends PIXI.Sprite {
         }
     }
 
+    // if the player is eligible for an interaction event begin the interation
     attemptInteraction() {
-        if (this.queueMapTransition) return;
+        if (this.queueMapTransition) return; // but not if we're in the process of a transition
         for (let npc of this.npcs) {
             if (npc.withinTalkingRange(this.player)) {
                 this.npcText.display(npc);
-                console.log(npc.npcData.name);
                 break;
             }
         }
     }
 
+    // perform an instantaneous map transition
     mapTransition(mapName: MapName) {
         if (!this.map) return;
         let previousMapName = this.currentMapName;
+        
+        // clean up previous map objects
         this.removeChild(this.map.backgroundSprite);
         this.map.destroy(true);
         for (let npc of this.npcs) {
@@ -132,6 +164,8 @@ export default class World extends PIXI.Sprite {
             npc.destroy(true);
         }
         this.npcs = [];
+
+        // load new map objects
         this.currentMapData = mapData[mapName];
         this.currentMapName = mapName;
         this.loadMap(this.currentMapData, () => {
@@ -139,8 +173,10 @@ export default class World extends PIXI.Sprite {
             this.queueMapTransition = undefined;
         } );
         try {
+            // try to set player spawn to the entrance for the previous map
             this.setPlayerSpawn(this.currentMapData.entrances[previousMapName]);
         } catch(e) {
+            // if you can't, use the default spawn instead
             this.setPlayerSpawn(this.currentMapData.entrances.default);
         }
         this.currentMapName = mapName;
@@ -149,7 +185,14 @@ export default class World extends PIXI.Sprite {
     update() {
         if (!this.map) return;
         this.player.updateImpulse(this.map, this.queueMapTransition === undefined && !this.npcText.visible);
+        for (let npa of this.npas) {
+            npa.updateImpulse(this.map, this.player);
+        }
+
         this.player.handleCollisions(this.map.move(this.player));
+        for (let npa of this.npas) {
+            npa.handleCollisions(this.map.move(npa));
+        }
 
         let foundInteractable = false;
         for (let npc of this.npcs) {

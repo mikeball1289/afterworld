@@ -2,13 +2,29 @@ import * as Key from "./Key";
 
 class Juggler
 {
-    enterFrameFunctions: [(() => void), any][] = [];
+    private enterFrameFunctions: [(() => void), any][] = [];
+    private schedule: number;
+    private interFrameTime: number;
 
-    constructor(fps: number)
+    constructor(private fps: number)
     {
-        setInterval( () => {
+        this.interFrameTime = 1000 / fps;
+        this.schedule = Date.now() + this.interFrameTime;
+        let tick = () => {
             this.enterFrameFunctions.forEach( ([fn, ctx]) => fn.call(ctx) );
-        }, 1000 / fps);
+            this.schedule += this.interFrameTime;
+            
+            let timeout = this.schedule - Date.now();
+            if (timeout < 2) {
+                timeout = 2;
+                this.schedule = Date.now() + this.interFrameTime;
+            }
+            setTimeout(tick, this.schedule - Date.now());
+        }
+        setTimeout(tick, this.interFrameTime);
+        // setInterval( () => {
+            // this.enterFrameFunctions.forEach( ([fn, ctx]) => fn.call(ctx) );
+        // }, 1000 / fps);
     }
 
     add(fn: () => void, context?: any)

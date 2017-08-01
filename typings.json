@@ -1,5 +1,6 @@
 {
   "globalDependencies": {
-    "node": "registry:dt/node#7.0.0+20170322231424"
+    "node": "registry:dt/node#7.0.0+20170322231424",
+    "pixi.js": "registry:dt/pixi.js#4.4.0+20170311014322"
   }
 }
