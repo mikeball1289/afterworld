@@ -36,6 +36,7 @@ export default class World extends PIXI.Sprite {
     // NPC data
     private npcs: NPC[] = [];
     private npcText: NPCText;
+    private npcLayer: PIXI.Container;
 
     // NPA (non-player actor) data
     private npas: NonPlayerActor[] = [];
@@ -56,6 +57,9 @@ export default class World extends PIXI.Sprite {
         this.fadeBlocker.drawRect(0, 0, screenWidth, screenHeight);
         this.fadeBlocker.endFill();
         this.addChild(this.fadeBlocker);
+
+        this.npcLayer = new PIXI.Container();
+        this.worldContainer.addChild(this.npcLayer);
 
         this.actorLayer = new PIXI.Container();
         this.worldContainer.addChild(this.actorLayer);
@@ -111,7 +115,7 @@ export default class World extends PIXI.Sprite {
             for (let npc of mapDataObject.npcs) {
                 let npcSprite = new NPC(loader.resources[npc.name].texture, npc);
                 this.npcs.push(npcSprite);
-                this.actorLayer.addChild(npcSprite);
+                this.npcLayer.addChild(npcSprite);
             }
             if (done) done();
         } );
@@ -164,7 +168,7 @@ export default class World extends PIXI.Sprite {
         this.removeChild(this.map.backgroundSprite);
         this.map.destroy(true);
         for (let npc of this.npcs) {
-            this.actorLayer.removeChild(npc);
+            this.npcLayer.removeChild(npc);
             npc.destroy(true);
         }
         this.npcs = [];
