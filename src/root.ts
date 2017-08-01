@@ -1,3 +1,5 @@
+import * as Key from "./Key";
+
 class Juggler
 {
     enterFrameFunctions: [(() => void), any][] = [];
@@ -72,4 +74,79 @@ class Keyboard {
 
 }
 
-export let keyboard = new Keyboard(); 
+export let keyboard = new Keyboard();
+
+export enum ControllerAxis {
+    LEFT_X = 0,
+    LEFT_Y = 1,
+    RIGHT_X = 2,
+    RIGHT_Y = 3,
+}
+
+export enum ControllerButton {
+    A = 0,
+    B = 1,
+    X = 2,
+    Y = 3,
+    LB = 4,
+    RB = 5,
+    LT = 6,
+    RT = 7,
+    SELECT = 8,
+    START = 9,
+    L3 = 10,
+    R3 = 11,
+    D_UP = 12,
+    D_DOWN = 13,
+    D_LEFT = 14,
+    D_RIGHT = 15,
+}
+
+class Controller {
+    buttons: boolean[] = [];
+    axes: number[] = [];
+
+    constructor() {
+        juggler.add( () => {
+            let gps = navigator.getGamepads();
+            if (!gps[0]) {
+                this.buttons = [];
+                this.axes = [];
+                return;
+            }
+            let gamepad = gps[0];
+            this.buttons = gamepad.buttons.map( (b) => b.pressed );
+            this.axes = gamepad.axes;
+        } );
+    }
+
+    getAxis(axis: ControllerAxis) {
+        return this.axes[axis] || 0;
+    }
+
+    getButton(button: ControllerButton) {
+        return this.buttons[button] || false;
+    }
+}
+
+export let controller = new Controller();
+
+export enum InputType {
+    LEFT,
+    RIGHT,
+    UP,
+    DOWN,
+    JUMP,
+    INTERACT,
+}
+
+export function hasInput(type: InputType) {
+    switch(type) {
+        case InputType.LEFT: return keyboard.isKeyDown(Key.LEFT) || controller.getAxis(ControllerAxis.LEFT_X) < -0.5;
+        case InputType.RIGHT: return keyboard.isKeyDown(Key.RIGHT) || controller.getAxis(ControllerAxis.LEFT_X) > 0.5;
+        case InputType.UP: return keyboard.isKeyDown(Key.UP) || controller.getAxis(ControllerAxis.LEFT_Y) < -0.5;
+        case InputType.DOWN: return keyboard.isKeyDown(Key.DOWN) || controller.getAxis(ControllerAxis.LEFT_Y) > 0.5;
+        case InputType.JUMP: return keyboard.isKeyDown(Key.SPACE) || controller.getButton(ControllerButton.A);
+        case InputType.INTERACT: return keyboard.isKeyDown(Key.ENTER) || controller.getButton(ControllerButton.Y);
+    }
+}

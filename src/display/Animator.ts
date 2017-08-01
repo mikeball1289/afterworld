@@ -1,3 +1,5 @@
+import { juggler } from "../root";
+
 // ActionMap is a map of animation names -> [animation index, animation length]
 // animation index is the number of rows down the animation starts, animation length
 // is the number of frames in the animation
@@ -13,8 +15,9 @@ export default class Animator<T extends ActionMap> extends PIXI.Sprite {
     private onCompleteContext?: any;
     private loop: boolean = true;
     private frames: PIXI.Texture[][] = [];
+    private jup: () => void;
 
-    constructor(private spriteSheet: PIXI.Texture, private frameSize: PIXI.Point, private animations: T, private idle: keyof T) {
+    constructor(private spriteSheet: PIXI.Texture, private frameSize: PIXI.Point, private animations: T, private idle: keyof T, fps = 12) {
         super();
         this.currentAnimation = idle;
         for (let ani in animations) {
@@ -25,6 +28,8 @@ export default class Animator<T extends ActionMap> extends PIXI.Sprite {
             }
             this.frames[row] = frames;
         }
+        this.jup = this.update.bind(this, fps / 60);
+        juggler.add(this.jup);
     }
 
     update(dt: number = 1) {
@@ -44,11 +49,25 @@ export default class Animator<T extends ActionMap> extends PIXI.Sprite {
         this.texture = this.frames[this.animations[this.currentAnimation][0]][Math.floor(this.currentFrame)];
     }
 
-    play(animation: keyof T, loop: boolean = true, onComplete?: () => void, onCompleteContext?: any) {
+    play(animation: keyof T, loop: boolean = true, onComplete?: () => void, onCompleteContext?: any, override: boolean = false) {
+        if (this.currentAnimation === animation && !override) return;
         this.currentAnimation = animation;
         this.currentFrame = 0;
         this.loop = loop;
         this.onComplete = onComplete;
+    }
+
+    destroy(options?: boolean | PIXI.IDestroyOptions, source = false) {
+        this.texture = <PIXI.Texture><any> undefined;
+        super.destroy(options);
+        juggler.remove(this.jup);
+        if (source) {
+            for (let frameLine of this.frames) {
+                for (let frame of frameLine) {
+                    frame.destroy();
+                }
+            }
+        }
     }
 
 }

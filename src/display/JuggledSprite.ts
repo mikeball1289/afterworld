@@ -14,7 +14,8 @@ export default class JuggledSprite extends PIXI.Sprite {
         
     }
 
-    dispose() {
+    destroy(options?: boolean | PIXI.IDestroyOptions) {
         juggler.remove(this._oef);
+        super.destroy();
     }
 }

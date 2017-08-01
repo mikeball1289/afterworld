@@ -6,6 +6,7 @@ abstract class Actor extends PIXI.Sprite {
 
     public size: PIXI.Point = new PIXI.Point;
     public velocity = new PIXI.Point(0, 0);
+    public fallthrough?: number;
 
     constructor(public world: World) {
         super();
@@ -16,7 +17,7 @@ abstract class Actor extends PIXI.Sprite {
     }
 
     get bottom() {
-        return this.y + this.size.x;
+        return this.y + this.size.y;
     }
 
     get left() {
@@ -24,7 +25,15 @@ abstract class Actor extends PIXI.Sprite {
     }
 
     get right() {
-        return this.x + this.size.y;
+        return this.x + this.size.x;
+    }
+
+    get horizontalCenter() {
+        return this.x + this.size.x / 2;
+    }
+
+    get verticalCenter() {
+        return this.y + this.size.y / 2;
     }
 
     abstract updateImpulse(map: Map): void;

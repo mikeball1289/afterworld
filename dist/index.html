@@ -2,13 +2,21 @@
 <head>
     <title>Game</title>
     <style>
+        @font-face {
+            font-family: 'SilkscreenNormal';
+            /* src: url('/fonts/slkscr-webfont.eot'); */
+            src: url('fonts/slkscr-webfont.ttf') format('truetype');
+            font-weight: normal; 
+            font-style: normal; 
+        }
+
         * {
             padding: 0px;
             margin: 0px;
         }
         body {
             overflow: hidden;
-            background-color: black;
+            background-color: #323438;
         }
         canvas {
             width: 100vw;
@@ -23,18 +31,22 @@
     <script src="./node_modules/pixi.js/dist/pixi.js"></script>
 </head>
 <body>
+    <p style="font-family: SilkscreenNormal; visibility: hidden;" id="silkscreen-normal">SilkscreenNormal</p> 
     <script>
         function start() {
             let main = require("./js/main");
             main.preload(true);
         }
 
-        window.addEventListener("keyup", function starter(e) {
-            if (e.keyCode === 32) {
-                window.removeEventListener("keyup", starter);
-                start();
-            }
-        })
+        document.fonts.onloadingdone = () => {
+            document.body.removeChild(document.getElementById("silkscreen-normal"));
+            window.addEventListener("keyup", function starter(e) {
+                if (e.keyCode === 32) {
+                    window.removeEventListener("keyup", starter);
+                    start();
+                }
+            } );
+        };
         // start();
     </script>
 </body>

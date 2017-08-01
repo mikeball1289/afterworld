@@ -10,8 +10,7 @@
         "noImplicitAny": true
     },
     "files": [
-        "typings/index.d.ts",
-        "dist/node_modules/pixi-display/bin/pixi-display.d.ts"
+        "typings/index.d.ts"
     ],
     "include": [
         "src/**/*.ts"

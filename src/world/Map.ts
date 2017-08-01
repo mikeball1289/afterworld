@@ -11,19 +11,22 @@ export enum GroundType {
     SOLID,
     PASSABLE_SOLID,
     PASSABLE_RAMP,
+    DROPPABLE,
+    POINT_PASSABLE,
 }
 
-export default class Map extends PIXI.Sprite {
+export default class Map {
 
     private mapData: Uint8Array;
     private mapWidth: number = 0;
     private mapHeight: number = 0;
+    public backgroundSprite: PIXI.Sprite;
 
     get digitalWidth() { return this.mapWidth; }
     get digitalHeight() { return this.mapHeight; }
 
-    constructor(mapTexture: PIXI.Texture) {
-        super(mapTexture);
+    constructor(private mapTexture: PIXI.Texture, backgroundImage: PIXI.Texture) {
+        // super(mapTexture);
         let mapDataTex = mapTexture;
         let canvas = document.createElement("canvas");
         this.mapWidth = canvas.width = mapDataTex.width;
@@ -38,12 +41,17 @@ export default class Map extends PIXI.Sprite {
             else if (data.data[i] === 0xFF && data.data[i + 1] === 0xFF && data.data[i + 2] === 0xFF) this.mapData[i / 4] = GroundType.AIR;
             else if (data.data[i] === 0xFF && data.data[i + 1] === 0x00 && data.data[i + 2] === 0x00) this.mapData[i / 4] = GroundType.PASSABLE_SOLID;
             else if (data.data[i] === 0x00 && data.data[i + 1] === 0xFF && data.data[i + 2] === 0x00) this.mapData[i / 4] = GroundType.PASSABLE_RAMP;
-            else throw new Error("Invalid map data at " + ((i / 4) % this.mapWidth) + ", " + Math.floor((i / 4) / this.mapWidth));
+            else if (data.data[i] === 0xFF && data.data[i + 1] === 0x00 && data.data[i + 2] === 0xDC) this.mapData[i / 4] = GroundType.DROPPABLE;
+            else if (data.data[i] === 0xFF && data.data[i + 1] === 0xFF && data.data[i + 2] === 0x00) this.mapData[i / 4] = GroundType.POINT_PASSABLE;
+            else throw new Error("Invalid map data at " + ((i / 4) % this.mapWidth) + ", " + Math.floor((i / 4) / this.mapWidth) + " " + data.data[i] + " " + data.data[i + 1] + " " + data.data[i + 2]);
         }
+        this.backgroundSprite = new PIXI.Sprite(backgroundImage);
     }
 
-    destroy(options?: boolean | PIXI.DestroyOptions) {
-        super.destroy(options);
+    destroy(options?: boolean | PIXI.IDestroyOptions) {
+        // super.destroy(options);
+        this.mapTexture.destroy(true);
+        this.backgroundSprite.destroy(true);
         this.mapData = new Uint8Array(0); // clear the map data on destruction
     }
 
@@ -56,19 +64,37 @@ export default class Map extends PIXI.Sprite {
 
     isGrounded(actor: Actor) {
         if (actor.velocity.y < 0) return false;
-        let onWalkableGround = Map.testLine({ x: actor.left, y: actor.bottom }, { x: actor.right - EPSILON, y: actor.bottom  },
-            (x, y) => Map.isWalkable(this.getPixelData(x, y)), 2);
-        if (!onWalkableGround) return false;
-        let onSolidGround = Map.testLine({ x: actor.left, y: actor.bottom }, { x: actor.right - EPSILON, y: actor.bottom  },
-            (x, y) => Map.isSolid(this.getPixelData(x, y)), 2);
-        if (onSolidGround) return true;
+        // let onWalkableGround = Map.testLine({ x: actor.left, y: actor.bottom }, { x: actor.right - EPSILON, y: actor.bottom  },
+        //     (x, y) => Map.isWalkable(this.getPixelData(x, y)), 2);
+        // onWalkableGround = onWalkableGround || Map.isPointWalkable(this.getPixelData(actor.horizontalCenter, actor.bottom));
+        if (!this.actorIsOnWalkableGround(actor)) return false;
+        if (this.actorIsOnSolidGround(actor)) return true;
         // if we're inside of a passable solid, then we haven't actually gotten through
-        let passingThroughPassable = Map.testLine({ x: actor.left, y: actor.bottom - 2 }, { x: actor.right - EPSILON, y: actor.bottom - 2 },
-            (x, y) => Map.isPassable(this.getPixelData(x, y)), actor.right - actor.left);
-        if (passingThroughPassable) return false;
+        // let passingThroughPassable = Map.testLine({ x: actor.left, y: actor.bottom - 2 }, { x: actor.right - EPSILON, y: actor.bottom - 2 },
+        //     (x, y) => Map.isPassable(this.getPixelData(x, y)), actor.right - actor.left);
+        //     passingThroughPassable = passingThroughPassable || Map.isPointWalkable(this.getPixelData(actor.horizontalCenter, actor.bottom - 2));
+        if (this.actorIsInPassable(actor)) return false;
         return true;
     }
     
+    actorIsOnWalkableGround(actor: Actor, verticalOffset = 0): boolean {
+        return Map.testLine({ x: actor.left, y: actor.bottom + verticalOffset }, { x: actor.right - EPSILON, y: actor.bottom + verticalOffset },
+                        (x, y) => Map.isWalkable(this.getPixelData(x, y)), 2 ) ||
+                Map.isPointWalkable(this.getPixelData(actor.horizontalCenter, actor.bottom + verticalOffset));
+    }
+
+    actorIsOnSolidGround(actor: Actor, verticalOffset = 0): boolean {
+        return Map.testLine({ x: actor.left, y: actor.bottom + verticalOffset }, { x: actor.right - EPSILON, y: actor.bottom + verticalOffset },
+                        (x, y) => Map.isSolid(this.getPixelData(x, y)), 2 )
+    }
+
+    actorIsInPassable(actor: Actor) {
+        if (actor.fallthrough !== undefined && Math.abs(actor.y - actor.fallthrough) < 5) return true;
+        return Map.isPointWalkable(this.getPixelData(actor.horizontalCenter, actor.bottom - 2)) ||
+                Map.testLine({ x: actor.left, y: actor.bottom - 2 }, { x: actor.right - EPSILON, y: actor.bottom - 2 },
+                    (x, y) => Map.isPassable(this.getPixelData(x, y)), actor.right - actor.left);
+    }
+
     // move an actor through the world, returns a pair of booleans representing
     // [horizontal collision occurred, vertical collision occurred]
     move(actor: Actor): [boolean, boolean] {
@@ -83,12 +109,8 @@ export default class Map extends PIXI.Sprite {
                     // iunno
                 } else {
                     // if we're hitting the ground, give 'em the goods
-                    if (Map.testLine({ x: actor.left, y: actor.bottom - EPSILON }, { x: actor.right - EPSILON, y: actor.bottom - EPSILON },
-                        (x, y) => Map.isWalkable(this.getPixelData(x, y)), 2 ) &&
-                        // if we're inside of a passable solid, then we haven't actually gotten through
-                        !Map.testLine({ x: actor.left, y: actor.bottom - 2 }, { x: actor.right - EPSILON, y: actor.bottom - 2 },
-                        (x, y) => Map.isPassable(this.getPixelData(x, y)), actor.right - actor.left))
-                    {
+                    // if we're inside of a passable solid, then we haven't actually gotten through
+                    if (this.actorIsOnSolidGround(actor, -EPSILON) || (this.actorIsOnWalkableGround(actor, -EPSILON) && !this.actorIsInPassable(actor))) {
                         movingY = false;
                         collisions[1] = true;
                         actor.position.y = Math.floor(actor.position.y - EPSILON);
@@ -115,15 +137,9 @@ export default class Map extends PIXI.Sprite {
                     }
                 }
                 if (!movingY) { // we're walking along the ground, detect 1px slopes
-                    if (Map.testLine({ x: actor.left, y: actor.bottom - 1 }, { x: actor.right - EPSILON, y: actor.bottom - 1 },
-                        (x, y) => Map.isWalkable(this.getPixelData(x, y)), 2 ))
-                    {
+                    if (this.actorIsOnWalkableGround(actor, -1)) {
                         actor.position.y --;
-                    } else if (!Map.testLine({ x: actor.left, y: actor.bottom }, { x: actor.right - EPSILON, y: actor.bottom },
-                                (x, y) => Map.isWalkable(this.getPixelData(x, y)), 2) &&
-                                Map.testLine({ x: actor.left, y: actor.bottom + 1 }, { x: actor.right - EPSILON, y: actor.bottom + 1 },
-                                (x, y) => Map.isWalkable(this.getPixelData(x, y)), 2))
-                    {
+                    } else if (!this.actorIsOnWalkableGround(actor) && this.actorIsOnWalkableGround(actor, 1)) {
                         actor.position.y ++;
                     }
                 }
@@ -144,14 +160,26 @@ export default class Map extends PIXI.Sprite {
     }
 
     static isWalkable(type: GroundType) {
-        return type === GroundType.SOLID || type === GroundType.PASSABLE_SOLID || type === GroundType.PASSABLE_RAMP;
+        return type === GroundType.SOLID || type === GroundType.PASSABLE_SOLID || type === GroundType.PASSABLE_RAMP || type === GroundType.DROPPABLE;
     }
+
+    static isPointWalkable(type: GroundType) {
+        return type === GroundType.POINT_PASSABLE;
+    }
+    
+    // static isPointPassable(type: GroundType) {
+        // return type === GroundType.POINT_PASSABLE;
+    // }
     
     static isWalled(type: GroundType) {
         return type === GroundType.SOLID;
     }
 
     static isPassable(type: GroundType) {
-        return type === GroundType.PASSABLE_SOLID || type === GroundType.PASSABLE_RAMP;
+        return type === GroundType.PASSABLE_SOLID || type === GroundType.PASSABLE_RAMP || type === GroundType.DROPPABLE;
     }
-} 
+
+    static isDroppable(type: GroundType) {
+        return type === GroundType.DROPPABLE || type === GroundType.AIR || type === GroundType.POINT_PASSABLE;
+    }
+}
