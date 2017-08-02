@@ -6,17 +6,6 @@ interface PointLike {
     y: number;
 }
 
-export enum GroundType {
-    AIR,
-    SOLID,
-    PASSABLE_SOLID,
-    PASSABLE_RAMP,
-    DROPPABLE,
-    POINT_PASSABLE,
-    SOLID_NO_FEAR,
-    DROPPABLE_NO_FEAR,
-}
-
 export default class Map {
 
     private mapData: Uint8Array;
@@ -160,35 +149,49 @@ export default class Map {
     }
 
     static isSolid(type: GroundType) {
-        return type === GroundType.SOLID || type === GroundType.SOLID_NO_FEAR;
+        return (type & IS_SOLID) !== 0;
     }
 
     static isWalkable(type: GroundType) {
-        if (Map.isSolid(type)) return true;
-        return type === GroundType.PASSABLE_SOLID || type === GroundType.PASSABLE_RAMP || type === GroundType.DROPPABLE || type === GroundType.DROPPABLE_NO_FEAR;
+        return (type & IS_WALKABLE) !== 0;
     }
 
     static isPointWalkable(type: GroundType) {
-        return type === GroundType.POINT_PASSABLE;
+        return (type & IS_POINT_WALKABLE) !== 0;
     }
 
     static isFearless(type: GroundType) {
-        return type === GroundType.SOLID_NO_FEAR || type === GroundType.DROPPABLE_NO_FEAR;
+        return (type & IS_FEARLESS) !== 0;
     }
     
-    // static isPointPassable(type: GroundType) {
-        // return type === GroundType.POINT_PASSABLE;
-    // }
-    
     static isWalled(type: GroundType) {
-        return type === GroundType.SOLID;
+        return (type & IS_WALLED) !== 0;
     }
 
     static isPassable(type: GroundType) {
-        return type === GroundType.PASSABLE_SOLID || type === GroundType.PASSABLE_RAMP || type === GroundType.DROPPABLE || type === GroundType.DROPPABLE_NO_FEAR;
+        return (type & IS_PASSABLE) !== 0;
     }
 
     static isDroppable(type: GroundType) {
-        return type === GroundType.DROPPABLE || type === GroundType.AIR || type === GroundType.POINT_PASSABLE || type === GroundType.DROPPABLE_NO_FEAR;
+        return (type & IS_DROPPABLE) !== 0;
     }
+}
+
+const IS_SOLID = 0x01;
+const IS_WALKABLE = 0x02;
+const IS_POINT_WALKABLE = 0x04;
+const IS_FEARLESS = 0x08;
+const IS_WALLED = 0x10;
+const IS_PASSABLE = 0x20;
+const IS_DROPPABLE = 0x40;
+
+export enum GroundType {
+    AIR = IS_DROPPABLE,
+    SOLID = IS_SOLID | IS_WALLED | IS_WALKABLE,
+    PASSABLE_SOLID = IS_WALKABLE | IS_PASSABLE,
+    PASSABLE_RAMP = IS_WALKABLE | IS_PASSABLE,
+    DROPPABLE = IS_WALKABLE | IS_PASSABLE | IS_DROPPABLE,
+    POINT_PASSABLE = IS_POINT_WALKABLE | IS_DROPPABLE,
+    SOLID_NO_FEAR = IS_SOLID | IS_FEARLESS | IS_WALKABLE,
+    DROPPABLE_NO_FEAR = IS_WALKABLE | IS_FEARLESS | IS_PASSABLE | IS_DROPPABLE,
 }

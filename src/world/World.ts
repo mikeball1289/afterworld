@@ -63,28 +63,17 @@ export default class World extends PIXI.Sprite {
 
         this.actorLayer = new PIXI.Container();
         this.worldContainer.addChild(this.actorLayer);
-        // this.playerLayer = new PIXI.Container();
-        // this.worldContainer.addChild(this.playerLayer);
         this.currentMapName = startingMap;
         this.currentMapData = mapData[startingMap];
 
         this.player = new PlayerCharacter(this);
-        this.setPlayerSpawn(this.currentMapData.entrances.default);
         this.actorLayer.addChild(this.player);
-        // this.playerLayer.addChild(this.player);
 
         // load up the starting map
         this.loadMap(this.currentMapData, () => {
+            this.setPlayerSpawn(this.currentMapData.entrances.default);
             this.positionCamera();
             this.queueMapTransition = undefined;
-
-            for (let i = 0; i < 20; i ++) {
-                let skelly = new Skelly(this);
-                skelly.x = 500 + Math.random() * 400;
-                skelly.y = 1023 - skelly.size.y;
-                this.npas.push(skelly);
-                this.actorLayer.addChild(skelly);
-            }
         } );
     }
 
@@ -116,6 +105,10 @@ export default class World extends PIXI.Sprite {
                 let npcSprite = new NPC(loader.resources[npc.name].texture, npc);
                 this.npcs.push(npcSprite);
                 this.npcLayer.addChild(npcSprite);
+            }
+            this.npas = mapDataObject.npas(this);
+            for (let npa of this.npas) {
+                this.actorLayer.addChild(npa);
             }
             if (done) done();
         } );
@@ -158,35 +151,45 @@ export default class World extends PIXI.Sprite {
         }
     }
 
-    // perform an instantaneous map transition
-    mapTransition(mapName: MapName) {
-        // TODO: Handle NPAs
-        if (!this.map) return;
-        let previousMapName = this.currentMapName;
-        
+    unloadMap() {
         // clean up previous map objects
+        if (!this.map) return;
         this.removeChild(this.map.backgroundSprite);
         this.map.destroy(true);
+        this.map = undefined;
         for (let npc of this.npcs) {
             this.npcLayer.removeChild(npc);
             npc.destroy(true);
         }
         this.npcs = [];
 
+        for (let npa of this.npas) {
+            this.actorLayer.removeChild(npa);
+            npa.destroy({ children: true, texture: true, baseTexture: false });
+        }
+        this.npas = [];
+    }
+
+    // perform an instantaneous map transition
+    mapTransition(mapName: MapName) {
+        // TODO: Handle NPAs
+        if (!this.map) return;
+        let previousMapName = this.currentMapName;
+
         // load new map objects
         this.currentMapData = mapData[mapName];
         this.currentMapName = mapName;
         this.loadMap(this.currentMapData, () => {
+            if (this.currentMapData.entrances[previousMapName]) {
+                // try to set player spawn to the entrance for the previous map
+                this.setPlayerSpawn(this.currentMapData.entrances[previousMapName]);
+            } else {
+                // if you can't, use the default spawn instead
+                this.setPlayerSpawn(this.currentMapData.entrances.default);
+            }
             this.positionCamera();
             this.queueMapTransition = undefined;
         } );
-        try {
-            // try to set player spawn to the entrance for the previous map
-            this.setPlayerSpawn(this.currentMapData.entrances[previousMapName]);
-        } catch(e) {
-            // if you can't, use the default spawn instead
-            this.setPlayerSpawn(this.currentMapData.entrances.default);
-        }
         this.currentMapName = mapName;
     }
 

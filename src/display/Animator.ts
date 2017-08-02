@@ -68,7 +68,7 @@ export default class Animator<T extends ActionMap> extends PIXI.Sprite {
         if (source) {
             for (let frameLine of this.frames) {
                 for (let frame of frameLine) {
-                    frame.destroy();
+                    frame.destroy((options && typeof options === "boolean") || (options && options.baseTexture));
                 }
             }
         }

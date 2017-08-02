@@ -1,3 +1,7 @@
+import NonPlayerActor from "../actors/NonPlayerActor";
+import Skelly from "../actors/Skelly";
+import World from "../world/World";
+
 export interface NPCData {
     name: string,
     image: string,
@@ -8,7 +12,8 @@ export interface NPCData {
 export interface MapDataObject {
     map: string;
     background: string;
-    npcs: NPCData[],
+    npcs: NPCData[];
+    npas: (world: World) => NonPlayerActor[];
     entrances: {
         default: [number, number];
         [name: string]: [number, number];
@@ -34,6 +39,16 @@ let mapData: { [mapname: string]: MapDataObject } = {
                         + "\n\nAlso why you naked?",
             },
         ],
+        npas: function(world: World) {
+            let npas: NonPlayerActor[] = [];
+            for (let i = 0; i < 20; i ++) {
+                let skelly = new Skelly(world);
+                skelly.x = 500 + Math.random() * 400;
+                skelly.y = 1023 - skelly.size.y;
+                npas.push(skelly);
+            }
+            return npas;
+        },
         entrances: {
             default: p(1112, 955),
             map2: p(2890, 1158),
@@ -52,7 +67,10 @@ let mapData: { [mapname: string]: MapDataObject } = {
         exits: {
             map1: p(85, 464),
         },
-        npcs: []
+        npcs: [],
+        npas: function() {
+            return [];
+        }
     }
 }
 
