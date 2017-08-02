@@ -57,6 +57,10 @@ export default class Animator<T extends ActionMap> extends PIXI.Sprite {
         this.onComplete = onComplete;
     }
 
+    setProgress(amount: number) {
+        this.currentFrame = amount * this.animations[this.currentAnimation][1];
+    }
+
     destroy(options?: boolean | PIXI.IDestroyOptions, source = false) {
         this.texture = <PIXI.Texture><any> undefined;
         super.destroy(options);
@@ -68,6 +72,10 @@ export default class Animator<T extends ActionMap> extends PIXI.Sprite {
                 }
             }
         }
+    }
+
+    get animationName(): keyof T {
+        return this.currentAnimation;
     }
 
 }

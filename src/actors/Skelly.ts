@@ -16,6 +16,8 @@ const IDLE_GROUNDED_DECAY = 0.85;
 const HORIZONTAL_THRESHOLD = 0.4;
 const FULL_HORIZONTAL_DECAY = 0.88;
 
+const VIEW_DISTANCE = 400;
+
 export default class Skelly extends NonPlayerActor {
 
     private animator: Animator<{
@@ -25,8 +27,17 @@ export default class Skelly extends NonPlayerActor {
         die: [number, number];
     }>;
 
-    private state = MovementStates.IDLE;
+    private _state = MovementStates.IDLE;
     private _direction: -1 | 1 = 1;
+
+    set state(val: MovementStates) {
+        this._state = val;
+        if (val !== MovementStates.CHASING) this.noticePlayerTimer = 1;
+    }
+
+    get state() {
+        return this._state;
+    }
 
     set direction(val: -1 | 1) {
         this._direction = val;
@@ -55,61 +66,137 @@ export default class Skelly extends NonPlayerActor {
         this.addChild(this.animator);
     }
 
+    private noticePlayerTimer: number = 1;
+    private goingUp: boolean = false;
+
+    walk() {
+        this.velocity.x += WALK_IMPULSE * this.direction;
+        if (Math.abs(this.velocity.x) > HORIZONTAL_THRESHOLD) this.velocity.x *= FULL_HORIZONTAL_DECAY;
+        if (this.animator.animationName !== "walk") {
+            this.animator.play("walk");
+            this.animator.setProgress(Math.random());
+        }
+    }
+
+    stand() {
+        this.velocity.x *= IDLE_GROUNDED_DECAY;
+        if (Math.abs(this.velocity.x) < EPSILON) this.velocity.x = 0;
+        this.animator.play("idle");
+    }
+
+    isFearless(map: Map) {
+        return Map.isFearless(map.getPixelData(this.left, this.bottom + EPSILON)) || Map.isFearless(map.getPixelData(this.right, this.bottom + EPSILON));
+    }
+
     updateImpulse(map: Map, player?: PlayerCharacter): void {
         if (!map.isGrounded(this)) {
             this.velocity.y += GRAVITY;
             return;
         }
 
+        if (this.state !== MovementStates.CHASING) {
+            if (player && player.right > this.left - VIEW_DISTANCE && player.right < this.right + VIEW_DISTANCE && this.top < player.bottom && this.bottom > player.top) {
+                if (Math.random() < this.noticePlayerTimer / 500) {
+                    this.state = MovementStates.CHASING;
+                } else {
+                    this.noticePlayerTimer ++;
+                }
+            }
+        }
+
         switch(this.state) {
             case MovementStates.IDLE: {
-                this.animator.play("idle");
-
-                this.velocity.x *= IDLE_GROUNDED_DECAY;
-                if (Math.abs(this.velocity.x) < EPSILON) this.velocity.x = 0;
-
+                this.stand();
                 if (Math.random() < 1 / 300) {
                     this.state = MovementStates.WALKING;
                     if (Math.random() < 1 / 2) {
                         this.direction *= -1;
                     }
                 } else {
-                    if (!Map.isWalkable(map.getPixelData(this.left, this.bottom))) {
-                        this.state = MovementStates.WALKING;
-                        this.direction = 1;
-                    } else if (this.direction > 0 && !Map.isWalkable(map.getPixelData(this.right, this.bottom))) {
-                        this.state = MovementStates.WALKING;
-                        this.direction = -1;
+                    if (!this.isFearless(map)) {
+                        if (!Map.isWalkable(map.getPixelData(this.left, this.bottom))) {
+                            this.state = MovementStates.WALKING;
+                            this.direction = 1;
+                        } else if (this.direction > 0 && !Map.isWalkable(map.getPixelData(this.right, this.bottom))) {
+                            this.state = MovementStates.WALKING;
+                            this.direction = -1;
+                        }
                     }
                 }
                 
                 break;
             }
             case MovementStates.WALKING: {
-                this.animator.play("walk");
-
-                if (this.direction < 0 && !Map.isWalkable(map.getPixelData(this.left, this.bottom))) {
-                    this.direction = 1;
-                } else if (this.direction > 0 && !Map.isWalkable(map.getPixelData(this.right, this.bottom))) {
-                    this.direction = -1;
+                if (!this.isFearless(map)) {
+                    if (this.direction < 0 && !Map.isWalkable(map.getPixelData(this.left, this.bottom))) {
+                        this.direction = 1;
+                    } else if (this.direction > 0 && !Map.isWalkable(map.getPixelData(this.right, this.bottom))) {
+                        this.direction = -1;
+                    }
                 }
                 
-                this.velocity.x += WALK_IMPULSE * this.direction;
+                this.walk();
 
-                if (Math.abs(this.velocity.x) > HORIZONTAL_THRESHOLD) this.velocity.x *= FULL_HORIZONTAL_DECAY;
                 if (Math.random() < 1 / 300) {
                     this.state = MovementStates.IDLE;
                 } else if (Math.random() < 1 / 150) {
                     this.direction *= -1;
                 }
-                
+
+                if (Math.random() < 1 / 10000) {
+                    this.goingUp = !this.goingUp;
+                }
+                if (this.goingUp) {
+                    if ((this.direction < 0 && Map.isWalkable(map.getPixelData(this.left, this.bottom - 2 - EPSILON)))  ||
+                        (this.direction > 0 && Map.isWalkable(map.getPixelData(this.right - EPSILON, this.bottom - 2 - EPSILON))))
+                    {
+                        this.y -= 2;
+                    }
+                }
+
                 break;
             }
             case MovementStates.CHASING: {
-                this.animator.play("walk");
                 if (!player) {
                     this.state = MovementStates.WALKING;
                     return this.updateImpulse(map, player);
+                }
+
+                if (player.right < this.left || player.left > this.right) {
+                    if (Math.random() < 1 / 15) {
+                        if (player.horizontalCenter < this.horizontalCenter) {
+                            this.direction = -1;
+                        } else {
+                            this.direction = 1;
+                        }
+                    }
+                    this.walk();
+                } else {
+                    this.stand();
+                }
+                if (player &&
+                    !(player.right > this.left - VIEW_DISTANCE * 2 &&
+                    player.right < this.right + VIEW_DISTANCE * 2 &&
+                    this.top < player.bottom + 500 &&
+                    this.bottom > player.top - 500))
+                {
+                    this.state = MovementStates.WALKING;
+                }
+
+                if (!this.isFearless(map)) {
+                    if (this.direction < 0 && !Map.isWalkable(map.getPixelData(this.left, this.bottom))) {
+                        this.direction = 1;
+                        this.state = MovementStates.WALKING;
+                    } else if (this.direction > 0 && !Map.isWalkable(map.getPixelData(this.right, this.bottom))) {
+                        this.direction = -1;
+                        this.state = MovementStates.WALKING;
+                    }
+                }
+
+                if ((this.direction < 0 && player.bottom < this.bottom && Map.isWalkable(map.getPixelData(this.left, this.bottom - 2 - EPSILON)))  ||
+                    (this.direction > 0 && player.bottom < this.bottom && Map.isWalkable(map.getPixelData(this.right - EPSILON, this.bottom - 2 - EPSILON))))
+                {
+                    this.y -= 2;
                 }
                 break;
             }

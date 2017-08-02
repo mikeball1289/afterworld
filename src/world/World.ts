@@ -78,10 +78,10 @@ export default class World extends PIXI.Sprite {
             this.positionCamera();
             this.queueMapTransition = undefined;
 
-            for (let i = 0; i < 5; i ++) {
+            for (let i = 0; i < 20; i ++) {
                 let skelly = new Skelly(this);
                 skelly.x = 500 + Math.random() * 400;
-                skelly.y = 1123 - skelly.size.y;
+                skelly.y = 1023 - skelly.size.y;
                 this.npas.push(skelly);
                 this.actorLayer.addChild(skelly);
             }

@@ -13,6 +13,8 @@ export enum GroundType {
     PASSABLE_RAMP,
     DROPPABLE,
     POINT_PASSABLE,
+    SOLID_NO_FEAR,
+    DROPPABLE_NO_FEAR,
 }
 
 export default class Map {
@@ -43,6 +45,8 @@ export default class Map {
             else if (data.data[i] === 0x00 && data.data[i + 1] === 0xFF && data.data[i + 2] === 0x00) this.mapData[i / 4] = GroundType.PASSABLE_RAMP;
             else if (data.data[i] === 0xFF && data.data[i + 1] === 0x00 && data.data[i + 2] === 0xDC) this.mapData[i / 4] = GroundType.DROPPABLE;
             else if (data.data[i] === 0xFF && data.data[i + 1] === 0xFF && data.data[i + 2] === 0x00) this.mapData[i / 4] = GroundType.POINT_PASSABLE;
+            else if (data.data[i] === 0xAA && data.data[i + 1] === 0xAA && data.data[i + 2] === 0xAA) this.mapData[i / 4] = GroundType.SOLID_NO_FEAR;
+            else if (data.data[i] === 0xFF && data.data[i + 1] === 0x88 && data.data[i + 2] === 0x99) this.mapData[i / 4] = GroundType.DROPPABLE_NO_FEAR;
             else throw new Error("Invalid map data at " + ((i / 4) % this.mapWidth) + ", " + Math.floor((i / 4) / this.mapWidth) + " " + data.data[i] + " " + data.data[i + 1] + " " + data.data[i + 2]);
         }
         this.backgroundSprite = new PIXI.Sprite(backgroundImage);
@@ -156,15 +160,20 @@ export default class Map {
     }
 
     static isSolid(type: GroundType) {
-        return type === GroundType.SOLID;
+        return type === GroundType.SOLID || type === GroundType.SOLID_NO_FEAR;
     }
 
     static isWalkable(type: GroundType) {
-        return type === GroundType.SOLID || type === GroundType.PASSABLE_SOLID || type === GroundType.PASSABLE_RAMP || type === GroundType.DROPPABLE;
+        if (Map.isSolid(type)) return true;
+        return type === GroundType.PASSABLE_SOLID || type === GroundType.PASSABLE_RAMP || type === GroundType.DROPPABLE || type === GroundType.DROPPABLE_NO_FEAR;
     }
 
     static isPointWalkable(type: GroundType) {
         return type === GroundType.POINT_PASSABLE;
+    }
+
+    static isFearless(type: GroundType) {
+        return type === GroundType.SOLID_NO_FEAR || type === GroundType.DROPPABLE_NO_FEAR;
     }
     
     // static isPointPassable(type: GroundType) {
@@ -176,10 +185,10 @@ export default class Map {
     }
 
     static isPassable(type: GroundType) {
-        return type === GroundType.PASSABLE_SOLID || type === GroundType.PASSABLE_RAMP || type === GroundType.DROPPABLE;
+        return type === GroundType.PASSABLE_SOLID || type === GroundType.PASSABLE_RAMP || type === GroundType.DROPPABLE || type === GroundType.DROPPABLE_NO_FEAR;
     }
 
     static isDroppable(type: GroundType) {
-        return type === GroundType.DROPPABLE || type === GroundType.AIR || type === GroundType.POINT_PASSABLE;
+        return type === GroundType.DROPPABLE || type === GroundType.AIR || type === GroundType.POINT_PASSABLE || type === GroundType.DROPPABLE_NO_FEAR;
     }
 }
