@@ -202,9 +202,9 @@ export default class World extends PIXI.Sprite {
             let a = this.npas[i];
             for (let j = i + 1; j < this.npas.length; j ++) {
                 let b = this.npas[j];
-                if (a.left <= b.right && a.right >= b.left) {
+                let dist = a.horizontalCenter - b.horizontalCenter;
+                if (Math.abs(dist) < (a.size.x / 2 + b.size.x / 2) * 0.85) {
                     if (Math.abs(a.bottom - b.bottom) < 15) {
-                        let dist = a.horizontalCenter - b.horizontalCenter;
                         let force = repulsionForce(dist);
                         if (dist < 0) {
                             a.velocity.x -= force;
@@ -221,7 +221,8 @@ export default class World extends PIXI.Sprite {
         }
 
         // this.actorLayer.children.sort( (a: Actor, b: Actor) => a.bottom - b.bottom );
-        this.actorLayer.children = mergeSort(this.actorLayer.children, (a: Actor, b: Actor) => a.bottom - b.bottom);
+        this.actorLayer.children = mergeSort(this.actorLayer.children, (a: Actor, b: Actor) => (a.bottom - b.bottom) ||
+            ((a instanceof PlayerCharacter) ? -1 : (b instanceof PlayerCharacter) ? 1 : 0) );
 
         this.player.handleCollisions(this.map.move(this.player));
         for (let npa of this.npas) {
