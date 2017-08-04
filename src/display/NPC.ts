@@ -27,7 +27,10 @@ export default class NPC extends JuggledSprite {
         if (on === this.interactableOpen) return;
         this.interactableOpen = on;
         if (on && !this.interactablePrompt.visible) {
-            this.interactablePrompt.play("dotdotdot", true, undefined, undefined, true);
+            this.interactablePrompt.play("dotdotdot", {
+                loop: true,
+                override: true
+            } );
             this.interactablePrompt.visible = true;
             this.interactablePrompt.scale.set(0.1);
         }

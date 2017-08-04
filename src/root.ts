@@ -154,6 +154,12 @@ export enum InputType {
     DOWN,
     JUMP,
     INTERACT,
+    PRIMARY_ATTACK,
+    SECONDARY_ATTACK,
+    ABILITY_1,
+    ABILITY_2,
+    ABILITY_3,
+    ABILITY_4,
 }
 
 export function hasInput(type: InputType) {
@@ -164,5 +170,7 @@ export function hasInput(type: InputType) {
         case InputType.DOWN: return keyboard.isKeyDown(Key.DOWN) || controller.getAxis(ControllerAxis.LEFT_Y) > 0.5;
         case InputType.JUMP: return keyboard.isKeyDown(Key.SPACE) || controller.getButton(ControllerButton.A);
         case InputType.INTERACT: return keyboard.isKeyDown(Key.ENTER) || controller.getButton(ControllerButton.Y);
+        case InputType.PRIMARY_ATTACK: return keyboard.isKeyDown(Key.A) || controller.getButton(ControllerButton.X);
+        case InputType.PRIMARY_ATTACK: return keyboard.isKeyDown(Key.S) || controller.getButton(ControllerButton.B);
     }
 }

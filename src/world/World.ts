@@ -38,8 +38,8 @@ export default class World extends PIXI.Sprite {
     private npcText: NPCText;
     private npcLayer: PIXI.Container;
 
-    // NPA (non-player actor) data
-    private npas: NonPlayerActor[] = [];
+    // NPA (enemy) data
+    public npas: NonPlayerActor[] = [];
 
     constructor(startingMap: MapName, public screenWidth: number, public screenHeight: number) {
         super();
@@ -165,17 +165,16 @@ export default class World extends PIXI.Sprite {
 
         for (let npa of this.npas) {
             this.actorLayer.removeChild(npa);
-            npa.destroy({ children: true, texture: true, baseTexture: false });
+            npa.destroy({ children: true, texture: false, baseTexture: false });
         }
         this.npas = [];
     }
 
     // perform an instantaneous map transition
     mapTransition(mapName: MapName) {
-        // TODO: Handle NPAs
         if (!this.map) return;
         let previousMapName = this.currentMapName;
-
+        this.unloadMap();
         // load new map objects
         this.currentMapData = mapData[mapName];
         this.currentMapName = mapName;
@@ -203,25 +202,15 @@ export default class World extends PIXI.Sprite {
         this.npas = mergeSort(this.npas, (a, b) => a.horizontalCenter - b.horizontalCenter);
         for (let i = 0; i < this.npas.length - 1; i ++) {
             let a = this.npas[i];
+            a.repel(this.player);
             for (let j = i + 1; j < this.npas.length; j ++) {
                 let b = this.npas[j];
-                let dist = a.horizontalCenter - b.horizontalCenter;
-                if (Math.abs(dist) < (a.size.x / 2 + b.size.x / 2) * 0.85) {
-                    if (Math.abs(a.bottom - b.bottom) < 15) {
-                        let force = repulsionForce(dist);
-                        if (dist < 0) {
-                            a.velocity.x -= force;
-                            b.velocity.x += force;
-                        } else {
-                            a.velocity.x += force;
-                            b.velocity.x -= force;
-                        }
-                    }
-                } else {
+                if (!a.repel(b)) {
                     break;
                 }
             }
         }
+        if (this.npas.length > 0) this.npas[this.npas.length - 1].repel(this.player);
 
         // this.actorLayer.children.sort( (a: Actor, b: Actor) => a.bottom - b.bottom );
         this.actorLayer.children = mergeSort(this.actorLayer.children, (a: Actor, b: Actor) => (a.bottom - b.bottom) ||

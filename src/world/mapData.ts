@@ -41,10 +41,12 @@ let mapData: { [mapname: string]: MapDataObject } = {
         ],
         npas: function(world: World) {
             let npas: NonPlayerActor[] = [];
-            for (let i = 0; i < 20; i ++) {
+            for (let i = 0; i < 10; i ++) {
                 let skelly = new Skelly(world);
                 skelly.x = 500 + Math.random() * 400;
                 skelly.y = 1023 - skelly.size.y;
+                // skelly.x = 200 + Math.random() * 2800;
+                // skelly.y = 200;
                 npas.push(skelly);
             }
             return npas;

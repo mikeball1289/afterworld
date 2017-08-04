@@ -9,6 +9,7 @@ enum MovementStates {
     IDLE,
     WALKING,
     CHASING,
+    ATTACKING,
 }
 
 const WALK_IMPULSE = 0.1;
@@ -29,6 +30,7 @@ export default class Skelly extends NonPlayerActor {
 
     private _state = MovementStates.IDLE;
     private _direction: -1 | 1 = 1;
+    public weight = 1.8;
 
     set state(val: MovementStates) {
         this._state = val;
@@ -41,7 +43,7 @@ export default class Skelly extends NonPlayerActor {
 
     set direction(val: -1 | 1) {
         if (this._direction !== val) {
-            this.animator.setProgress
+            // this.animator.setProgress(0);
             this._direction = val;
             this.animator.scale.x = 1.5 * val;
         }
@@ -71,20 +73,18 @@ export default class Skelly extends NonPlayerActor {
 
     private noticePlayerTimer: number = 1;
     private goingUp: boolean = false;
+    private attackCooldown = 0;
 
     walk() {
         this.velocity.x += WALK_IMPULSE * this.direction;
         if (Math.abs(this.velocity.x) > HORIZONTAL_THRESHOLD) this.velocity.x *= FULL_HORIZONTAL_DECAY;
-        // if (this.animator.animationName !== "walk") {
-        this.animator.play("walk");
-            // this.animator.setProgress(Math.random());
-        // }
+        this.animator.play("walk", { loop: true });
     }
 
     stand() {
         this.velocity.x *= IDLE_GROUNDED_DECAY;
         if (Math.abs(this.velocity.x) < EPSILON) this.velocity.x = 0;
-        this.animator.play("idle");
+        this.animator.play("idle", { loop: true });
     }
 
     isFearless(map: Map) {
@@ -97,7 +97,7 @@ export default class Skelly extends NonPlayerActor {
             return;
         }
 
-        if (this.state !== MovementStates.CHASING) {
+        if (this.state !== MovementStates.CHASING && this.state !== MovementStates.ATTACKING) {
             if (player && player.right > this.left - VIEW_DISTANCE && player.right < this.right + VIEW_DISTANCE && this.top < player.bottom && this.bottom > player.top) {
                 if (Math.random() < this.noticePlayerTimer / 500) {
                     this.state = MovementStates.CHASING;
@@ -105,6 +105,10 @@ export default class Skelly extends NonPlayerActor {
                     this.noticePlayerTimer ++;
                 }
             }
+        }
+
+        if (this.attackCooldown > 0) {
+            this.attackCooldown --;
         }
 
         switch(this.state) {
@@ -120,7 +124,16 @@ export default class Skelly extends NonPlayerActor {
                 this.chasingUpdate(map, player);
                 break;
             }
+            case MovementStates.ATTACKING: {
+                this.attackingUpdate(map, player);
+                break;
+            }
         }
+    }
+
+    attackingUpdate(map: Map, player?: PlayerCharacter) {
+        this.velocity.x *= IDLE_GROUNDED_DECAY;
+        if (Math.abs(this.velocity.x) < EPSILON) this.velocity.x = 0;
     }
 
     idleUpdate(map: Map, player?: PlayerCharacter) {
@@ -178,7 +191,7 @@ export default class Skelly extends NonPlayerActor {
             return this.updateImpulse(map, player);
         }
 
-        if (player.right < this.left || player.left > this.right) {
+        if (player.right < this.left - 5 || player.left > this.right + 5) {
             this.walk();
         } else {
             this.stand();
@@ -216,6 +229,26 @@ export default class Skelly extends NonPlayerActor {
         {
             this.y -= 2;
         }
+
+        if (this.attackCooldown <= 0 && Math.abs(this.bottom - player.bottom) < this.size.y && Math.abs(this.horizontalCenter - player.horizontalCenter) < this.size.x + 10 && Math.random() < 1 / 30) {
+            if (this.horizontalCenter < player.horizontalCenter) {
+                this.direction = 1;
+            } else {
+                this.direction = -1;
+            }
+            this.state = MovementStates.ATTACKING;
+            this.animator.play("attack", {
+                onProgress: (frame) => {
+                    if (frame === 3) {
+                        console.log("attack hit");
+                    }
+                },
+                onComplete: () => {
+                    this.state = MovementStates.CHASING;
+                    this.attackCooldown = 120;
+                }
+            } );
+        }
     }
 
     handleCollisions(collisions: [boolean, boolean]) {
@@ -224,5 +257,10 @@ export default class Skelly extends NonPlayerActor {
             if (this.state === MovementStates.WALKING) this.direction *= -1;
         }
         if (collisions[1]) this.velocity.y = 0;
+    }
+
+    destroy(options?: boolean | PIXI.IDestroyOptions) {
+        super.destroy(options);
+        this.world = <any> undefined;
     }
 }

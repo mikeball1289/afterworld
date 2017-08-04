@@ -177,13 +177,13 @@ export default class Map {
     }
 }
 
-const IS_SOLID = 0x01;
-const IS_WALKABLE = 0x02;
-const IS_POINT_WALKABLE = 0x04;
-const IS_FEARLESS = 0x08;
-const IS_WALLED = 0x10;
-const IS_PASSABLE = 0x20;
-const IS_DROPPABLE = 0x40;
+const IS_SOLID = 0x01; // 00000001
+const IS_WALKABLE = 0x02; // 00000010
+const IS_POINT_WALKABLE = 0x04; // 00000100
+const IS_FEARLESS = 0x08; // 00001000
+const IS_WALLED = 0x10; // 00010000
+const IS_PASSABLE = 0x20; // 00100000
+const IS_DROPPABLE = 0x40; // 01000000
 
 export enum GroundType {
     AIR = IS_DROPPABLE,
