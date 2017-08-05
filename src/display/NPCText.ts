@@ -36,7 +36,6 @@ export default class NPCText extends JuggledSprite {
     display(npc: NPC) {
         this.visible = true;
         this.talkerSprite.texture = npc.texture;
-        // this.textField.text = npc.npcData.text;
         this.showText = npc.npcData.text;
         this.progress = 0;
         this.nameField.text = npc.npcData.name;
@@ -57,7 +56,7 @@ export default class NPCText extends JuggledSprite {
             this.progress += 0.4;
             this.textField.text = this.showText.substr(0, Math.floor(this.progress));
         }
-        if (!hasInput(InputType.INTERACT)) {
+        if (!hasInput(InputType.JUMP)) {
             this.promptReady = true;
         } else {
             if (this.promptReady) {

@@ -1,10 +1,11 @@
+import attackFunctions from "../attacks/attackFunctions";
 import { hasInput, InputType, juggler } from "../root";
 import World from "../world/World";
 import Map from "../world/Map";
 import Actor from "./Actor";
 import * as PC from "../world/physicalConstants";
 import Animator, { AnimatorOptions } from "../display/Animator";
-import NonPlayerActor from "./NonPlayerActor";
+import Enemy from "./Enemy";
 
 type PlayerAnimations = {
     idle: [number, number];
@@ -77,6 +78,23 @@ export default class PlayerCharacter extends Actor {
         this.body.weapon.play(animation, partialOptions);
         this.body.arm.play(animation, partialOptions);
     }
+    
+    // do the animations and setup triggers for basic attack
+    performBasicAttack() {
+        let randomAttack = BASIC_ATTACKS[Math.floor(Math.random() * 2)];
+        this.play(randomAttack, {
+            onProgress: (frame) => {
+                if (frame === 2) {
+                    attackFunctions.basicAttack(this, this.world);
+                }
+            },
+            onComplete: () => {
+                this.locked = false;
+                this.attackCooldown = 20;
+            }
+        } );
+        this.locked = true;
+    }
 
     jumpBuffer: boolean = true;
     interactBuffer: boolean = true;
@@ -92,42 +110,7 @@ export default class PlayerCharacter extends Actor {
         }
 
         if (getControls && hasInput(InputType.PRIMARY_ATTACK) && this.attackCooldown <= 0) {
-            let randomAttack = BASIC_ATTACKS[Math.floor(Math.random() * 2)];
-            this.play(randomAttack, {
-                onProgress: (frame) => {
-                    // if (frame === 2) console.log("do the attacky thing!");
-                    if (frame === 2) {
-                        let attackBox: PIXI.Rectangle = new PIXI.Rectangle(this.horizontalCenter, this.top + this.size.y / 3, 75, 30);
-                        let enemies = this.world.npas;
-
-                        let applyAttack = (enemy: NonPlayerActor): boolean => {
-                            // return false;
-                            if (enemy.left < attackBox.right && enemy.right > attackBox.left && enemy.top < attackBox.bottom && enemy.bottom > attackBox.top) {
-                                // console.log(enemy.id);
-                                enemy.applyImpulse(4 * this.direction, 0);
-                                return true;
-                            }
-                            return false;
-                        }
-
-                        if (this.direction === -1) {
-                            attackBox.x -= 75;
-                            for (let i = enemies.length - 1; i >= 0; i --) {
-                                if (applyAttack(enemies[i])) break;
-                            }
-                        } else {
-                            for (let i = 0; i < enemies.length; i ++) {
-                                if (applyAttack(enemies[i])) break;
-                            }
-                        }
-                    }
-                },
-                onComplete: () => {
-                    this.locked = false;
-                    this.attackCooldown = 20;
-                }
-            } );
-            this.locked = true;
+            this.performBasicAttack();
         }
         if (this.attackCooldown > 0) {
             this.attackCooldown --;
@@ -195,6 +178,9 @@ export default class PlayerCharacter extends Actor {
             } else {
                 this.interactBuffer = true;
             }
+        } else {
+            // dont come out of a control lock immediately jumping
+            this.jumpBuffer = false;
         }
     }
 

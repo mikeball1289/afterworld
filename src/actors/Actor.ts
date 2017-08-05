@@ -42,8 +42,10 @@ abstract class Actor extends PIXI.Sprite {
     }
 
     repel(other: Actor, damper = 8.5): boolean {
+        if (!this.collideable) return false;
         let dist = this.horizontalCenter - other.horizontalCenter;
         if (Math.abs(dist) < (this.size.x / 2 + other.size.x / 2) * 0.85) {
+            if (!other.collideable) return true;
             if (Math.abs(this.bottom - other.bottom) < 15) {
                 let force = repulsionForce(dist, damper);
                 let weightRatio = this.weight / other.weight;
@@ -64,6 +66,10 @@ abstract class Actor extends PIXI.Sprite {
     applyImpulse(x: number, y: number) {
         this.velocity.x += x;
         this.velocity.y += y;
+    }
+
+    get collideable() {
+        return true;
     }
 
     abstract updateImpulse(map: Map): void;

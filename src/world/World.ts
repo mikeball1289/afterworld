@@ -1,20 +1,14 @@
-import Skelly from "../actors/Skelly";
-import mapData, {MapDataObject} from "./mapData";
-import PlayerCharacter from "../actors/PlayerCharacter";
+import mapData, { MapDataObject } from "./mapData";
 import Map from "./Map";
 import NPC from "../display/NPC";
 import NPCText from "../display/NPCText";
-import Actor from "../actors/Actor";
-import NonPlayerActor from "../actors/NonPlayerActor";
-import mergeSort from "../mergeSort";
-import { repulsionForce } from "./physicalConstants";
+import ActorManager from "./ActorManager";
+import ParticleSystem from "../particlesystem/ParticleSystem";
 
 type MapName = keyof typeof mapData;
 
 // contain the info for the game world, this doesn't include UI
 export default class World extends PIXI.Sprite {
-    
-    public player: PlayerCharacter;
     
     // map and transition data
     public map?: Map;
@@ -22,10 +16,6 @@ export default class World extends PIXI.Sprite {
     private currentMapName: MapName;
     private queueMapTransition?: keyof typeof mapData;
     public transitionTimer = 1;
-    
-    // layers
-    private actorLayer: PIXI.Container;
-    // private playerLayer: PIXI.Container;
     
     private virtualPosition = { x: 0, y: 0 };
 
@@ -38,8 +28,8 @@ export default class World extends PIXI.Sprite {
     private npcText: NPCText;
     private npcLayer: PIXI.Container;
 
-    // NPA (enemy) data
-    public npas: NonPlayerActor[] = [];
+    public actorManager: ActorManager;
+    public particleSystem: ParticleSystem;
 
     constructor(startingMap: MapName, public screenWidth: number, public screenHeight: number) {
         super();
@@ -61,26 +51,20 @@ export default class World extends PIXI.Sprite {
         this.npcLayer = new PIXI.Container();
         this.worldContainer.addChild(this.npcLayer);
 
-        this.actorLayer = new PIXI.Container();
-        this.worldContainer.addChild(this.actorLayer);
+        this.actorManager = new ActorManager(this);
+        this.worldContainer.addChild(this.actorManager);
+        this.particleSystem = new ParticleSystem(this);
+        this.worldContainer.addChild(this.particleSystem);
+        
         this.currentMapName = startingMap;
         this.currentMapData = mapData[startingMap];
-
-        this.player = new PlayerCharacter(this);
-        this.actorLayer.addChild(this.player);
-
+        
         // load up the starting map
         this.loadMap(this.currentMapData, () => {
-            this.setPlayerSpawn(this.currentMapData.entrances.default);
+            this.actorManager.setPlayerSpawn(this.currentMapData.entrances.default);
             this.positionCamera();
             this.queueMapTransition = undefined;
         } );
-    }
-
-    // align the player with spawn information
-    setPlayerSpawn(entrance: [number, number]) {
-        this.player.x = entrance[0] - this.player.size.x / 2;
-        this.player.y = entrance[1] - this.player.size.y;
     }
 
     // asyncronously load a map and all its extra data
@@ -94,7 +78,7 @@ export default class World extends PIXI.Sprite {
         }
         loader.load( () => {
             try {
-                this.map = new Map(loader.resources.map.texture, loader.resources.background.texture);
+                this.map = new Map(loader.resources["map"].texture, loader.resources["background"].texture);
             } catch(e) {
                 console.log(e);
                 throw e;
@@ -106,10 +90,7 @@ export default class World extends PIXI.Sprite {
                 this.npcs.push(npcSprite);
                 this.npcLayer.addChild(npcSprite);
             }
-            this.npas = mapDataObject.npas(this);
-            for (let npa of this.npas) {
-                this.actorLayer.addChild(npa);
-            }
+            this.actorManager.loadEnemies(mapDataObject);
             if (done) done();
         } );
     }
@@ -118,12 +99,12 @@ export default class World extends PIXI.Sprite {
     positionCamera() {
         if (!this.map) return;
         if (this.map.digitalWidth > this.screenWidth) {
-            this.virtualPosition.x = -this.player.x + this.screenWidth / 2 - this.player.size.x / 2;
+            this.virtualPosition.x = -this.actorManager.player.x + this.screenWidth / 2 - this.actorManager.player.size.x / 2;
         } else {
             this.virtualPosition.x = this.screenWidth / 2 - this.map.digitalWidth / 2;
         }
         if (this.map.digitalHeight > this.screenHeight) {
-            this.virtualPosition.y = -this.player.y + this.screenHeight / 2 - this.player.size.y / 2;
+            this.virtualPosition.y = -this.actorManager.player.y + this.screenHeight / 2 - this.actorManager.player.size.y / 2;
         } else {
             this.virtualPosition.y = this.screenHeight / 2 - this.map.digitalHeight / 2;
         }
@@ -134,7 +115,9 @@ export default class World extends PIXI.Sprite {
         if (this.queueMapTransition) return;
         for (let exitName in this.currentMapData.exits) {
             let exit = this.currentMapData.exits[exitName];
-            if (exit[0] > this.player.left && exit[0] < this.player.right && exit[1] > this.player.top && exit[1] < this.player.bottom) {
+            if (exit[0] > this.actorManager.player.left && exit[0] < this.actorManager.player.right &&
+                exit[1] > this.actorManager.player.top && exit[1] < this.actorManager.player.bottom)
+            {
                 this.queueMapTransition = <keyof typeof mapData> exitName;
             }
         }
@@ -144,7 +127,7 @@ export default class World extends PIXI.Sprite {
     attemptInteraction() {
         if (this.queueMapTransition) return; // but not if we're in the process of a transition
         for (let npc of this.npcs) {
-            if (npc.withinTalkingRange(this.player)) {
+            if (npc.withinTalkingRange(this.actorManager.player)) {
                 this.npcText.display(npc);
                 break;
             }
@@ -163,11 +146,7 @@ export default class World extends PIXI.Sprite {
         }
         this.npcs = [];
 
-        for (let npa of this.npas) {
-            this.actorLayer.removeChild(npa);
-            npa.destroy({ children: true, texture: false, baseTexture: false });
-        }
-        this.npas = [];
+        this.actorManager.unloadEnemies();
     }
 
     // perform an instantaneous map transition
@@ -181,10 +160,10 @@ export default class World extends PIXI.Sprite {
         this.loadMap(this.currentMapData, () => {
             if (this.currentMapData.entrances[previousMapName]) {
                 // try to set player spawn to the entrance for the previous map
-                this.setPlayerSpawn(this.currentMapData.entrances[previousMapName]);
+                this.actorManager.setPlayerSpawn(this.currentMapData.entrances[previousMapName]);
             } else {
                 // if you can't, use the default spawn instead
-                this.setPlayerSpawn(this.currentMapData.entrances.default);
+                this.actorManager.setPlayerSpawn(this.currentMapData.entrances.default);
             }
             this.positionCamera();
             this.queueMapTransition = undefined;
@@ -194,36 +173,13 @@ export default class World extends PIXI.Sprite {
 
     update() {
         if (!this.map) return;
-        this.player.updateImpulse(this.map, this.queueMapTransition === undefined && !this.npcText.visible);
-        for (let npa of this.npas) {
-            npa.updateImpulse(this.map, this.player);
-        }
-        // this.npas.sort( (a, b) => a.horizontalCenter - b.horizontalCenter );
-        this.npas = mergeSort(this.npas, (a, b) => a.horizontalCenter - b.horizontalCenter);
-        for (let i = 0; i < this.npas.length - 1; i ++) {
-            let a = this.npas[i];
-            a.repel(this.player);
-            for (let j = i + 1; j < this.npas.length; j ++) {
-                let b = this.npas[j];
-                if (!a.repel(b)) {
-                    break;
-                }
-            }
-        }
-        if (this.npas.length > 0) this.npas[this.npas.length - 1].repel(this.player);
-
-        // this.actorLayer.children.sort( (a: Actor, b: Actor) => a.bottom - b.bottom );
-        this.actorLayer.children = mergeSort(this.actorLayer.children, (a: Actor, b: Actor) => (a.bottom - b.bottom) ||
-            ((a instanceof PlayerCharacter) ? -1 : (b instanceof PlayerCharacter) ? 1 : 0) );
-
-        this.player.handleCollisions(this.map.move(this.player));
-        for (let npa of this.npas) {
-            npa.handleCollisions(this.map.move(npa));
-        }
+        
+        this.actorManager.update(this.map, this.queueMapTransition === undefined && !this.npcText.visible);
+        this.particleSystem.update();
 
         let foundInteractable = false;
         for (let npc of this.npcs) {
-            if (npc.withinTalkingRange(this.player) && !foundInteractable) {
+            if (npc.withinTalkingRange(this.actorManager.player) && !foundInteractable) {
                 npc.setInteractablePrompt(true);
                 foundInteractable = true;
             } else {
@@ -233,14 +189,14 @@ export default class World extends PIXI.Sprite {
 
         // camera control
         if (this.map.digitalWidth > this.screenWidth) {
-            let targetX = -this.player.x + this.screenWidth / 2 - this.player.size.x / 2;
+            let targetX = -this.actorManager.player.x + this.screenWidth / 2 - this.actorManager.player.size.x / 2;
             this.virtualPosition.x += (targetX - this.virtualPosition.x) / 15;
             this.virtualPosition.x = Math.min(Math.max(this.virtualPosition.x, -this.map.digitalWidth + this.screenWidth), 0);
         } else {
             this.virtualPosition.x = this.screenWidth / 2 - this.map.digitalWidth / 2;
         }
         if (this.map.digitalHeight > this.screenHeight) {
-            let targetY = -this.player.y + this.screenHeight / 2 - this.player.size.y / 2;
+            let targetY = -this.actorManager.player.y + this.screenHeight / 2 - this.actorManager.player.size.y / 2;
             this.virtualPosition.y += (targetY - this.virtualPosition.y) / 15;
             this.virtualPosition.y = Math.min(Math.max(this.virtualPosition.y, -this.map.digitalHeight + this.screenHeight), 0);
         } else {

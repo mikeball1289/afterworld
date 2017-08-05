@@ -53,6 +53,7 @@ export default class Animator<T extends ActionMap> extends PIXI.Sprite {
     }
 
     update(dt: number = 1) {
+        let previousFrame = this.currentFrame;
         this.currentFrame += dt;
         if (Math.floor(this.currentFrame) >= this.animations[this.currentAnimation][1]) {
             if (this.onComplete !== undefined) {
@@ -65,7 +66,7 @@ export default class Animator<T extends ActionMap> extends PIXI.Sprite {
             }
         }
         this.texture = this.frames[this.animations[this.currentAnimation][0]][Math.floor(this.currentFrame)];
-        if (Math.floor(this.currentFrame) !== Math.floor(this.currentFrame - dt)) {
+        if (Math.floor(this.currentFrame) !== Math.floor(previousFrame)) {
             if (this.onProgress) this.onProgress.call(this.onProgressContext, Math.floor(this.currentFrame));
         }
     }
