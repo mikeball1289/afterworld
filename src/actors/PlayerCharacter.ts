@@ -1,10 +1,15 @@
 import attackFunctions from "../attacks/attackFunctions";
+import ColorTweener from "../ColorTweener";
+import PlayerStats from "../combat/PlayerStats";
+import Animator, { IAnimatorOptions } from "../display/Animator";
+import HealthBar from "../display/HealthBar";
+import DamageParticle from "../particlesystem/DamageParticle";
+import FireParticle from "../particlesystem/FireParticle";
 import { hasInput, InputType, juggler } from "../root";
-import World from "../world/World";
 import Map from "../world/Map";
-import Actor from "./Actor";
 import * as PC from "../world/physicalConstants";
-import Animator, { AnimatorOptions } from "../display/Animator";
+import World from "../world/World";
+import Actor from "./Actor";
 import Enemy from "./Enemy";
 
 type PlayerAnimations = {
@@ -13,19 +18,27 @@ type PlayerAnimations = {
     jump: [number, number];
     attack1: [number, number];
     attack2: [number, number];
-}
+};
 
 const BASIC_ATTACKS: ["attack1", "attack2"] = ["attack1", "attack2"];
 
 export default class PlayerCharacter extends Actor {
+    public healthBar: HealthBar;
 
+    private jumpBuffer: boolean = true;
+    private interactBuffer: boolean = true;
+    private locked: boolean = false;
+    private attackCooldown: number = 0;
     private sprite: PIXI.Sprite;
+    private tintTimer = 0;
+
     private body: {
         arm: Animator<PlayerAnimations>;
         head: Animator<PlayerAnimations>;
         body: Animator<PlayerAnimations>;
         weapon: Animator<PlayerAnimations>;
     };
+    private stats: PlayerStats;
 
     private _direction: 1 | -1 = 1;
     set direction(val: 1 | -1) {
@@ -38,6 +51,7 @@ export default class PlayerCharacter extends Actor {
 
     constructor(world: World) {
         super(world);
+        this.stats = new PlayerStats();
         this.sprite = new PIXI.Sprite();
         this.addChild(this.sprite);
         let frameData: PlayerAnimations = {
@@ -52,7 +66,7 @@ export default class PlayerCharacter extends Actor {
             weapon: new Animator(PIXI.loader.resources["/sprites/weapon_base.png"].texture, JSON.parse(PIXI.loader.resources["/sprites/weapon_base.json"].data), frameData, "idle", 6),
             head: new Animator(PIXI.loader.resources["/sprites/head_base.png"].texture, JSON.parse(PIXI.loader.resources["/sprites/head_base.json"].data), frameData, "idle", 6),
             body: new Animator(PIXI.loader.resources["/sprites/body_base.png"].texture, JSON.parse(PIXI.loader.resources["/sprites/body_base.json"].data), frameData, "idle", 6),
-        }
+        };
         this.sprite.addChild(this.body.body);
         this.sprite.addChild(this.body.head);
         this.sprite.addChild(this.body.weapon);
@@ -65,22 +79,47 @@ export default class PlayerCharacter extends Actor {
         this.size.y = 80;
         this.sprite.x = this.size.x / 2;
         this.sprite.y = this.size.y;
+
+        this.healthBar = new HealthBar(50, 0x00FF5D);
+        world.uiManager.worldLayers[0].addChild(this.healthBar);
+
+        // let addFireParticle = () => {
+        //     let startTweener = new ColorTweener(0xFFFFFF, 0xFFF191);
+        //     let endTweener = new ColorTweener(0xFFF191, 0xD60000);
+        //     for (let i = 0; i < 400; i ++) {
+        //         let randomDirection = Math.random() * Math.PI * 2;
+        //         let speed = (Math.random() + Math.floor(i / 100)) * 0.4 + 0.1;
+        //         speed *= Math.abs(speed);
+        //         let particle = new FireParticle((100 - (speed * speed * 6) - Math.random() * (40 - speed * 20)) / 2,
+        //                                         new ColorTweener(startTweener.getInbetween(speed / 2.89), endTweener.getInbetween(speed / 2.89)));
+        //         let radialX = speed * Math.sin(randomDirection);
+        //         let radialY = speed * Math.cos(randomDirection);
+        //         particle.velocity.x = radialX * 2 + this.velocity.x * 0.3;
+        //         particle.velocity.y = radialY * 2 + this.velocity.y * 0.3;
+        //         particle.x = this.horizontalCenter + radialX * 15;
+        //         particle.y = this.verticalCenter + radialY * 15;
+        //         this.world.particleSystem.add(particle);
+        //     }
+        //     juggler.afterFrames(180, addFireParticle);
+        // };
+
+        // juggler.afterFrames(180, addFireParticle);
     }
 
-    play(animation: keyof PlayerAnimations, options?: AnimatorOptions) {
+    public play(animation: keyof PlayerAnimations, options?: IAnimatorOptions) {
         if (this.locked) return;
         let partialOptions = {
             loop: options && options.loop,
             override: options && options.override,
-        }
+        };
         this.body.body.play(animation, options);
         this.body.head.play(animation, partialOptions);
         this.body.weapon.play(animation, partialOptions);
         this.body.arm.play(animation, partialOptions);
     }
-    
+
     // do the animations and setup triggers for basic attack
-    performBasicAttack() {
+    public performBasicAttack() {
         let randomAttack = BASIC_ATTACKS[Math.floor(Math.random() * 2)];
         this.play(randomAttack, {
             onProgress: (frame) => {
@@ -91,31 +130,20 @@ export default class PlayerCharacter extends Actor {
             onComplete: () => {
                 this.locked = false;
                 this.attackCooldown = 20;
-            }
+            },
         } );
         this.locked = true;
     }
 
-    jumpBuffer: boolean = true;
-    interactBuffer: boolean = true;
-    locked: boolean = false
-    attackCooldown: number = 0;
-
-    updateImpulse(map: Map, getControls = true) {
+    public updateImpulse(map: Map, getControls = true) {
         let grounded = map.isGrounded(this);
         getControls = getControls && !this.locked;
 
-        if (this.fallthrough && Math.abs(this.y - this.fallthrough) >= 5) {
-            this.fallthrough = undefined;
-        }
-
         if (getControls && hasInput(InputType.PRIMARY_ATTACK) && this.attackCooldown <= 0) {
             this.performBasicAttack();
+            getControls = getControls && !this.locked;
         }
-        if (this.attackCooldown > 0) {
-            this.attackCooldown --;
-        }
-        
+
         if (grounded) {
             if (getControls && hasInput(InputType.LEFT)) {
                 this.velocity.x -= PC.WALK_IMPULSE;
@@ -184,7 +212,57 @@ export default class PlayerCharacter extends Actor {
         }
     }
 
-    handleCollisions(collisions: [boolean, boolean]) {
+    public isDead() {
+        return this.stats.health <= 0;
+    }
+
+    public die() {
+        // pass
+    }
+
+    public tintAll(tint: number = 0xFFFFFF) {
+        this.body.arm.tint = tint;
+        this.body.body.tint = tint;
+        this.body.head.tint = tint;
+    }
+
+    public applyDamage(damage: number, knockback: PIXI.Point) {
+        if (this.isDead()) return false;
+
+        let particle = new DamageParticle(damage, "playerDamage", this);
+        this.world.particleSystem.add(particle, false);
+        this.world.uiManager.worldLayers[1].addChild(particle);
+
+        this.stats.health -= damage;
+        if (this.stats.health <= 0) {
+            this.die();
+        } else {
+            this.applyImpulse(knockback.x, knockback.y);
+            this.tintTimer = 10;
+            this.tintAll(0xFFCCCC);
+        }
+        return true;
+    }
+
+    public frameUpdate() {
+        if (this.attackCooldown > 0) {
+            this.attackCooldown --;
+        }
+
+        if (this.fallthrough && Math.abs(this.y - this.fallthrough) >= 5) {
+            this.fallthrough = undefined;
+        }
+        if (this.tintTimer > 0) {
+            this.tintTimer --;
+            if (this.tintTimer <= 0) this.tintAll();
+        }
+
+        this.healthBar.x = this.horizontalCenter;
+        this.healthBar.y = this.top - 40;
+        this.healthBar.setAmount(this.stats.health / this.stats.maxHealth);
+    }
+
+    public handleCollisions(collisions: [boolean, boolean]) {
         if (collisions[0]) this.velocity.x = 0;
         if (collisions[1]) this.velocity.y = 0;
     }

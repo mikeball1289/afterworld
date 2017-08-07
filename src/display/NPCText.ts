@@ -1,6 +1,6 @@
-import { InputType, hasInput } from "../root";
-import NPC from "./NPC";
+import { hasInput, InputType } from "../root";
 import JuggledSprite from "./JuggledSprite";
+import NPC from "./NPC";
 
 export default class NPCText extends JuggledSprite {
 
@@ -33,7 +33,7 @@ export default class NPCText extends JuggledSprite {
         this.visible = false;
     }
 
-    display(npc: NPC) {
+    public display(npc: NPC) {
         this.visible = true;
         this.talkerSprite.texture = npc.texture;
         this.showText = npc.npcData.text;
@@ -44,13 +44,13 @@ export default class NPCText extends JuggledSprite {
         this.textField.text = "";
     }
 
-    close() {
+    public close() {
         this.visible = false;
-        this.talkerSprite.texture = <PIXI.Texture><any> undefined;
+        this.talkerSprite.texture = <PIXI.Texture> <any> undefined;
         this.showText = undefined;
     }
 
-    onEnterFrame() {
+    public onEnterFrame() {
         if (!this.showText) return;
         if (this.showText && this.progress < this.showText.length) {
             this.progress += 0.4;

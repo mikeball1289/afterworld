@@ -6,21 +6,21 @@ export interface IAttackFunction {
     (player: PlayerCharacter, world: World): void;
 }
 
-interface AttackFunction {
+interface IAttackFunctions {
     basicAttack: IAttackFunction;
 }
 
-let attackFunctions: AttackFunction = {
+let attackFunctions: IAttackFunctions = {
     basicAttack: (player, world) => {
         let attackBox: PIXI.Rectangle = new PIXI.Rectangle(player.horizontalCenter, player.top + player.size.y * 0.4, 75, 25);
         let enemies = world.actorManager.enemies;
 
         let applyAttack = (enemy: Enemy): boolean => {
             if (enemy.left < attackBox.right && enemy.right > attackBox.left && enemy.top < attackBox.bottom && enemy.bottom > attackBox.top) {
-                return enemy.applyAttack(Math.random() * 3 + 1000000, new PIXI.Point(4 * player.direction, 0));
+                return enemy.applyAttack(Math.floor(Math.random() * 3 + 2), new PIXI.Point(4 * player.direction, 0));
             }
             return false;
-        }
+        };
 
         if (player.direction === -1) {
             attackBox.x -= attackBox.width;
@@ -28,11 +28,12 @@ let attackFunctions: AttackFunction = {
                 if (applyAttack(enemies[i])) break;
             }
         } else {
+            // tslint:disable-next-line:prefer-for-of
             for (let i = 0; i < enemies.length; i ++) {
                 if (applyAttack(enemies[i])) break;
             }
         }
-    }
+    },
 };
 
 export default attackFunctions;

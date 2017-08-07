@@ -10,11 +10,9 @@ export default class JuggledSprite extends PIXI.Sprite {
         juggler.add(this._oef);
     }
 
-    onEnterFrame() {
-        
-    }
+    public onEnterFrame() { /* pass */ }
 
-    destroy(options?: boolean | PIXI.IDestroyOptions) {
+    public destroy(options?: boolean | PIXI.IDestroyOptions) {
         juggler.remove(this._oef);
         super.destroy();
     }

@@ -13,5 +13,5 @@ export const AERIAL_IMPULSE = 0.15;
 export const AERIAL_HORIZONTAL_DECAY = 0.99;
 
 export function repulsionForce(dist: number, damper = 8.5) {
-    return (Math.PI / 2 - Math.atan(Math.abs(dist / 50))) / (Math.PI * damper)
+    return (Math.PI / 2 - Math.atan(Math.abs(dist / 50))) / (Math.PI * damper);
 }

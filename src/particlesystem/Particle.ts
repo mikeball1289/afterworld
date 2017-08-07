@@ -1,32 +1,29 @@
-import ParticleSystem from "./ParticleSystem";
 import World from "../world/World";
+import ParticleSystem from "./ParticleSystem";
 
 abstract class Particle extends PIXI.Container {
-    
-    static ID_IDX: number = 0;
+
+    private static ID_IDX: number = 0;
 
     public velocity: PIXI.Point = new PIXI.Point();
-    private system?: ParticleSystem;
-    public layer?: PIXI.Container;
     public id: number;
+    private system?: ParticleSystem;
 
     constructor(public lifetime = 60) {
         super();
         this.id = Particle.ID_IDX ++;
     }
 
-    abstract update(world: World): void;
+    public abstract update(world: World): void;
 
-    destroy(options?: boolean | PIXI.IDestroyOptions) {
+    public destroy(options?: boolean | PIXI.IDestroyOptions) {
         if (this.system) this.system.remove(this);
         this.system = undefined;
-        this.layer = undefined;
         super.destroy(options);
     }
 
-    linkSystem(pc: ParticleSystem, layer: PIXI.Container) {
+    public linkSystem(pc: ParticleSystem) {
         this.system = pc;
-        this.layer = layer;
     }
 
 }

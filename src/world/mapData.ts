@@ -2,17 +2,17 @@ import Enemy from "../actors/Enemy";
 import Skelly from "../actors/Skelly";
 import World from "../world/World";
 
-export interface NPCData {
-    name: string,
-    image: string,
-    position: { x: number, y: number },
-    text: string,
+export interface INPCData {
+    name: string;
+    image: string;
+    position: { x: number, y: number };
+    text: string;
 }
 
-export interface MapDataObject {
+export interface IMapDataObject {
     map: string;
     background: string;
-    npcs: NPCData[];
+    npcs: INPCData[];
     enemies: (world: World) => Enemy[];
     entrances: {
         default: [number, number];
@@ -23,7 +23,7 @@ export interface MapDataObject {
 
 let p: (x: number, y: number) => [number, number] = (x, y) => [x, y];
 
-let mapData: { [mapname: string]: MapDataObject } = {
+let mapData: { [mapname: string]: IMapDataObject } = {
     map1: {
         map: "/maps/map.png",
         background: "/maps/map_back.png",
@@ -39,7 +39,7 @@ let mapData: { [mapname: string]: MapDataObject } = {
                         + "\n\nAlso why you naked?",
             },
         ],
-        enemies: function(world: World) {
+        enemies: (world: World) => {
             let enemies: Enemy[] = [];
             for (let i = 0; i < 10; i ++) {
                 let skelly = new Skelly(world);
@@ -57,7 +57,7 @@ let mapData: { [mapname: string]: MapDataObject } = {
         },
         exits: {
             map2: p(2890, 1158),
-        }
+        },
     },
     map2: {
         map: "/maps/map2.png",
@@ -70,10 +70,10 @@ let mapData: { [mapname: string]: MapDataObject } = {
             map1: p(85, 464),
         },
         npcs: [],
-        enemies: function() {
+        enemies: () => {
             return [];
-        }
-    }
-}
+        },
+    },
+};
 
 export default mapData;

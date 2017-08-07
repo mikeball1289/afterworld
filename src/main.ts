@@ -1,22 +1,20 @@
-import World from "./world/World";
-import * as root from "./root";
 import * as fs from "fs";
 import Animator from "./display/Animator";
 import * as Key from "./Key";
+import * as root from "./root";
+import World from "./world/World";
 
 export function preload(images: string[]): void;
 export function preload(all: boolean): void;
 export function preload(arg: boolean | string[]) {
     let app = new PIXI.Application(1072, 603, { backgroundColor: 0x323438, antialias: false });
-    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST
+    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
     document.body.appendChild(app.view);
 
     let loader = PIXI.loader;
     if (arg === true) {
         let files = fs.readdirSync("images");
         files.forEach( (file) => loader.add("/images/" + file) );
-        // files = fs.readdirSync("sprites");
-        // files.forEach( (file) => loader.add("/sprites/" + file) );
         loader.add("/sprites/arm_base.png")
               .add("/sprites/body_base.png")
               .add("/sprites/weapon_base.png")
@@ -24,7 +22,7 @@ export function preload(arg: boolean | string[]) {
               .add("/sprites/arm_base.json", { xhrType: "text" })
               .add("/sprites/body_base.json", { xhrType: "text" })
               .add("/sprites/head_base.json", { xhrType: "text" })
-              .add("/sprites/weapon_base.json", { xhrType: "text" })
+              .add("/sprites/weapon_base.json", { xhrType: "text" });
         loader.load( () => main(app) );
     } else if (arg instanceof Array) {
         arg.forEach( (file) => loader.add(file) );
@@ -49,7 +47,7 @@ function main(app: PIXI.Application) {
 
     root.juggler.add( () => {
         world.update();
-        
+
         if (lastTick > 0) {
             let tick = Date.now();
             if (!isFinite(fps)) {

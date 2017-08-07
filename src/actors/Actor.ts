@@ -1,7 +1,7 @@
-import World from "../world/World";
-import Map from "../world/Map";
 import * as EventEmitter from "events";
+import Map from "../world/Map";
 import { repulsionForce } from "../world/physicalConstants";
+import World from "../world/World";
 
 abstract class Actor extends PIXI.Sprite {
     private static ID_IDX = 1;
@@ -16,7 +16,7 @@ abstract class Actor extends PIXI.Sprite {
         super();
         this.id = Actor.ID_IDX ++;
     }
-    
+
     get top() {
         return this.y;
     }
@@ -41,7 +41,7 @@ abstract class Actor extends PIXI.Sprite {
         return this.y + this.size.y / 2;
     }
 
-    repel(other: Actor, damper = 8.5): boolean {
+    public repel(other: Actor, damper = 8.5): boolean {
         if (!this.collideable) return false;
         let dist = this.horizontalCenter - other.horizontalCenter;
         if (Math.abs(dist) < (this.size.x / 2 + other.size.x / 2) * 0.85) {
@@ -63,7 +63,7 @@ abstract class Actor extends PIXI.Sprite {
         }
     }
 
-    applyImpulse(x: number, y: number) {
+    public applyImpulse(x: number, y: number) {
         this.velocity.x += x;
         this.velocity.y += y;
     }
@@ -72,8 +72,9 @@ abstract class Actor extends PIXI.Sprite {
         return true;
     }
 
-    abstract updateImpulse(map: Map): void;
-    abstract handleCollisions(collisions: [boolean, boolean]): void;
+    public abstract updateImpulse(map: Map): void;
+    public abstract handleCollisions(collisions: [boolean, boolean]): void;
+    public abstract frameUpdate(): void;
 }
 
 export default Actor;

@@ -1,55 +1,58 @@
+// tslint:disable max-classes-per-file
 import * as Key from "./Key";
 
-class Juggler
-{
+class Juggler {
     private enterFrameFunctions: [(() => void), any][] = [];
     private schedule: number;
     private interFrameTime: number;
 
-    constructor(private fps: number)
-    {
+    constructor(private fps: number) {
         this.interFrameTime = 1000 / fps;
         this.schedule = Date.now() + this.interFrameTime;
         let tick = () => {
             this.enterFrameFunctions.forEach( ([fn, ctx]) => fn.call(ctx) );
             this.schedule += this.interFrameTime;
-            
+
             let timeout = this.schedule - Date.now();
             if (timeout < 2) {
                 timeout = 2;
                 this.schedule = Date.now() + this.interFrameTime;
             }
             setTimeout(tick, this.schedule - Date.now());
-        }
+        };
+
         setTimeout(tick, this.interFrameTime);
-        // setInterval( () => {
-            // this.enterFrameFunctions.forEach( ([fn, ctx]) => fn.call(ctx) );
-        // }, 1000 / fps);
     }
 
-    add(fn: () => void, context?: any)
-    {
-        if (this.has(fn, context) < 0)
-        {
+    public add(fn: () => void, context?: any) {
+        if (this.has(fn, context) < 0) {
             this.enterFrameFunctions.push([fn, context]);
         }
     }
 
-    remove(fn: () => void, context?: any)
-    {
+    public remove(fn: () => void, context?: any) {
         let idx = this.has(fn, context);
-        if (idx >= 0)
-        {
+        if (idx >= 0) {
             this.enterFrameFunctions.splice(idx, 1);
         }
     }
 
-    has(fn: () => void, context?: any) {
-        for (let i = 0; i < this.enterFrameFunctions.length; i ++)
-        {
+    public has(fn: () => void, context?: any) {
+        for (let i = 0; i < this.enterFrameFunctions.length; i ++) {
             if (this.enterFrameFunctions[i][0] === fn && this.enterFrameFunctions[i][1] === context) return i;
         }
         return -1;
+    }
+
+    public afterFrames(numFrames: number, fn: () => void, context?: any) {
+        let wrapper = () => {
+            numFrames --;
+            if (numFrames <= 0) {
+                fn.call(context);
+                this.remove(wrapper);
+            }
+        };
+        this.add(wrapper);
     }
 }
 
@@ -58,22 +61,18 @@ export let juggler = new Juggler(60);
 class Root {
     private _stage: PIXI.Container;
 
-    constructor() { }
-
-    setStage(stage: PIXI.Container)
-    {
+    public setStage(stage: PIXI.Container) {
         if (!this._stage) this._stage = stage;
         else throw new Error("Stage is already set");
     }
 
-    get stage(): PIXI.Container
-    {
+    get stage(): PIXI.Container {
         if (this._stage) return this._stage;
         else throw new Error("Stage is not yet set");
     }
 }
 
-export let root = new Root()
+export let root = new Root();
 
 class Keyboard {
 
@@ -84,7 +83,7 @@ class Keyboard {
         window.addEventListener("keyup", (e) => this.keys[e.keyCode] = false );
     }
 
-    isKeyDown(keycode: number) {
+    public isKeyDown(keycode: number) {
         return this.keys[keycode] || false;
     }
 
@@ -119,8 +118,8 @@ export enum ControllerButton {
 }
 
 class Controller {
-    buttons: boolean[] = [];
-    axes: number[] = [];
+    private buttons: boolean[] = [];
+    private axes: number[] = [];
 
     constructor() {
         juggler.add( () => {
@@ -136,11 +135,11 @@ class Controller {
         } );
     }
 
-    getAxis(axis: ControllerAxis) {
+    public getAxis(axis: ControllerAxis) {
         return this.axes[axis] || 0;
     }
 
-    getButton(button: ControllerButton) {
+    public getButton(button: ControllerButton) {
         return this.buttons[button] || false;
     }
 }
@@ -163,7 +162,7 @@ export enum InputType {
 }
 
 export function hasInput(type: InputType) {
-    switch(type) {
+    switch (type) {
         case InputType.LEFT: return keyboard.isKeyDown(Key.LEFT) || controller.getAxis(ControllerAxis.LEFT_X) < -0.5;
         case InputType.RIGHT: return keyboard.isKeyDown(Key.RIGHT) || controller.getAxis(ControllerAxis.LEFT_X) > 0.5;
         case InputType.UP: return keyboard.isKeyDown(Key.UP) || controller.getAxis(ControllerAxis.LEFT_Y) < -0.5;
@@ -172,5 +171,6 @@ export function hasInput(type: InputType) {
         case InputType.INTERACT: return keyboard.isKeyDown(Key.ENTER) || controller.getButton(ControllerButton.Y);
         case InputType.PRIMARY_ATTACK: return keyboard.isKeyDown(Key.A) || controller.getButton(ControllerButton.X);
         case InputType.PRIMARY_ATTACK: return keyboard.isKeyDown(Key.S) || controller.getButton(ControllerButton.B);
+        default: return false;
     }
 }

@@ -1,47 +1,38 @@
-import Particle from "./Particle";
+// tslint:disable forin
 import World from "../world/World";
+import Particle from "./Particle";
 
 export default class ParticleSystem extends PIXI.Container {
 
     private particles: {[id: number]: Particle} = {};
-    private uiLayer: PIXI.Container;
-    private midgroundLayer: PIXI.Container;
 
     constructor(private world: World) {
         super();
-        this.midgroundLayer = new PIXI.Container();
-        this.addChild(this.midgroundLayer);
-        this.uiLayer = new PIXI.Container();
-        this.addChild(this.uiLayer);
     }
 
-    remove(particle: Particle) {
+    public remove(particle: Particle) {
         if (this.particles[particle.id]) {
-            if (particle.layer) particle.layer.removeChild(particle);
+            if (particle.parent) particle.parent.removeChild(particle);
             delete this.particles[particle.id];
         }
     }
 
-    add(particle: Particle, layer: "ui" | "midground" = "midground") {
+    public add(particle: Particle, addToSelf = true) {
         if (this.particles[particle.id]) return;
         this.particles[particle.id] = particle;
-        switch(layer) {
-            case "ui": {
-                this.uiLayer.addChild(particle);
-                particle.linkSystem(this, this.uiLayer);
-                break;
-            }
-            case "midground": {
-                this.midgroundLayer.addChild(particle);
-                particle.linkSystem(this, this.midgroundLayer);
-                break;
-            }
+        particle.linkSystem(this);
+        if (addToSelf) this.addChild(particle);
+    }
+
+    public update() {
+        for (let id in this.particles) {
+            this.particles[id].update(this.world);
         }
     }
 
-    update() {
+    public removeAll() {
         for (let id in this.particles) {
-            this.particles[id].update(this.world);
+            this.remove(this.particles[id]);
         }
     }
 }

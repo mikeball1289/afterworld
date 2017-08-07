@@ -1,9 +1,9 @@
-import World from "../world/World";
 import { GRAVITY } from "../world/physicalConstants";
+import World from "../world/World";
 import Particle from "./Particle";
 
 export default class TextParticle extends Particle {
-    
+
     constructor(value: string, color: number) {
         super();
         let text = new PIXI.Text(value, {
@@ -19,9 +19,9 @@ export default class TextParticle extends Particle {
         this.lifetime = 20;
     }
 
-    update(world: World) {
+    public update(world: World) {
         this.velocity.y += GRAVITY / 4;
-        
+
         this.x += this.velocity.x;
         this.y += this.velocity.y;
         if (this.velocity.y >= 0) {

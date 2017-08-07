@@ -1,47 +1,47 @@
-import PlayerCharacter from "../Actors/PlayerCharacter";
-import Enemy from "../Actors/Enemy";
-import { MapDataObject } from "./mapData";
-import World from "./World";
-import Map from "./Map";
 import Actor from "../Actors/Actor";
+import Enemy from "../Actors/Enemy";
+import PlayerCharacter from "../Actors/PlayerCharacter";
 import mergeSort from "../mergeSort";
+import Map from "./Map";
+import { IMapDataObject } from "./mapData";
+import World from "./World";
 
 export default class ActorManager extends PIXI.Container {
     public player: PlayerCharacter;
 
-    private actorLayer: PIXI.Container;
     public enemies: Enemy[] = [];
+    private actorLayer: PIXI.Container;
 
     constructor(private world: World) {
         super();
         this.actorLayer = new PIXI.Container();
         this.addChild(this.actorLayer);
-        
+
         this.player = new PlayerCharacter(world);
         this.actorLayer.addChild(this.player);
     }
 
     // align the player with spawn information
-    setPlayerSpawn(entrance: [number, number]) {
+    public setPlayerSpawn(entrance: [number, number]) {
         this.player.x = entrance[0] - this.player.size.x / 2;
         this.player.y = entrance[1] - this.player.size.y;
     }
 
-    loadEnemies(mapDataObject: MapDataObject) {
+    public loadEnemies(mapDataObject: IMapDataObject) {
         this.enemies = mapDataObject.enemies(this.world);
         for (let enemy of this.enemies) {
             this.actorLayer.addChild(enemy);
         }
     }
 
-    removeEnemy(enemy: Enemy) {
+    public removeEnemy(enemy: Enemy) {
         let idx = this.enemies.indexOf(enemy);
         if (idx < 0) return;
         this.actorLayer.removeChild(enemy);
         this.enemies.splice(idx, 1);
     }
-    
-    unloadEnemies() {
+
+    public unloadEnemies() {
         for (let enemy of this.enemies) {
             this.actorLayer.removeChild(enemy);
             enemy.destroy({ children: true, texture: false, baseTexture: false });
@@ -49,7 +49,7 @@ export default class ActorManager extends PIXI.Container {
         this.enemies = [];
     }
 
-    update(map: Map, getControls: boolean = true) {
+    public update(map: Map, getControls: boolean = true) {
         this.player.updateImpulse(map, getControls);
         for (let npa of this.enemies) {
             npa.updateImpulse(map, this.player);
@@ -71,8 +71,13 @@ export default class ActorManager extends PIXI.Container {
             ((a instanceof PlayerCharacter) ? -1 : (b instanceof PlayerCharacter) ? 1 : 0) );
 
         this.player.handleCollisions(map.move(this.player));
-        for (let npa of this.enemies) {
-            npa.handleCollisions(map.move(npa));
+        for (let enemy of this.enemies) {
+            enemy.handleCollisions(map.move(enemy));
+        }
+
+        this.player.frameUpdate();
+        for (let enemy of this.enemies) {
+            enemy.frameUpdate();
         }
     }
 }

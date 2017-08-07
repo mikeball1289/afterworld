@@ -1,11 +1,12 @@
-import DebrisParticle from "../particlesystem/DebrisParticle";
 import Animator from "../display/Animator";
+import HealthBar from "../display/HealthBar";
+import DamageParticle from "../particlesystem/DamageParticle";
+import DebrisParticle from "../particlesystem/DebrisParticle";
 import Map from "../world/Map";
-import World from "../world/World";
-import PlayerCharacter from "./PlayerCharacter";
 import { EPSILON, GRAVITY } from "../world/physicalConstants";
+import World from "../world/World";
 import Enemy from "./Enemy";
-import TextParticle from "../particlesystem/TextParticle";
+import PlayerCharacter from "./PlayerCharacter";
 
 enum MovementStates {
     IDLE,
@@ -24,6 +25,7 @@ const MAX_HEALTH = 10;
 const VIEW_DISTANCE = 400;
 
 export default class Skelly extends Enemy {
+    public weight = 1.8;
 
     private animator: Animator<{
         idle: [number, number];
@@ -34,7 +36,11 @@ export default class Skelly extends Enemy {
 
     private _state = MovementStates.IDLE;
     private _direction: -1 | 1 = 1;
-    public weight = 1.8;
+    private healthBar: HealthBar;
+
+    private noticePlayerTimer: number = 1;
+    private goingUp: boolean = false;
+    private attackCooldown = 0;
 
     set state(val: MovementStates) {
         this._state = val;
@@ -47,7 +53,6 @@ export default class Skelly extends Enemy {
 
     set direction(val: -1 | 1) {
         if (this._direction !== val) {
-            // this.animator.setProgress(0);
             this._direction = val;
             this.animator.scale.x = 1.5 * val;
         }
@@ -55,6 +60,25 @@ export default class Skelly extends Enemy {
 
     get direction() {
         return this._direction;
+    }
+
+    get collideable() {
+        return this.state !== MovementStates.DEAD;
+    }
+
+    private _health: number;
+    set health(val: number) {
+        val = Math.max(val, 0);
+        this._health = val;
+        if (this.healthBar && this.world) {
+            this.healthBar.setAmount(this._health / MAX_HEALTH);
+            if (this._health < MAX_HEALTH) this.world.uiManager.worldLayers[0].addChild(this.healthBar);
+        }
+        if (this.parent) this.parent.addChild(this);
+    }
+
+    get health() {
+        return this._health;
     }
 
     constructor(world: World) {
@@ -73,31 +97,80 @@ export default class Skelly extends Enemy {
         this.animator.x = this.size.x / 2;
         this.animator.y = this.size.y + 4;
         this.addChild(this.animator);
+        this.healthBar = new HealthBar();
 
         this.health = MAX_HEALTH;
     }
 
-    private noticePlayerTimer: number = 1;
-    private goingUp: boolean = false;
-    private attackCooldown = 0;
-
-    walk() {
+    public walk() {
         this.velocity.x += WALK_IMPULSE * this.direction;
         if (Math.abs(this.velocity.x) > HORIZONTAL_THRESHOLD) this.velocity.x *= FULL_HORIZONTAL_DECAY;
         this.animator.play("walk", { loop: true });
     }
 
-    stand() {
+    public stand() {
         this.velocity.x *= IDLE_GROUNDED_DECAY;
         if (Math.abs(this.velocity.x) < EPSILON) this.velocity.x = 0;
         this.animator.play("idle", { loop: true });
     }
 
-    isFearless(map: Map) {
+    public isFearless(map: Map) {
         return Map.isFearless(map.getPixelData(this.left, this.bottom + EPSILON)) || Map.isFearless(map.getPixelData(this.right, this.bottom + EPSILON));
     }
 
-    updateImpulse(map: Map, player?: PlayerCharacter): void {
+    public frameUpdate() {
+        this.healthBar.x = this.horizontalCenter;
+        this.healthBar.y = this.top - 40;
+    }
+
+    public handleCollisions(collisions: [boolean, boolean]) {
+        if (collisions[0]) {
+            this.velocity.x = 0;
+            if (this.state === MovementStates.WALKING) this.direction *= -1;
+        }
+        if (collisions[1]) this.velocity.y = 0;
+    }
+
+    public isDead() {
+        return this.state === MovementStates.DEAD;
+    }
+
+    public die(damage: number = 0, knockback: PIXI.Point = new PIXI.Point()) {
+        this.velocity.set(0);
+        this.animator.play("die", {
+            onComplete: () => {
+                this.world.actorManager.removeEnemy(this);
+                this.destroy();
+            },
+            onProgress: (frame) => {
+                this.healthBar.alpha = 1 - (frame / 7);
+
+                if (frame === 6) {
+                    for (let i = 0; i < 6; i ++) {
+                        let particle = new DebrisParticle(PIXI.loader.resources["/images/bone_particle.png"].texture);
+                        particle.x = this.horizontalCenter;
+                        particle.y = this.top + this.size.y / 2;
+                        let overkill = Math.min(damage / MAX_HEALTH, 2);
+                        particle.velocity.x = ((Math.random() - 0.5) * 5 + knockback.x / 2) * (overkill + 1);
+                        particle.velocity.y = (Math.random() * -4 - 1) - (overkill * 15) + knockback.y / 2 * (overkill + 1);
+                        particle.rotationVelocity = Math.random() * 2 - 1;
+                        this.world.particleSystem.add(particle);
+                    }
+                }
+            },
+        } );
+        this.animator.fps = 8;
+        this.state = MovementStates.DEAD;
+    }
+
+    public destroy(options?: boolean | PIXI.IDestroyOptions) {
+        super.destroy(options);
+        if (this.healthBar.parent) this.healthBar.parent.removeChild(this.healthBar);
+        this.healthBar.destroy();
+        this.world = <any> undefined;
+    }
+
+    public updateImpulse(map: Map, player?: PlayerCharacter): void {
         if (this.state === MovementStates.DEAD) return;
         if (!map.isGrounded(this)) {
             this.velocity.y += GRAVITY;
@@ -118,11 +191,7 @@ export default class Skelly extends Enemy {
             this.attackCooldown --;
         }
 
-        switch(this.state) {
-            case MovementStates.IDLE: {
-                this.idleUpdate(map, player);
-                break;
-            }
+        switch (this.state) {
             case MovementStates.WALKING: {
                 this.walkingUpdate(map, player);
                 break;
@@ -135,15 +204,20 @@ export default class Skelly extends Enemy {
                 this.attackingUpdate(map, player);
                 break;
             }
+            case MovementStates.IDLE:
+            default: {
+                this.idleUpdate(map, player);
+                break;
+            }
         }
     }
 
-    attackingUpdate(map: Map, player?: PlayerCharacter) {
+    private attackingUpdate(map: Map, player?: PlayerCharacter) {
         this.velocity.x *= IDLE_GROUNDED_DECAY;
         if (Math.abs(this.velocity.x) < EPSILON) this.velocity.x = 0;
     }
 
-    idleUpdate(map: Map, player?: PlayerCharacter) {
+    private idleUpdate(map: Map, player?: PlayerCharacter) {
         this.stand();
         if (Math.random() < 1 / 300) {
             this.state = MovementStates.WALKING;
@@ -163,7 +237,7 @@ export default class Skelly extends Enemy {
         }
     }
 
-    walkingUpdate(map: Map, player?: PlayerCharacter) {
+    private walkingUpdate(map: Map, player?: PlayerCharacter) {
         if (!this.isFearless(map)) {
             if (this.direction < 0 && !Map.isWalkable(map.getPixelData(this.left, this.bottom))) {
                 this.direction = 1;
@@ -171,7 +245,7 @@ export default class Skelly extends Enemy {
                 this.direction = -1;
             }
         }
-        
+
         this.walk();
 
         if (Math.random() < 1 / 300) {
@@ -192,7 +266,7 @@ export default class Skelly extends Enemy {
         }
     }
 
-    chasingUpdate(map: Map, player?: PlayerCharacter) {
+    private chasingUpdate(map: Map, player?: PlayerCharacter) {
         if (!player) {
             this.state = MovementStates.WALKING;
             return this.updateImpulse(map, player);
@@ -203,7 +277,7 @@ export default class Skelly extends Enemy {
         } else {
             this.stand();
         }
-        
+
         if (Math.random() < 1 / 30) {
             if (player.horizontalCenter < this.horizontalCenter) {
                 this.direction = -1;
@@ -211,7 +285,7 @@ export default class Skelly extends Enemy {
                 this.direction = 1;
             }
         }
-        
+
         if (player &&
             !(player.right > this.left - VIEW_DISTANCE * 2 &&
             player.right < this.right + VIEW_DISTANCE * 2 &&
@@ -247,74 +321,16 @@ export default class Skelly extends Enemy {
             this.animator.play("attack", {
                 onProgress: (frame) => {
                     if (frame === 3) {
-                        console.log("attack hit");
+                        // console.log("attack hit");
+                        player.applyDamage(Math.floor(Math.random() * 2 + 1), new PIXI.Point());
                     }
                 },
                 onComplete: () => {
                     this.state = MovementStates.CHASING;
                     this.attackCooldown = 120;
-                }
-            } );
-        }
-    }
-
-    handleCollisions(collisions: [boolean, boolean]) {
-        if (collisions[0]) {
-            this.velocity.x = 0;
-            if (this.state === MovementStates.WALKING) this.direction *= -1;
-        }
-        if (collisions[1]) this.velocity.y = 0;
-    }
-
-    applyAttack(damage: number, knockback: PIXI.Point) {
-        if (this.state === MovementStates.DEAD) return false;
-        let n = Math.floor(damage);
-
-        let particle = new TextParticle(n.toFixed(0), 0xFF0000);
-        particle.x = this.horizontalCenter;
-        particle.y = this.top;
-        particle.velocity.x = (Math.random() - 0.5) * 2;
-        particle.velocity.y = Math.random() - 3;
-        this.world.particleSystem.add(particle, "ui");
-        
-        this.health -= n;
-        if (this.health <= 0) {
-            this.velocity.set(0);
-            this.animator.play("die", {
-                onComplete: () => {
-                    this.world.actorManager.removeEnemy(this);
-                    this.destroy();
                 },
-                onProgress: (frame) => {
-                    if (frame === 6) {
-                        for (let i = 0; i < 6; i ++) {
-                            let particle = new DebrisParticle(PIXI.loader.resources["/images/bone_particle.png"].texture);
-                            particle.x = this.horizontalCenter;
-                            particle.y = this.top + this.size.y / 2;
-                            let overkill = Math.min(n / MAX_HEALTH, 1)
-                            particle.velocity.x = (Math.random() - 0.5) * 5 * (overkill + 1);
-                            particle.velocity.y = (Math.random() * -4 - 1) - (overkill * 15);
-                            particle.rotationVelocity = Math.random() * 2 - 1;
-                            this.world.particleSystem.add(particle);
-                        }
-                    }
-                }
             } );
-            this.animator.fps = 8;
-            this.state = MovementStates.DEAD;
-        } else {
-            this.applyImpulse(knockback.x, knockback.y);
         }
-        
-        return true;
     }
 
-    get collideable() {
-        return this.state !== MovementStates.DEAD;
-    }
-
-    destroy(options?: boolean | PIXI.IDestroyOptions) {
-        super.destroy(options);
-        this.world = <any> undefined;
-    }
 }

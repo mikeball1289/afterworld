@@ -3,11 +3,11 @@ import { juggler } from "../root";
 // ActionMap is a map of animation names -> [animation index, animation length]
 // animation index is the number of rows down the animation starts, animation length
 // is the number of frames in the animation
-export interface ActionMap {
+export interface IActionMap {
     [action: string]: [number, number];
 }
 
-export interface AnimatorOptions {
+export interface IAnimatorOptions {
     onComplete?: () => void;
     onCompleteContext?: any;
     onProgress?: (frame: number) => void;
@@ -16,7 +16,7 @@ export interface AnimatorOptions {
     override?: boolean;
 }
 
-export default class Animator<T extends ActionMap> extends PIXI.Sprite {
+export default class Animator<T extends IActionMap> extends PIXI.Sprite {
 
     private currentFrame = 0;
     private currentAnimation: keyof T;
@@ -34,6 +34,7 @@ export default class Animator<T extends ActionMap> extends PIXI.Sprite {
         super();
         this.currentAnimation = idle;
         for (let ani in animations) {
+            if (!animations.hasOwnProperty(ani)) continue;
             let frames = [];
             let row = animations[ani][0];
             for (let i = 0; i < animations[ani][1]; i ++) {
@@ -52,7 +53,41 @@ export default class Animator<T extends ActionMap> extends PIXI.Sprite {
         juggler.add(this.jup);
     }
 
-    update(dt: number = 1) {
+    public play(animation: keyof T, options: IAnimatorOptions = {}) {
+        let override = options.override || false;
+        let loop = options.loop || false;
+        if (this.currentAnimation === animation && !override) return;
+        this.currentAnimation = animation;
+        this.currentFrame = 0;
+        this.loop = loop;
+        this.onComplete = options.onComplete;
+        this.onCompleteContext = options.onCompleteContext;
+        this.onProgress = options.onProgress;
+        this.onProgressContext = options.onProgressContext;
+    }
+
+    public setProgress(amount: number) {
+        this.currentFrame = amount * this.animations[this.currentAnimation][1];
+    }
+
+    public destroy(options?: boolean | PIXI.IDestroyOptions, source = false) {
+        this.texture = <PIXI.Texture> <any> undefined;
+        super.destroy(options);
+        juggler.remove(this.jup);
+        if (source) {
+            for (let frameLine of this.frames) {
+                for (let frame of frameLine) {
+                    frame.destroy((options && typeof options === "boolean") || (options && options.baseTexture));
+                }
+            }
+        }
+    }
+
+    get animationName(): keyof T {
+        return this.currentAnimation;
+    }
+
+    private update(dt: number = 1) {
         let previousFrame = this.currentFrame;
         this.currentFrame += dt;
         if (Math.floor(this.currentFrame) >= this.animations[this.currentAnimation][1]) {
@@ -70,39 +105,4 @@ export default class Animator<T extends ActionMap> extends PIXI.Sprite {
             if (this.onProgress) this.onProgress.call(this.onProgressContext, Math.floor(this.currentFrame));
         }
     }
-
-    play(animation: keyof T, options: AnimatorOptions = {}) {
-        let override = options.override || false;
-        let loop = options.loop || false;
-        if (this.currentAnimation === animation && !override) return;
-        this.currentAnimation = animation;
-        this.currentFrame = 0;
-        this.loop = loop;
-        this.onComplete = options.onComplete;
-        this.onCompleteContext = options.onCompleteContext;
-        this.onProgress = options.onProgress;
-        this.onProgressContext = options.onProgressContext;
-    }
-
-    setProgress(amount: number) {
-        this.currentFrame = amount * this.animations[this.currentAnimation][1];
-    }
-
-    destroy(options?: boolean | PIXI.IDestroyOptions, source = false) {
-        this.texture = <PIXI.Texture><any> undefined;
-        super.destroy(options);
-        juggler.remove(this.jup);
-        if (source) {
-            for (let frameLine of this.frames) {
-                for (let frame of frameLine) {
-                    frame.destroy((options && typeof options === "boolean") || (options && options.baseTexture));
-                }
-            }
-        }
-    }
-
-    get animationName(): keyof T {
-        return this.currentAnimation;
-    }
-
 }

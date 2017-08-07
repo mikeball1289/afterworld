@@ -1,15 +1,15 @@
-import { juggler } from "../root";
-import Animator from "./Animator";
-import { NPCData } from "../world/mapData";
-import JuggledSprite from "./JuggledSprite";
 import Actor from "../actors/Actor";
+import { juggler } from "../root";
+import { INPCData } from "../world/mapData";
+import Animator from "./Animator";
+import JuggledSprite from "./JuggledSprite";
 
 export default class NPC extends JuggledSprite {
 
-    interactablePrompt: Animator<{ dotdotdot: [number, number] }>;
-    interactableOpen: boolean = false;
+    private interactablePrompt: Animator<{ dotdotdot: [number, number] }>;
+    private interactableOpen: boolean = false;
 
-    constructor(texture: PIXI.Texture, public npcData: NPCData) {
+    constructor(texture: PIXI.Texture, public npcData: INPCData) {
         super(texture);
         this.anchor.set(0.5, 1);
         this.x = npcData.position.x;
@@ -23,20 +23,20 @@ export default class NPC extends JuggledSprite {
         this.addChild(this.interactablePrompt);
     }
 
-    setInteractablePrompt(on: boolean) {
+    public setInteractablePrompt(on: boolean) {
         if (on === this.interactableOpen) return;
         this.interactableOpen = on;
         if (on && !this.interactablePrompt.visible) {
             this.interactablePrompt.play("dotdotdot", {
                 loop: true,
-                override: true
+                override: true,
             } );
             this.interactablePrompt.visible = true;
             this.interactablePrompt.scale.set(0.1);
         }
     }
 
-    onEnterFrame() {
+    public onEnterFrame() {
         if (this.interactableOpen && this.interactablePrompt.scale.x < 1) {
             this.interactablePrompt.scale.x += 0.09;
             this.interactablePrompt.scale.y += 0.09;
@@ -49,11 +49,11 @@ export default class NPC extends JuggledSprite {
         }
     }
 
-    withinTalkingRange(actor: Actor) {
+    public withinTalkingRange(actor: Actor) {
         return actor.left < this.x + this.texture.width && actor.right > this.x - this.texture.width && actor.bottom > this.y - this.texture.height && actor.top < this.y;
-    } 
+    }
 
-    destroy(options?: boolean | PIXI.IDestroyOptions) {
+    public destroy(options?: boolean | PIXI.IDestroyOptions) {
         this.removeChild(this.interactablePrompt);
         super.destroy(true);
         this.interactablePrompt.destroy();
