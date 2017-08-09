@@ -50,11 +50,11 @@ abstract class Actor extends PIXI.Sprite {
                 let force = repulsionForce(dist, damper);
                 let weightRatio = this.weight / other.weight;
                 if (dist < 0) {
-                    this.velocity.x -= force / weightRatio * (this.velocity.x > 0 ? 2 : 1);
-                    other.velocity.x += force * weightRatio * (other.velocity.x < 0 ? 2 : 1);
+                    this.velocity.x -= force / weightRatio * (this.velocity.x > force ? 2 : 1);
+                    other.velocity.x += force * weightRatio * (other.velocity.x < force ? 2 : 1);
                 } else {
-                    this.velocity.x += force / weightRatio * (this.velocity.x < 0 ? 2 : 1);
-                    other.velocity.x -= force * weightRatio * (other.velocity.x > 0 ? 2 : 1);
+                    this.velocity.x += force / weightRatio * (this.velocity.x < force ? 2 : 1);
+                    other.velocity.x -= force * weightRatio * (other.velocity.x > force ? 2 : 1);
                 }
             }
             return true;

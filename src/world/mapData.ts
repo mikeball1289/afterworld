@@ -6,7 +6,9 @@ export interface INPCData {
     name: string;
     image: string;
     position: { x: number, y: number };
-    text: string;
+    startInteraction?: (world: World) => void;
+    getText: (world: World) => { text: string, options?: string[] };
+    continue?: (world: World, optionNumber?: number) => boolean;
 }
 
 export interface IMapDataObject {
@@ -19,6 +21,7 @@ export interface IMapDataObject {
         [name: string]: [number, number];
     };
     exits: {[name: string]: [number, number]};
+    bgTrack: string;
 }
 
 let p: (x: number, y: number) => [number, number] = (x, y) => [x, y];
@@ -35,8 +38,9 @@ let mapData: { [mapname: string]: IMapDataObject } = {
                     x: 1645,
                     y: 1172,
                 },
-                text: "Hey hey cool cat. I'm John, the coolest\nguy in these parts. Did you know you can\ntalk to cool catz like me by pressing\nEnter on a keyboard or 'Y' on a gamepad?"
-                        + "\n\nAlso why you naked?",
+                getText: () => { return { text: "Hey hey cool cat. I'm John, the coolest\nguy in these parts. " +
+                        "Did you know you can\ntalk to cool catz like me by pressing\nEnter on a keyboard or 'Y' on a gamepad?" +
+                        "\n\nAlso why you naked?" }; },
             },
         ],
         enemies: (world: World) => {
@@ -49,6 +53,10 @@ let mapData: { [mapname: string]: IMapDataObject } = {
                 // skelly.y = 200;
                 enemies.push(skelly);
             }
+            let skelly = new Skelly(world);
+            skelly.x = 2750;
+            skelly.y = 1030;
+            enemies.push(skelly);
             return enemies;
         },
         entrances: {
@@ -58,6 +66,7 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         exits: {
             map2: p(2890, 1158),
         },
+        bgTrack: "/sounds/CarrotWine_How_to_spend_winter.ogg",
     },
     map2: {
         map: "/maps/map2.png",
@@ -73,6 +82,7 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         enemies: () => {
             return [];
         },
+        bgTrack: "/sounds/CarrotWine_How_to_spend_winter.ogg",
     },
 };
 

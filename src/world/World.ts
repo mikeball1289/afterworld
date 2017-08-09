@@ -1,12 +1,14 @@
+import ArchangelNPCData from "../display/ArchangelNPCData";
 import NPC from "../display/NPC";
-import NPCText from "../display/NPCText";
 import UIManager from "../display/UIManager";
 import ParticleSystem from "../particlesystem/ParticleSystem";
+import { juggler, soundManager } from "../root";
 import ActorManager from "./ActorManager";
 import Map from "./Map";
 import mapData, { IMapDataObject } from "./mapData";
 
 type MapName = keyof typeof mapData;
+const TRANSITION_SPEED = 0.033;
 
 // contain the info for the game world, this doesn't include UI
 export default class World extends PIXI.Sprite {
@@ -14,7 +16,6 @@ export default class World extends PIXI.Sprite {
     // map and transition data
     public map?: Map;
     public transitionTimer = 1;
-
     public actorManager: ActorManager;
     public particleSystem: ParticleSystem;
     public uiManager: UIManager;
@@ -31,7 +32,6 @@ export default class World extends PIXI.Sprite {
 
     // NPC data
     private npcs: NPC[] = [];
-    private npcText: NPCText;
     private npcLayer: PIXI.Container;
 
     constructor(startingMap: MapName, public screenWidth: number, public screenHeight: number) {
@@ -39,16 +39,11 @@ export default class World extends PIXI.Sprite {
 
         this.worldContainer = new PIXI.Container();
         this.npcLayer = new PIXI.Container();
-        this.uiManager = new UIManager();
-        this.npcText = new NPCText();
+        this.uiManager = new UIManager(this);
         this.particleSystem = new ParticleSystem(this);
         this.actorManager = new ActorManager(this);
 
         this.addChild(this.worldContainer);
-
-        this.npcText.pivot.set(this.npcText.width / 2, this.npcText.height / 2);
-        this.npcText.position.set(screenWidth / 2, screenHeight / 2);
-        this.addChild(this.npcText);
 
         this.worldContainer.addChild(this.npcLayer);
         this.worldContainer.addChild(this.actorManager);
@@ -76,6 +71,7 @@ export default class World extends PIXI.Sprite {
 
     // asyncronously load a map and all its extra data
     public loadMap(mapDataObject: IMapDataObject, done?: () => void) {
+        soundManager.playMusic(mapDataObject.bgTrack);
         this.map = undefined;
         let loader = new PIXI.loaders.Loader();
         loader.add("map", mapDataObject.map)
@@ -136,7 +132,7 @@ export default class World extends PIXI.Sprite {
         if (this.queueMapTransition) return; // but not if we're in the process of a transition
         for (let npc of this.npcs) {
             if (npc.withinTalkingRange(this.actorManager.player)) {
-                this.npcText.display(npc);
+                this.uiManager.npcText.display(npc);
                 break;
             }
         }
@@ -157,10 +153,45 @@ export default class World extends PIXI.Sprite {
         this.actorManager.unloadEnemies();
     }
 
+    public dieDialogue() {
+        let filter = new PIXI.GrayFilter();
+        let grayscale = 0;
+        let fade = () => {
+            grayscale += 1 / 60;
+            if (grayscale > 1) {
+                grayscale = 1;
+                this.uiManager.npcText.display(ArchangelNPCData);
+                juggler.remove(fade);
+            }
+            filter.gray = grayscale;
+        };
+        filter.gray = grayscale;
+        this.worldContainer.filters = [filter];
+        juggler.add(fade);
+        this.transitionTimer = 0;
+        this.queueMapTransition = undefined;
+    }
+
+    public revivePlayer(lastTown = true) {
+        if (lastTown) {
+            let oef = () => {
+                this.transitionTimer += TRANSITION_SPEED;
+                if (this.transitionTimer >= 1) {
+                    this.mapTransition("map2", true);
+                    juggler.remove(oef);
+                }
+            };
+            juggler.add(oef);
+        } else {
+            this.actorManager.player.setAlive(0.5);
+            this.worldContainer.filters = [];
+        }
+    }
+
     public update() {
         if (!this.map) return;
 
-        this.actorManager.update(this.map, this.queueMapTransition === undefined && !this.npcText.visible);
+        this.actorManager.update(this.map, this.queueMapTransition === undefined && !this.uiManager.hasInteractiveUI());
         this.particleSystem.update();
 
         let foundInteractable = false;
@@ -189,15 +220,17 @@ export default class World extends PIXI.Sprite {
             this.virtualPosition.y = this.screenHeight / 2 - this.map.digitalHeight / 2;
         }
 
-        if (this.queueMapTransition) {
-            if (this.transitionTimer >= 1) {
-                this.mapTransition(this.queueMapTransition);
+        if (!this.actorManager.player.isDead()) {
+            if (this.queueMapTransition) {
+                if (this.transitionTimer >= 1) {
+                    this.mapTransition(this.queueMapTransition);
+                } else {
+                    this.transitionTimer += TRANSITION_SPEED;
+                }
             } else {
-                this.transitionTimer += 0.033;
-            }
-        } else {
-            if (this.transitionTimer > 0) {
-                this.transitionTimer -= 0.033;
+                if (this.transitionTimer > 0) {
+                    this.transitionTimer -= TRANSITION_SPEED;
+                }
             }
         }
 
@@ -213,15 +246,24 @@ export default class World extends PIXI.Sprite {
     }
 
     // perform an instantaneous map transition
-    private mapTransition(mapName: MapName) {
+    private mapTransition(mapName: MapName, revivePlayer = false) {
         if (!this.map) return;
+        if (this.actorManager.player.isDead()) {
+            if (revivePlayer) {
+                this.actorManager.player.setAlive(0.5);
+                this.worldContainer.filters = [];
+            } else {
+                this.fadeBlocker.visible = false;
+                return;
+            }
+        }
         let previousMapName = this.currentMapName;
         this.unloadMap();
         // load new map objects
         this.currentMapData = mapData[mapName];
         this.currentMapName = mapName;
         this.loadMap(this.currentMapData, () => {
-            if (this.currentMapData.entrances[previousMapName]) {
+            if (!revivePlayer && this.currentMapData.entrances[previousMapName]) {
                 // try to set player spawn to the entrance for the previous map
                 this.actorManager.setPlayerSpawn(this.currentMapData.entrances[previousMapName]);
             } else {

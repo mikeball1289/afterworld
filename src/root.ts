@@ -174,3 +174,33 @@ export function hasInput(type: InputType) {
         default: return false;
     }
 }
+
+class SoundManager {
+    public static GLOBAL_VOLUME = 0.4;
+    private music: { [songName: string]: HTMLAudioElement } = {};
+
+    public playSound(name: string, volume = 1) {
+        let audio = new Audio(name);
+        audio.volume = volume * SoundManager.GLOBAL_VOLUME;
+        audio.play();
+    }
+
+    public playMusic(name: string, volume = 1) {
+        if (this.music.hasOwnProperty(name)) {
+            this.music[name].volume = volume * SoundManager.GLOBAL_VOLUME;
+            return;
+        }
+        let audio = new Audio(name);
+        audio.volume = volume * SoundManager.GLOBAL_VOLUME;
+        audio.loop = true;
+        audio.play();
+        this.music[name] = audio;
+    }
+
+    public setMusicVolume(name: string, volume: number) {
+        if (!this.music.hasOwnProperty(name)) return;
+        this.music[name].volume = volume * SoundManager.GLOBAL_VOLUME;
+    }
+}
+
+export let soundManager = new SoundManager();

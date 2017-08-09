@@ -1,11 +1,11 @@
-import attackFunctions from "../attacks/attackFunctions";
 import ColorTweener from "../ColorTweener";
-import PlayerStats from "../combat/PlayerStats";
 import Animator, { IAnimatorOptions } from "../display/Animator";
 import HealthBar from "../display/HealthBar";
 import DamageParticle from "../particlesystem/DamageParticle";
 import FireParticle from "../particlesystem/FireParticle";
-import { hasInput, InputType, juggler } from "../root";
+import attackFunctions from "../playerData/attackFunctions";
+import PlayerStats from "../playerData/PlayerStats";
+import { hasInput, InputType, juggler, soundManager } from "../root";
 import Map from "../world/Map";
 import * as PC from "../world/physicalConstants";
 import World from "../world/World";
@@ -30,6 +30,7 @@ export default class PlayerCharacter extends Actor {
     private locked: boolean = false;
     private attackCooldown: number = 0;
     private sprite: PIXI.Sprite;
+    private deathFrame: PIXI.Sprite;
     private tintTimer = 0;
 
     private body: {
@@ -51,7 +52,7 @@ export default class PlayerCharacter extends Actor {
 
     constructor(world: World) {
         super(world);
-        this.stats = new PlayerStats();
+        this.stats = new PlayerStats(world);
         this.sprite = new PIXI.Sprite();
         this.addChild(this.sprite);
         let frameData: PlayerAnimations = {
@@ -82,6 +83,11 @@ export default class PlayerCharacter extends Actor {
 
         this.healthBar = new HealthBar(50, 0x00FF5D);
         world.uiManager.worldLayers[0].addChild(this.healthBar);
+
+        this.deathFrame = new PIXI.Sprite(PIXI.loader.resources["/images/dark_ghost.png"].texture);
+        this.deathFrame.anchor.set(0.5, 1);
+        this.deathFrame.x = this.size.x / 2;
+        this.deathFrame.y = this.size.y;
 
         // let addFireParticle = () => {
         //     let startTweener = new ColorTweener(0xFFFFFF, 0xFFF191);
@@ -136,6 +142,7 @@ export default class PlayerCharacter extends Actor {
     }
 
     public updateImpulse(map: Map, getControls = true) {
+        if (this.isDead()) return;
         let grounded = map.isGrounded(this);
         getControls = getControls && !this.locked;
 
@@ -168,10 +175,12 @@ export default class PlayerCharacter extends Actor {
                         this.fallthrough = this.y;
                         this.velocity.y = -PC.FALLTHROUGH_JUMP_POWER;
                         this.velocity.x = 0;
+                        soundManager.playSound("/sounds/jump_pop.ogg", 0.2);
                     }
                 } else {
                     this.velocity.y = -PC.JUMP_POWER;
                     this.jumpBuffer = false;
+                    soundManager.playSound("/sounds/jump_pop.ogg", 0.2);
                 }
             } else if (getControls && hasInput(InputType.UP)) {
                 this.world.attemptMapTransition();
@@ -217,13 +226,28 @@ export default class PlayerCharacter extends Actor {
     }
 
     public die() {
-        // pass
+        this.velocity.set(0);
+        this.world.dieDialogue();
+        this.removeChild(this.sprite);
+        this.addChild(this.deathFrame);
+        this.deathFrame.scale.x = this.direction;
+    }
+
+    public setAlive(healthPercent: number) {
+        this.stats.health = Math.ceil(this.stats.maxHealth * healthPercent);
+        this.removeChild(this.deathFrame);
+        this.addChild(this.sprite);
+        this.sprite.scale.x = this.direction;
     }
 
     public tintAll(tint: number = 0xFFFFFF) {
         this.body.arm.tint = tint;
         this.body.body.tint = tint;
         this.body.head.tint = tint;
+    }
+
+    public get collideable() {
+        return !this.isDead();
     }
 
     public applyDamage(damage: number, knockback: PIXI.Point) {

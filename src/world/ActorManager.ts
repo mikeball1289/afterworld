@@ -52,7 +52,11 @@ export default class ActorManager extends PIXI.Container {
     public update(map: Map, getControls: boolean = true) {
         this.player.updateImpulse(map, getControls);
         for (let npa of this.enemies) {
-            npa.updateImpulse(map, this.player);
+            if (!this.player.isDead()) {
+                npa.updateImpulse(map, this.player);
+            } else {
+                npa.updateImpulse(map);
+            }
         }
         this.enemies = mergeSort(this.enemies, (a, b) => a.horizontalCenter - b.horizontalCenter);
         for (let i = 0; i < this.enemies.length - 1; i ++) {

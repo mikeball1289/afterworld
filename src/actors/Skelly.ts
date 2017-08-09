@@ -2,6 +2,7 @@ import Animator from "../display/Animator";
 import HealthBar from "../display/HealthBar";
 import DamageParticle from "../particlesystem/DamageParticle";
 import DebrisParticle from "../particlesystem/DebrisParticle";
+import { soundManager } from "../root";
 import Map from "../world/Map";
 import { EPSILON, GRAVITY } from "../world/physicalConstants";
 import World from "../world/World";
@@ -125,8 +126,14 @@ export default class Skelly extends Enemy {
 
     public handleCollisions(collisions: [boolean, boolean]) {
         if (collisions[0]) {
+            if (this.state === MovementStates.WALKING) {
+                if (this.velocity.x < 0) {
+                    this.direction = 1;
+                } else {
+                    this.direction = -1;
+                }
+            }
             this.velocity.x = 0;
-            if (this.state === MovementStates.WALKING) this.direction *= -1;
         }
         if (collisions[1]) this.velocity.y = 0;
     }
@@ -146,6 +153,7 @@ export default class Skelly extends Enemy {
                 this.healthBar.alpha = 1 - (frame / 7);
 
                 if (frame === 6) {
+                    soundManager.playSound("/sounds/skelly_rattle.ogg");
                     for (let i = 0; i < 6; i ++) {
                         let particle = new DebrisParticle(PIXI.loader.resources["/images/bone_particle.png"].texture);
                         particle.x = this.horizontalCenter;
@@ -321,7 +329,7 @@ export default class Skelly extends Enemy {
             this.animator.play("attack", {
                 onProgress: (frame) => {
                     if (frame === 3) {
-                        // console.log("attack hit");
+                        soundManager.playSound("/sounds/skelly_scratch.ogg");
                         player.applyDamage(Math.floor(Math.random() * 2 + 1), new PIXI.Point());
                     }
                 },
