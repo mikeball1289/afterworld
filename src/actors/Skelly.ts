@@ -159,8 +159,8 @@ export default class Skelly extends Enemy {
                         particle.x = this.horizontalCenter;
                         particle.y = this.top + this.size.y / 2;
                         let overkill = Math.min(damage / MAX_HEALTH, 2);
-                        particle.velocity.x = ((Math.random() - 0.5) * 5 + knockback.x / 2) * (overkill + 1);
-                        particle.velocity.y = (Math.random() * -4 - 1) - (overkill * 15) + knockback.y / 2 * (overkill + 1);
+                        particle.velocity.x = ((Math.random() - 0.5) * 5 + Math.min(10, Math.max(-10, knockback.x)) / 2) * (overkill / 2 + 1);
+                        particle.velocity.y = (Math.random() * -4 - 1) - (overkill * 15) + knockback.y / 2 * (overkill / 2 + 1);
                         particle.rotationVelocity = Math.random() * 2 - 1;
                         this.world.particleSystem.add(particle);
                     }
@@ -329,7 +329,7 @@ export default class Skelly extends Enemy {
             this.animator.play("attack", {
                 onProgress: (frame) => {
                     if (frame === 3) {
-                        soundManager.playSound("/sounds/skelly_scratch.ogg");
+                        soundManager.playSound("/sounds/skelly_scratch.ogg", 1, "scratch");
                         player.applyDamage(Math.floor(Math.random() * 2 + 1), new PIXI.Point());
                     }
                 },

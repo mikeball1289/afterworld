@@ -1,10 +1,11 @@
 import ColorTweener from "../ColorTweener";
+import attackFunctions from "../data/attackFunctions";
+import Inventory, { IEquipmentSlots } from "../data/Inventory";
+import PlayerStats from "../data/PlayerStats";
 import Animator, { IAnimatorOptions } from "../display/Animator";
 import HealthBar from "../display/HealthBar";
 import DamageParticle from "../particlesystem/DamageParticle";
 import FireParticle from "../particlesystem/FireParticle";
-import attackFunctions from "../playerData/attackFunctions";
-import PlayerStats from "../playerData/PlayerStats";
 import { hasInput, InputType, juggler, soundManager } from "../root";
 import Map from "../world/Map";
 import * as PC from "../world/physicalConstants";
@@ -18,27 +19,35 @@ type PlayerAnimations = {
     jump: [number, number];
     attack1: [number, number];
     attack2: [number, number];
+    cast: [number, number];
 };
 
-const BASIC_ATTACKS: ["attack1", "attack2"] = ["attack1", "attack2"];
+interface IBodyAnimations {
+    front_arm: Animator<PlayerAnimations>;
+    head: Animator<PlayerAnimations>;
+    body: Animator<PlayerAnimations>;
+    weapon: Animator<PlayerAnimations>;
+    front_hand: Animator<PlayerAnimations>;
+    back_hand: Animator<PlayerAnimations>;
+    legs: Animator<PlayerAnimations>;
+    feet: Animator<PlayerAnimations>;
+}
+
+const BODY_ANIMATION_KEYS: (keyof IBodyAnimations)[] = ["back_hand", "feet", "legs", "body", "head", "weapon", "front_hand", "front_arm"];
 
 export default class PlayerCharacter extends Actor {
     public healthBar: HealthBar;
+    public locked: boolean = false;
+    public attackCooldown: number = 0;
+    public inventory: Inventory;
+    public body: IBodyAnimations;
 
     private jumpBuffer: boolean = true;
     private interactBuffer: boolean = true;
-    private locked: boolean = false;
-    private attackCooldown: number = 0;
     private sprite: PIXI.Sprite;
     private deathFrame: PIXI.Sprite;
     private tintTimer = 0;
 
-    private body: {
-        arm: Animator<PlayerAnimations>;
-        head: Animator<PlayerAnimations>;
-        body: Animator<PlayerAnimations>;
-        weapon: Animator<PlayerAnimations>;
-    };
     private stats: PlayerStats;
 
     private _direction: 1 | -1 = 1;
@@ -55,27 +64,29 @@ export default class PlayerCharacter extends Actor {
         this.stats = new PlayerStats(world);
         this.sprite = new PIXI.Sprite();
         this.addChild(this.sprite);
+        this.inventory = new Inventory(world);
         let frameData: PlayerAnimations = {
-                walk: [0, 4],
-                idle: [1, 1],
-                jump: [2, 1],
-                attack1: [3, 4],
-                attack2: [4, 4],
-            };
+            walk: [0, 4],
+            idle: [1, 1],
+            jump: [2, 1],
+            attack1: [3, 4],
+            attack2: [4, 4],
+            cast: [5, 4],
+        };
         this.body = {
-            arm: new Animator(PIXI.loader.resources["/sprites/arm_base.png"].texture, JSON.parse(PIXI.loader.resources["/sprites/arm_base.json"].data), frameData, "idle", 6),
+            front_arm: new Animator(PIXI.loader.resources["/sprites/front_arm_base.png"].texture, JSON.parse(PIXI.loader.resources["/sprites/front_arm_base.json"].data), frameData, "idle", 6),
             weapon: new Animator(PIXI.loader.resources["/sprites/weapon_base.png"].texture, JSON.parse(PIXI.loader.resources["/sprites/weapon_base.json"].data), frameData, "idle", 6),
             head: new Animator(PIXI.loader.resources["/sprites/head_base.png"].texture, JSON.parse(PIXI.loader.resources["/sprites/head_base.json"].data), frameData, "idle", 6),
             body: new Animator(PIXI.loader.resources["/sprites/body_base.png"].texture, JSON.parse(PIXI.loader.resources["/sprites/body_base.json"].data), frameData, "idle", 6),
+            legs: new Animator(PIXI.loader.resources["/sprites/legs_base.png"].texture, JSON.parse(PIXI.loader.resources["/sprites/legs_base.json"].data), frameData, "idle", 6),
+            feet: new Animator(PIXI.loader.resources["/sprites/feet_base.png"].texture, JSON.parse(PIXI.loader.resources["/sprites/feet_base.json"].data), frameData, "idle", 6),
+            front_hand: new Animator(PIXI.loader.resources["/sprites/front_hand_base.png"].texture, JSON.parse(PIXI.loader.resources["/sprites/front_hand_base.json"].data), frameData, "idle", 6),
+            back_hand: new Animator(PIXI.loader.resources["/sprites/back_hand_base.png"].texture, JSON.parse(PIXI.loader.resources["/sprites/back_hand_base.json"].data), frameData, "idle", 6),
         };
-        this.sprite.addChild(this.body.body);
-        this.sprite.addChild(this.body.head);
-        this.sprite.addChild(this.body.weapon);
-        this.sprite.addChild(this.body.arm);
-        this.body.body.anchor.set(0.5, 1);
-        this.body.head.anchor.set(0.5, 1);
-        this.body.weapon.anchor.set(0.5, 1);
-        this.body.arm.anchor.set(0.5, 1);
+        for (let key of BODY_ANIMATION_KEYS) {
+            this.sprite.addChild(this.body[key]);
+            this.body[key].anchor.set(0.5, 1);
+        }
         this.size.x = 32;
         this.size.y = 80;
         this.sprite.x = this.size.x / 2;
@@ -89,27 +100,12 @@ export default class PlayerCharacter extends Actor {
         this.deathFrame.x = this.size.x / 2;
         this.deathFrame.y = this.size.y;
 
-        // let addFireParticle = () => {
-        //     let startTweener = new ColorTweener(0xFFFFFF, 0xFFF191);
-        //     let endTweener = new ColorTweener(0xFFF191, 0xD60000);
-        //     for (let i = 0; i < 400; i ++) {
-        //         let randomDirection = Math.random() * Math.PI * 2;
-        //         let speed = (Math.random() + Math.floor(i / 100)) * 0.4 + 0.1;
-        //         speed *= Math.abs(speed);
-        //         let particle = new FireParticle((100 - (speed * speed * 6) - Math.random() * (40 - speed * 20)) / 2,
-        //                                         new ColorTweener(startTweener.getInbetween(speed / 2.89), endTweener.getInbetween(speed / 2.89)));
-        //         let radialX = speed * Math.sin(randomDirection);
-        //         let radialY = speed * Math.cos(randomDirection);
-        //         particle.velocity.x = radialX * 2 + this.velocity.x * 0.3;
-        //         particle.velocity.y = radialY * 2 + this.velocity.y * 0.3;
-        //         particle.x = this.horizontalCenter + radialX * 15;
-        //         particle.y = this.verticalCenter + radialY * 15;
-        //         this.world.particleSystem.add(particle);
-        //     }
-        //     juggler.afterFrames(180, addFireParticle);
-        // };
-
-        // juggler.afterFrames(180, addFireParticle);
+        for (let slot of <(keyof IEquipmentSlots)[]> Object.keys(this.inventory.equipment)) {
+            let equip = this.inventory.equipment[slot];
+            if (equip) {
+                equip.addEquipmentGraphic(this);
+            }
+        }
     }
 
     public play(animation: keyof PlayerAnimations, options?: IAnimatorOptions) {
@@ -118,27 +114,13 @@ export default class PlayerCharacter extends Actor {
             loop: options && options.loop,
             override: options && options.override,
         };
-        this.body.body.play(animation, options);
-        this.body.head.play(animation, partialOptions);
-        this.body.weapon.play(animation, partialOptions);
-        this.body.arm.play(animation, partialOptions);
-    }
-
-    // do the animations and setup triggers for basic attack
-    public performBasicAttack() {
-        let randomAttack = BASIC_ATTACKS[Math.floor(Math.random() * 2)];
-        this.play(randomAttack, {
-            onProgress: (frame) => {
-                if (frame === 2) {
-                    attackFunctions.basicAttack(this, this.world);
-                }
-            },
-            onComplete: () => {
-                this.locked = false;
-                this.attackCooldown = 20;
-            },
-        } );
-        this.locked = true;
+        for (let key of BODY_ANIMATION_KEYS) {
+            if (key === "head") {
+                this.body[key].play(animation, options);
+            } else {
+                this.body[key].play(animation, partialOptions);
+            }
+        }
     }
 
     public updateImpulse(map: Map, getControls = true) {
@@ -147,7 +129,11 @@ export default class PlayerCharacter extends Actor {
         getControls = getControls && !this.locked;
 
         if (getControls && hasInput(InputType.PRIMARY_ATTACK) && this.attackCooldown <= 0) {
-            this.performBasicAttack();
+            attackFunctions.basicAttack(this, this.world);
+            getControls = getControls && !this.locked;
+        }
+        if (getControls && hasInput(InputType.SECONDARY_ATTACK) && this.attackCooldown <= 0) {
+            attackFunctions.explosion(this, this.world);
             getControls = getControls && !this.locked;
         }
 
@@ -241,9 +227,9 @@ export default class PlayerCharacter extends Actor {
     }
 
     public tintAll(tint: number = 0xFFFFFF) {
-        this.body.arm.tint = tint;
-        this.body.body.tint = tint;
-        this.body.head.tint = tint;
+        for (let key of BODY_ANIMATION_KEYS) {
+            this.body[key].tint = tint;
+        }
     }
 
     public get collideable() {

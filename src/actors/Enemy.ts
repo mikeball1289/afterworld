@@ -12,7 +12,7 @@ abstract class Enemy extends NonPlayerActor implements ICombatObject {
     public applyAttack(damage: number, knockback: PIXI.Point) {
         if (this.isDead()) return false;
 
-        soundManager.playSound(smacks[Math.floor(Math.random() * smacks.length)]);
+        soundManager.playSound(smacks[Math.floor(Math.random() * smacks.length)], 1, "smack_hit");
 
         let particle = new DamageParticle(damage, "enemyDamage", this);
         this.world.particleSystem.add(particle, false);

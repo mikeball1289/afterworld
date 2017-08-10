@@ -30,7 +30,7 @@ export default class UIManager {
         inventory.alpha = 0.95;
         inventory.x = Math.round(world.screenWidth / 2 - inventory.width / 2);
         inventory.y = Math.round(world.screenHeight / 2 - inventory.height / 2);
-        this.overlayLayer.addChild(inventory);
+        // this.overlayLayer.addChild(inventory);
     }
 
     public hasInteractiveUI() {

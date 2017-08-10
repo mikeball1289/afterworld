@@ -27,6 +27,7 @@ export default class Animator<T extends IActionMap> extends PIXI.Sprite {
     private loop: boolean = true;
     private frames: PIXI.Texture[][] = [];
     private jup: () => void;
+    private loader?: PIXI.loaders.Loader;
 
     constructor(spriteSheet: PIXI.Texture, frameSize: PIXI.Point, animations: T, idle: keyof T, fps?: number);
     constructor(spriteSheet: PIXI.Texture, frameData: any, animations: T, idle: keyof T, fps?: number);
@@ -51,6 +52,42 @@ export default class Animator<T extends IActionMap> extends PIXI.Sprite {
         }
         this.jup = () => this.update(this.fps / 60);
         juggler.add(this.jup);
+    }
+
+    // this is a pretty narrow function, basically useful for swapping out sprite sheets on the
+    // fly for the player sprite to switch equipment
+    public loadTexturePackerFrames(spriteSheet: string, data: string) {
+        if (this.loader) this.loader.removeAllListeners();
+        this.loader = new PIXI.loaders.Loader();
+        this.loader.add(spriteSheet).add(data, { xhrType: "text" });
+        this.loader.on("complete", () => {
+            if (!this.loader) return;
+            let newFrames = [];
+            let sheet = this.loader.resources[spriteSheet].texture;
+            let frameData = JSON.parse(this.loader.resources[data].data);
+            for (let ani in this.animations) {
+                if (!this.animations.hasOwnProperty(ani)) continue;
+                let frames = [];
+                let row = this.animations[ani][0];
+                for (let i = 0; i < this.animations[ani][1]; i ++) {
+                    let frameDataObject = frameData.frames[row + "-" + i];
+                    frames.push(new PIXI.Texture(sheet.baseTexture, new PIXI.Rectangle(frameDataObject.frame.x, frameDataObject.frame.y, frameDataObject.frame.w, frameDataObject.frame.h),
+                                                                    new PIXI.Rectangle(0, 0, frameDataObject.sourceSize.w, frameDataObject.sourceSize.h),
+                                                                    new PIXI.Rectangle(frameDataObject.spriteSourceSize.x, frameDataObject.spriteSourceSize.y, frameDataObject.spriteSourceSize.w, frameDataObject.spriteSourceSize.h)));
+                }
+                newFrames[row] = frames;
+            }
+            for (let frameLine of this.frames) {
+                for (let frame of frameLine) {
+                    frame.destroy();
+                }
+            }
+            this.spriteSheet.destroy(true);
+            this.spriteSheet = sheet;
+            this.frames = newFrames;
+            this.loader = undefined;
+        } );
+        this.loader.load();
     }
 
     public play(animation: keyof T, options: IAnimatorOptions = {}) {

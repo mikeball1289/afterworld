@@ -170,7 +170,7 @@ export function hasInput(type: InputType) {
         case InputType.JUMP: return keyboard.isKeyDown(Key.SPACE) || controller.getButton(ControllerButton.A);
         case InputType.INTERACT: return keyboard.isKeyDown(Key.ENTER) || controller.getButton(ControllerButton.Y);
         case InputType.PRIMARY_ATTACK: return keyboard.isKeyDown(Key.A) || controller.getButton(ControllerButton.X);
-        case InputType.PRIMARY_ATTACK: return keyboard.isKeyDown(Key.S) || controller.getButton(ControllerButton.B);
+        case InputType.SECONDARY_ATTACK: return keyboard.isKeyDown(Key.S) || controller.getButton(ControllerButton.B);
         default: return false;
     }
 }
@@ -178,8 +178,20 @@ export function hasInput(type: InputType) {
 class SoundManager {
     public static GLOBAL_VOLUME = 0.4;
     private music: { [songName: string]: HTMLAudioElement } = {};
+    private tags: { [tag: string]: boolean } = {};
 
-    public playSound(name: string, volume = 1) {
+    constructor() {
+        juggler.add(() => this.tags = {});
+    }
+
+    public playSound(name: string, volume = 1, tag?: string) {
+        if (tag) {
+            if (!this.tags[tag]) {
+                this.tags[tag] = true;
+            } else {
+                return;
+            }
+        }
         let audio = new Audio(name);
         audio.volume = volume * SoundManager.GLOBAL_VOLUME;
         audio.play();

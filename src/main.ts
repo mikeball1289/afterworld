@@ -15,14 +15,22 @@ export function preload(arg: boolean | string[]) {
     if (arg === true) {
         let files = fs.readdirSync("images");
         files.forEach( (file) => loader.add("/images/" + file) );
-        loader.add("/sprites/arm_base.png")
+        loader.add("/sprites/front_arm_base.png")
               .add("/sprites/body_base.png")
               .add("/sprites/weapon_base.png")
               .add("/sprites/head_base.png")
-              .add("/sprites/arm_base.json", { xhrType: "text" })
+              .add("/sprites/front_hand_base.png")
+              .add("/sprites/back_hand_base.png")
+              .add("/sprites/feet_base.png")
+              .add("/sprites/legs_base.png")
+              .add("/sprites/front_arm_base.json", { xhrType: "text" })
               .add("/sprites/body_base.json", { xhrType: "text" })
               .add("/sprites/head_base.json", { xhrType: "text" })
-              .add("/sprites/weapon_base.json", { xhrType: "text" });
+              .add("/sprites/weapon_base.json", { xhrType: "text" })
+              .add("/sprites/front_hand_base.json", { xhrType: "text" })
+              .add("/sprites/back_hand_base.json", { xhrType: "text" })
+              .add("/sprites/feet_base.json", { xhrType: "text" })
+              .add("/sprites/legs_base.json", { xhrType: "text" });
         loader.load( () => main(app) );
     } else if (arg instanceof Array) {
         arg.forEach( (file) => loader.add(file) );
