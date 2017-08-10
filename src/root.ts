@@ -159,21 +159,51 @@ export enum InputType {
     ABILITY_2,
     ABILITY_3,
     ABILITY_4,
+    INVENTORY,
+
+    TOTAL,
 }
 
-export function hasInput(type: InputType) {
-    switch (type) {
-        case InputType.LEFT: return keyboard.isKeyDown(Key.LEFT) || controller.getAxis(ControllerAxis.LEFT_X) < -0.5;
-        case InputType.RIGHT: return keyboard.isKeyDown(Key.RIGHT) || controller.getAxis(ControllerAxis.LEFT_X) > 0.5;
-        case InputType.UP: return keyboard.isKeyDown(Key.UP) || controller.getAxis(ControllerAxis.LEFT_Y) < -0.5;
-        case InputType.DOWN: return keyboard.isKeyDown(Key.DOWN) || controller.getAxis(ControllerAxis.LEFT_Y) > 0.5;
-        case InputType.JUMP: return keyboard.isKeyDown(Key.SPACE) || controller.getButton(ControllerButton.A);
-        case InputType.INTERACT: return keyboard.isKeyDown(Key.ENTER) || controller.getButton(ControllerButton.Y);
-        case InputType.PRIMARY_ATTACK: return keyboard.isKeyDown(Key.A) || controller.getButton(ControllerButton.X);
-        case InputType.SECONDARY_ATTACK: return keyboard.isKeyDown(Key.S) || controller.getButton(ControllerButton.B);
-        default: return false;
+class Controls {
+
+    private previousControls: boolean[] = [];
+    private controls: boolean[] = [];
+
+    constructor() {
+        juggler.add( () => {
+            this.previousControls = this.controls;
+            this.controls = [];
+            for (let i = 0; i < InputType.TOTAL; i ++) {
+                this.controls[i] = this.updateInput(i);
+            }
+        } );
+    }
+
+    public hasInput(type: InputType) {
+        return this.controls[type];
+    }
+
+    public hasLeadingEdge(type: InputType) {
+        return this.controls[type] && !this.previousControls[type];
+    }
+
+    private updateInput(type: InputType) {
+        switch (type) {
+            case InputType.LEFT: return keyboard.isKeyDown(Key.LEFT) || controller.getAxis(ControllerAxis.LEFT_X) < -0.5;
+            case InputType.RIGHT: return keyboard.isKeyDown(Key.RIGHT) || controller.getAxis(ControllerAxis.LEFT_X) > 0.5;
+            case InputType.UP: return keyboard.isKeyDown(Key.UP) || controller.getAxis(ControllerAxis.LEFT_Y) < -0.5;
+            case InputType.DOWN: return keyboard.isKeyDown(Key.DOWN) || controller.getAxis(ControllerAxis.LEFT_Y) > 0.5;
+            case InputType.JUMP: return keyboard.isKeyDown(Key.SPACE) || controller.getButton(ControllerButton.A);
+            case InputType.INTERACT: return keyboard.isKeyDown(Key.ENTER) || controller.getButton(ControllerButton.Y);
+            case InputType.PRIMARY_ATTACK: return keyboard.isKeyDown(Key.A) || controller.getButton(ControllerButton.X);
+            case InputType.SECONDARY_ATTACK: return keyboard.isKeyDown(Key.S) || controller.getButton(ControllerButton.B);
+            case InputType.INVENTORY: return keyboard.isKeyDown(Key.I) || controller.getButton(ControllerButton.SELECT);
+            default: return false;
+        }
     }
 }
+
+export let controls = new Controls();
 
 class SoundManager {
     public static GLOBAL_VOLUME = 0.4;

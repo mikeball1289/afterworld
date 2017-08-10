@@ -1,4 +1,4 @@
-import NPCText from "../display/NPCText";
+import NPCText, { INPCLike } from "../display/NPCText";
 import World from "../world/World";
 import InventoryUI from "./InventoryUI";
 
@@ -11,6 +11,8 @@ export default class UIManager {
 
     public worldLayers: PIXI.Container[] = [];
     public npcText: NPCText;
+
+    public inventoryUI: InventoryUI;
 
     constructor(private world: World) {
         this.worldLayer = new PIXI.Container();
@@ -26,15 +28,20 @@ export default class UIManager {
         this.npcText.position.set(world.screenWidth / 2, world.screenHeight / 2);
         this.overlayLayer.addChild(this.npcText);
 
-        let inventory = new InventoryUI(world);
-        inventory.alpha = 0.95;
-        inventory.x = Math.round(world.screenWidth / 2 - inventory.width / 2);
-        inventory.y = Math.round(world.screenHeight / 2 - inventory.height / 2);
-        // this.overlayLayer.addChild(inventory);
+        this.inventoryUI = new InventoryUI(world);
+        this.inventoryUI.alpha = 0.95;
+        this.inventoryUI.x = Math.round(world.screenWidth / 2 - this.inventoryUI.width / 2);
+        this.inventoryUI.y = Math.round(world.screenHeight / 2 - this.inventoryUI.height / 2);
+        this.overlayLayer.addChild(this.inventoryUI);
+    }
+
+    public displayNPCText(npc: INPCLike) {
+        if (this.inventoryUI.isOpen()) this.inventoryUI.close();
+        this.npcText.display(npc);
     }
 
     public hasInteractiveUI() {
-        return this.npcText.isOpen();
+        return this.npcText.isOpen() || this.inventoryUI.isOpen();
     }
 
 }

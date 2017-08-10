@@ -1,11 +1,11 @@
-import { hasInput, InputType } from "../root";
+import { controls, InputType } from "../root";
 import { soundManager } from "../root";
 import { INPCData } from "../world/mapData";
 import World from "../world/World";
 import JuggledSprite from "./JuggledSprite";
 import NPC from "./NPC";
 
-interface INPCLike {
+export interface INPCLike {
     texture: PIXI.Texture;
     npcData: INPCData;
 }
@@ -16,8 +16,6 @@ export default class NPCText extends JuggledSprite {
     private textField: PIXI.Text;
     private nameField: PIXI.Text;
 
-    private promptReady: boolean = false;
-    private optionSwapReady: boolean = false;
     private showText?: string;
     private progress: number = 0;
     private options?: string[];
@@ -116,33 +114,21 @@ export default class NPCText extends JuggledSprite {
             if (this.progress >= this.showText.length) this.showAll();
         }
 
-        if (this.options && this.selectedOption !== undefined) {
-            if (!hasInput(InputType.UP) && !hasInput(InputType.DOWN)) {
-                this.optionSwapReady = true;
-            } else {
-                if (this.optionSwapReady) {
-                    this.optionSwapReady = false;
-                    if (hasInput(InputType.UP) && this.selectedOption > 0) this.selectedOption --;
-                    else if (hasInput(InputType.DOWN) && this.selectedOption < this.options.length - 1) this.selectedOption ++;
-                    soundManager.playSound("/sounds/talk_beep.ogg", 0.5);
-                    this.highlightOption(this.selectedOption);
-                }
-            }
+        if (this.options && this.selectedOption !== undefined && (controls.hasLeadingEdge(InputType.UP) || controls.hasLeadingEdge(InputType.DOWN))) {
+            if (controls.hasLeadingEdge(InputType.UP) && this.selectedOption > 0) this.selectedOption --;
+            else if (controls.hasLeadingEdge(InputType.DOWN) && this.selectedOption < this.options.length - 1) this.selectedOption ++;
+            soundManager.playSound("/sounds/talk_beep.ogg", 0.5);
+            this.highlightOption(this.selectedOption);
         }
 
-        if (!hasInput(InputType.JUMP)) {
-            this.promptReady = true;
-        } else {
-            if (this.promptReady) {
-                this.promptReady = false;
-                if (this.progress < this.showText.length) {
-                    this.showAll();
+        if (controls.hasLeadingEdge(InputType.JUMP)) {
+            if (this.progress < this.showText.length) {
+                this.showAll();
+            } else {
+                if (this.npcData && this.npcData.continue && this.npcData.continue(this.world, this.selectedOption)) {
+                    this.startText();
                 } else {
-                    if (this.npcData && this.npcData.continue && this.npcData.continue(this.world, this.selectedOption)) {
-                        this.startText();
-                    } else {
-                        this.close();
-                    }
+                    this.close();
                 }
             }
         }
@@ -161,7 +147,6 @@ export default class NPCText extends JuggledSprite {
         this.options = options;
         this.progress = 0;
         this.nameField.text = this.npcData.name;
-        this.promptReady = false;
         this.textField.text = "";
     }
 }

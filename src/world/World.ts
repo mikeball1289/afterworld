@@ -132,7 +132,7 @@ export default class World extends PIXI.Sprite {
         if (this.queueMapTransition) return; // but not if we're in the process of a transition
         for (let npc of this.npcs) {
             if (npc.withinTalkingRange(this.actorManager.player)) {
-                this.uiManager.npcText.display(npc);
+                this.uiManager.displayNPCText(npc);
                 break;
             }
         }
@@ -160,7 +160,7 @@ export default class World extends PIXI.Sprite {
             grayscale += 1 / 60;
             if (grayscale > 1) {
                 grayscale = 1;
-                this.uiManager.npcText.display(ArchangelNPCData);
+                this.uiManager.displayNPCText(ArchangelNPCData);
                 juggler.remove(fade);
             }
             filter.gray = grayscale;

@@ -6,7 +6,7 @@ import Animator, { IAnimatorOptions } from "../display/Animator";
 import HealthBar from "../display/HealthBar";
 import DamageParticle from "../particlesystem/DamageParticle";
 import FireParticle from "../particlesystem/FireParticle";
-import { hasInput, InputType, juggler, soundManager } from "../root";
+import { controls, InputType, juggler, soundManager } from "../root";
 import Map from "../world/Map";
 import * as PC from "../world/physicalConstants";
 import World from "../world/World";
@@ -33,6 +33,17 @@ interface IBodyAnimations {
     feet: Animator<PlayerAnimations>;
 }
 
+enum ControlLocks {
+    JUMP,
+    PRIMARY_ATTACK,
+    SECONDARY_ATTACK,
+}
+
+let controlLockInputs: InputType[] = [];
+controlLockInputs[ControlLocks.JUMP] = InputType.JUMP;
+controlLockInputs[ControlLocks.PRIMARY_ATTACK] = InputType.PRIMARY_ATTACK;
+controlLockInputs[ControlLocks.SECONDARY_ATTACK] = InputType.SECONDARY_ATTACK;
+
 const BODY_ANIMATION_KEYS: (keyof IBodyAnimations)[] = ["back_hand", "feet", "legs", "body", "head", "weapon", "front_hand", "front_arm"];
 
 export default class PlayerCharacter extends Actor {
@@ -43,10 +54,10 @@ export default class PlayerCharacter extends Actor {
     public body: IBodyAnimations;
 
     private jumpBuffer: boolean = true;
-    private interactBuffer: boolean = true;
     private sprite: PIXI.Sprite;
     private deathFrame: PIXI.Sprite;
     private tintTimer = 0;
+    private controlLocks: boolean[] = [];
 
     private stats: PlayerStats;
 
@@ -123,26 +134,46 @@ export default class PlayerCharacter extends Actor {
         }
     }
 
+    public hasUseableInput(input: InputType, getControls: boolean = true): boolean {
+        if (!getControls) return false;
+        let idx = controlLockInputs.indexOf(input);
+        if (idx < 0) {
+            return controls.hasInput(input);
+        } else {
+            return this.controlLocks[idx] && controls.hasInput(input);
+        }
+    }
+
     public updateImpulse(map: Map, getControls = true) {
+        if (this.isDead() || !getControls) this.controlLocks = [];
         if (this.isDead()) return;
+
+        if (getControls) {
+            for (let i = 0; i < controlLockInputs.length; i ++) {
+                if (!controls.hasInput(controlLockInputs[i])) {
+                    this.controlLocks[i] = true;
+                }
+            }
+        }
+
         let grounded = map.isGrounded(this);
         getControls = getControls && !this.locked;
 
-        if (getControls && hasInput(InputType.PRIMARY_ATTACK) && this.attackCooldown <= 0) {
+        if (this.hasUseableInput(InputType.PRIMARY_ATTACK, getControls) && this.attackCooldown <= 0) {
             attackFunctions.basicAttack(this, this.world);
             getControls = getControls && !this.locked;
         }
-        if (getControls && hasInput(InputType.SECONDARY_ATTACK) && this.attackCooldown <= 0) {
+        if (this.hasUseableInput(InputType.SECONDARY_ATTACK, getControls) && this.attackCooldown <= 0) {
             attackFunctions.explosion(this, this.world);
             getControls = getControls && !this.locked;
         }
 
         if (grounded) {
-            if (getControls && hasInput(InputType.LEFT)) {
+            if (this.hasUseableInput(InputType.LEFT, getControls)) {
                 this.velocity.x -= PC.WALK_IMPULSE;
                 this.direction = -1;
                 this.play("walk", { loop: true });
-            } else if (getControls && hasInput(InputType.RIGHT)) {
+            } else if (this.hasUseableInput(InputType.RIGHT, getControls)) {
                 this.velocity.x += PC.WALK_IMPULSE;
                 this.direction = 1;
                 this.play("walk", { loop: true });
@@ -152,8 +183,8 @@ export default class PlayerCharacter extends Actor {
                 this.play("idle", { loop: true });
             }
             if (Math.abs(this.velocity.x) > PC.HORIZONTAL_THRESHOLD) this.velocity.x *= PC.FULL_HORIZONTAL_DECAY;
-            if (getControls && hasInput(InputType.JUMP) && this.jumpBuffer) {
-                if (getControls && hasInput(InputType.DOWN)) {
+            if (this.hasUseableInput(InputType.JUMP, getControls) && this.jumpBuffer) {
+                if (this.hasUseableInput(InputType.DOWN, getControls)) {
                     if (!Map.testLine({ x: this.left, y: this.bottom }, { x: this.right - PC.EPSILON, y: this.bottom },
                             (x, y) => !Map.isDroppable(map.getPixelData(x, y)), 2))
                     {
@@ -168,7 +199,7 @@ export default class PlayerCharacter extends Actor {
                     this.jumpBuffer = false;
                     soundManager.playSound("/sounds/jump_pop.ogg", 0.2);
                 }
-            } else if (getControls && hasInput(InputType.UP)) {
+            } else if (this.hasUseableInput(InputType.UP, getControls)) {
                 this.world.attemptMapTransition();
             }
 
@@ -176,10 +207,10 @@ export default class PlayerCharacter extends Actor {
             this.play("jump", { loop: true });
             this.velocity.y += PC.GRAVITY;
             if (Math.abs(this.velocity.y) > PC.TERMINAL_VELOCITY) this.velocity.y *= PC.AERIAL_DRAG;
-            if (getControls && hasInput(InputType.LEFT)) {
+            if (this.hasUseableInput(InputType.LEFT, getControls)) {
                 if (this.velocity.x > 0) this.velocity.x = this.velocity.x * PC.FULL_HORIZONTAL_DECAY;
                 if (this.velocity.x > -PC.HORIZONTAL_THRESHOLD) this.velocity.x -= PC.AERIAL_IMPULSE;
-            } else if (getControls && hasInput(InputType.RIGHT)) {
+            } else if (this.hasUseableInput(InputType.RIGHT, getControls)) {
                 if (this.velocity.x < 0) this.velocity.x = this.velocity.x * PC.FULL_HORIZONTAL_DECAY;
                 if (this.velocity.x < PC.HORIZONTAL_THRESHOLD) this.velocity.x += PC.AERIAL_IMPULSE;
             } else {
@@ -188,22 +219,12 @@ export default class PlayerCharacter extends Actor {
             }
         }
 
-        if (!hasInput(InputType.JUMP)) {
+        if (!controls.hasInput(InputType.JUMP)) {
             this.jumpBuffer = true;
         }
 
-        if (getControls) {
-            if (hasInput(InputType.INTERACT)) {
-                if (this.interactBuffer) {
-                    this.world.attemptInteraction();
-                    this.interactBuffer = false;
-                }
-            } else {
-                this.interactBuffer = true;
-            }
-        } else {
-            // dont come out of a control lock immediately jumping
-            this.jumpBuffer = false;
+        if (getControls && controls.hasLeadingEdge(InputType.INTERACT)) {
+            this.world.attemptInteraction();
         }
     }
 

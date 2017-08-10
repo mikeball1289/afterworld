@@ -60,7 +60,7 @@ export default class Animator<T extends IActionMap> extends PIXI.Sprite {
         if (this.loader) this.loader.removeAllListeners();
         this.loader = new PIXI.loaders.Loader();
         this.loader.add(spriteSheet).add(data, { xhrType: "text" });
-        this.loader.on("complete", () => {
+        this.loader.load( () => {
             if (!this.loader) return;
             let newFrames = [];
             let sheet = this.loader.resources[spriteSheet].texture;
@@ -87,7 +87,6 @@ export default class Animator<T extends IActionMap> extends PIXI.Sprite {
             this.frames = newFrames;
             this.loader = undefined;
         } );
-        this.loader.load();
     }
 
     public play(animation: keyof T, options: IAnimatorOptions = {}) {
