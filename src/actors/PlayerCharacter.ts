@@ -160,13 +160,16 @@ export default class PlayerCharacter extends Actor {
         getControls = getControls && !this.locked;
 
         if (this.hasUseableInput(InputType.PRIMARY_ATTACK, getControls) && this.attackCooldown <= 0) {
-            attackFunctions.basicAttack(this, this.world);
-            getControls = getControls && !this.locked;
+            if (attackFunctions.basicAttack(this, this.world)) {
+                this.attackCooldown = 40;
+            }
         }
         if (this.hasUseableInput(InputType.SECONDARY_ATTACK, getControls) && this.attackCooldown <= 0) {
-            attackFunctions.explosion(this, this.world);
-            getControls = getControls && !this.locked;
+            if (attackFunctions.explosion(this, this.world)) {
+                this.attackCooldown = 40;
+            }
         }
+        getControls = getControls && !this.locked;
 
         if (grounded) {
             if (this.hasUseableInput(InputType.LEFT, getControls)) {

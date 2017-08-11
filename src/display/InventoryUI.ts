@@ -1,4 +1,5 @@
 import { IEquipmentSlots } from "../data/Inventory";
+import Inventory from "../data/Inventory";
 import JuggledSprite from "../display/JuggledSprite";
 import { controls, InputType } from "../root";
 import World from "../world/World";
@@ -10,6 +11,18 @@ enum MovementDirection {
     RIGHT,
 }
 
+const EQUIPMENT_INDEX_TYPES: (keyof IEquipmentSlots)[] = [
+    "trinket",
+    "weapon",
+    "head",
+    "neck",
+    "body",
+    "legs",
+    "feet",
+    "offhand",
+    "gloves",
+];
+
 type SelectionArea = "items" | "equipment" | "skills";
 
 export default class InventoryUI extends JuggledSprite {
@@ -18,19 +31,8 @@ export default class InventoryUI extends JuggledSprite {
         area: SelectionArea;
         index: number;
     } = { area: "items", index: 0 };
-
-    private equipmentIndexTypes: (keyof IEquipmentSlots)[] = [
-        "trinket",
-        "weapon",
-        "head",
-        "neck",
-        "body",
-        "legs",
-        "feet",
-        "offhand",
-        "gloves",
-    ];
     private selectionHighlight: PIXI.Sprite;
+    private itemTextures: PIXI.Container;
 
     constructor(private world: World) {
         super(new PIXI.Texture(PIXI.loader.resources["/images/inventory_ui.png"].texture.baseTexture, new PIXI.Rectangle(0, 0, 871, 496)));
@@ -38,6 +40,8 @@ export default class InventoryUI extends JuggledSprite {
         this.visible = false;
         this.selectionHighlight = new PIXI.Sprite(new PIXI.Texture(PIXI.loader.resources["/images/inventory_ui.png"].texture.baseTexture,
                                                     new PIXI.Rectangle(0, 496, 50, 50)));
+        this.itemTextures = new PIXI.Container();
+        this.addChild(this.itemTextures);
         this.addChild(this.selectionHighlight);
         this.highlightSelection();
     }
@@ -83,6 +87,33 @@ export default class InventoryUI extends JuggledSprite {
         this.selection.index = index;
         if (area) this.selection.area = area;
         this.highlightSelection();
+    }
+
+    public refreshInventoryIcons() {
+        for (let child of this.itemTextures.children) {
+            this.itemTextures.removeChild(child);
+            child.destroy();
+        }
+        let inventory = this.world.actorManager.player.inventory;
+        for (let i = 0; i < Inventory.INVENTORY_SIZE; i ++) {
+            let item = inventory.inventoryItems[i];
+            if (!item) continue;
+            let sprite = new PIXI.Sprite(item.graphic);
+            let coords = this.getItemFrameCoords({ area: "items", index: i });
+            sprite.x = coords[0] + 5;
+            sprite.y = coords[1] + 5;
+            this.itemTextures.addChild(sprite);
+        }
+
+        for (let i = 0; i < EQUIPMENT_INDEX_TYPES.length; i ++) {
+            let item = inventory.equipment[EQUIPMENT_INDEX_TYPES[i]];
+            if (!item) continue;
+            let sprite = new PIXI.Sprite(item.graphic);
+            let coords = this.getItemFrameCoords({ area: "equipment", index: i });
+            sprite.x = coords[0] + 5;
+            sprite.y = coords[1] + 5;
+            this.itemTextures.addChild(sprite);
+        }
     }
 
     public moveSelection(direction: MovementDirection) {

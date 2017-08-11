@@ -6,7 +6,7 @@ import { soundManager } from "../root";
 import World from "../world/World";
 
 export interface IAttackFunction {
-    (player: PlayerCharacter, world: World): void;
+    (player: PlayerCharacter, world: World): boolean;
 }
 
 interface IAttackFunctions {
@@ -51,14 +51,14 @@ let attackFunctions: IAttackFunctions = {
             },
             onComplete: () => {
                 player.locked = false;
-                player.attackCooldown = 20;
             },
         } );
         player.locked = true;
+        return true;
     },
 
     explosion: (player, world) => {
-        if (!world.map || !world.map.isGrounded(player)) return;
+        if (!world.map || !world.map.isGrounded(player)) return false;
         player.play("cast", {
             onProgress: (frame) => {
                 if (frame === 2) {
@@ -78,7 +78,9 @@ let attackFunctions: IAttackFunctions = {
                         particle.y = player.verticalCenter + radialY * 15;
                         world.particleSystem.add(particle);
                     }
+
                     soundManager.playSound("/sounds/explosion.ogg");
+
                     let cx = player.horizontalCenter;
                     let cy = player.verticalCenter;
                     for (let enemy of world.actorManager.enemies) {
@@ -99,10 +101,10 @@ let attackFunctions: IAttackFunctions = {
             },
             onComplete: () => {
                 player.locked = false;
-                player.attackCooldown = 20;
             },
         } );
         player.locked = true;
+        return true;
     },
 };
 

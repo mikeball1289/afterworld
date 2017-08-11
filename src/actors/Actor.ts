@@ -1,4 +1,5 @@
 import * as EventEmitter from "events";
+import BuffSet from "../buffs/BuffSet";
 import Map from "../world/Map";
 import { repulsionForce } from "../world/physicalConstants";
 import World from "../world/World";
@@ -11,10 +12,12 @@ abstract class Actor extends PIXI.Sprite {
     public fallthrough?: number;
     public weight = 1;
     public id: number;
+    public buffs: BuffSet;
 
     constructor(public world: World) {
         super();
         this.id = Actor.ID_IDX ++;
+        this.buffs = new BuffSet(this, world);
     }
 
     get top() {

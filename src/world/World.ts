@@ -61,6 +61,8 @@ export default class World extends PIXI.Sprite {
         this.currentMapName = startingMap;
         this.currentMapData = mapData[startingMap];
 
+        this.uiManager.inventoryUI.refreshInventoryIcons();
+
         // load up the starting map
         this.loadMap(this.currentMapData, () => {
             this.actorManager.setPlayerSpawn(this.currentMapData.entrances.default);
