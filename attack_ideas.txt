@@ -1,0 +1,20 @@
+Fireball - Launch a fireball that deals damage to the first enemy hit
+Chain Lightning - Zap an enemy with lightning then branch to up to 3 other enemies
+Teleport - Instantly teleport some distance forward
+Living Bomb - Melee attack an enemy to turn it into a living bomb, killing the enemy in the next 5 seconds causes it to explode, dealing damage and knocking back nearby enemies
+Familiar - Summon a familiar that makes your attacks stronger and fires a ball of energy whenever you attack
+Explosion - Summon an explosion around yourself that deals damage and knocks back nearby enemies. More damage and knockback near the center
+
+Backstab - If you hit an enemy from behind, deal 200% damage, otherwise deal 50%
+Ambush - Quickly attack 6 times
+Shadow Strike - Turn into a shadow and quickly dash forward, running your dagger through all enemies you pass through
+Shadow Meld - Melt into the shadows for 15 seconds, passing through enemies unhindered and becoming invisible to non-elite enemies. Dealing or taking damage ends this effect early
+Envenom - Coat your weapon with poison, the next 3 times you deal damage apply a poison DoT to the enemy hit
+Nimble - Move 15% faster for 10 seconds
+
+Cleave - Deal bonus damage to the first enemy hit and normal damage to up to 2 other enemies
+Lance - Stab a large area in front of you, dealing damage to all enemies hit
+Buckle Down - Take 50% reduced damage and don't get knocked back from attacks for 4 seconds
+Tremor - Emit a shockwave that stuns nearby enemies
+Leap - Launch yourself into the air twice as high as you normally jump
+Bloodlust - Deal 50% increased damage for 6 seconds. Killing an enemy refreshes the duration.
