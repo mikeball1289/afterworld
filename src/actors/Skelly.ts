@@ -7,7 +7,7 @@ import Map from "../world/Map";
 import { EPSILON, GRAVITY } from "../world/physicalConstants";
 import World from "../world/World";
 import Enemy from "./Enemy";
-import PlayerCharacter from "./PlayerCharacter";
+import Player from "./Player";
 
 enum MovementStates {
     IDLE,
@@ -120,6 +120,7 @@ export default class Skelly extends Enemy {
     }
 
     public frameUpdate() {
+        super.frameUpdate();
         this.healthBar.x = this.horizontalCenter;
         this.healthBar.y = this.top - 40;
     }
@@ -178,7 +179,7 @@ export default class Skelly extends Enemy {
         this.world = <any> undefined;
     }
 
-    public updateImpulse(map: Map, player?: PlayerCharacter): void {
+    public updateImpulse(map: Map, player?: Player): void {
         if (this.state === MovementStates.DEAD) return;
         if (!map.isGrounded(this)) {
             this.velocity.y += GRAVITY;
@@ -199,33 +200,47 @@ export default class Skelly extends Enemy {
             this.attackCooldown --;
         }
 
-        switch (this.state) {
-            case MovementStates.WALKING: {
-                this.walkingUpdate(map, player);
-                break;
+        // switch (this.state) {
+        //     case MovementStates.WALKING: {
+        //         this.walkingUpdate(map, player);
+        //         break;
+        //     }
+        //     case MovementStates.CHASING: {
+        //         this.chasingUpdate(map, player);
+        //         break;
+        //     }
+        //     case MovementStates.ATTACKING: {
+        //         this.attackingUpdate(map, player);
+        //         break;
+        //     }
+        //     case MovementStates.IDLE:
+        //     default: {
+        //         this.idleUpdate(map, player);
+        //         break;
+        //     }
+        // }
+        if (this.buffs.hasCondition("stunned")) {
+            if (this.state === MovementStates.ATTACKING) {
+                this.state = MovementStates.CHASING;
             }
-            case MovementStates.CHASING: {
-                this.chasingUpdate(map, player);
-                break;
-            }
-            case MovementStates.ATTACKING: {
-                this.attackingUpdate(map, player);
-                break;
-            }
-            case MovementStates.IDLE:
-            default: {
-                this.idleUpdate(map, player);
-                break;
-            }
+            this.idleUpdate(map, player);
+        } else if (this.state === MovementStates.IDLE || this.buffs.hasCondition("stunned")) {
+            this.idleUpdate(map, player);
+        } else if (this.state === MovementStates.WALKING) {
+            this.walkingUpdate(map, player);
+        } else if (this.state === MovementStates.ATTACKING) {
+            this.attackingUpdate(map, player);
+        } else if (this.state === MovementStates.CHASING) {
+            this.chasingUpdate(map, player);
         }
     }
 
-    private attackingUpdate(map: Map, player?: PlayerCharacter) {
+    private attackingUpdate(map: Map, player?: Player) {
         this.velocity.x *= IDLE_GROUNDED_DECAY;
         if (Math.abs(this.velocity.x) < EPSILON) this.velocity.x = 0;
     }
 
-    private idleUpdate(map: Map, player?: PlayerCharacter) {
+    private idleUpdate(map: Map, player?: Player) {
         this.stand();
         if (Math.random() < 1 / 300) {
             this.state = MovementStates.WALKING;
@@ -245,7 +260,7 @@ export default class Skelly extends Enemy {
         }
     }
 
-    private walkingUpdate(map: Map, player?: PlayerCharacter) {
+    private walkingUpdate(map: Map, player?: Player) {
         if (!this.isFearless(map)) {
             if (this.direction < 0 && !Map.isWalkable(map.getPixelData(this.left, this.bottom))) {
                 this.direction = 1;
@@ -274,7 +289,7 @@ export default class Skelly extends Enemy {
         }
     }
 
-    private chasingUpdate(map: Map, player?: PlayerCharacter) {
+    private chasingUpdate(map: Map, player?: Player) {
         if (!player) {
             this.state = MovementStates.WALKING;
             return this.updateImpulse(map, player);
@@ -330,7 +345,7 @@ export default class Skelly extends Enemy {
                 onProgress: (frame) => {
                     if (frame === 3) {
                         soundManager.playSound("/sounds/skelly_scratch.ogg", 1, "scratch");
-                        player.applyDamage(Math.floor(Math.random() * 2), new PIXI.Point());
+                        player.applyDamage(Math.floor(Math.random() * 2 + 1), new PIXI.Point());
                     }
                 },
                 onComplete: () => {

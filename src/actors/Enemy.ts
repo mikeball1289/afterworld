@@ -6,9 +6,17 @@ import NonPlayerActor from "./NonPlayerActor";
 const smacks = ["/sounds/hit_smack1.ogg", "/sounds/hit_smack1.ogg"];
 
 abstract class Enemy extends NonPlayerActor implements ICombatObject {
+
+    public static isEnemy(obj: any): obj is Enemy {
+        return obj && obj.isAnEnemy;
+    }
+
     public health: number = 0;
+    private isAnEnemy = true;
+
     public abstract isDead(): boolean;
     public abstract die(damage: number, knockback: PIXI.Point): void;
+
     public applyAttack(damage: number, knockback: PIXI.Point) {
         if (this.isDead()) return false;
 

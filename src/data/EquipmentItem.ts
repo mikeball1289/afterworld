@@ -1,4 +1,4 @@
-import PlayerCharacter from "../actors/PlayerCharacter";
+import Player from "../actors/Player";
 import World from "../world/World";
 import { IEquipmentSlots } from "./Inventory";
 import InventoryItem from "./InventoryItem";
@@ -14,7 +14,7 @@ export default class EquipmentItem extends InventoryItem {
         this.type = "equipment";
     }
 
-    public addEquipmentGraphic(player: PlayerCharacter) {
+    public addEquipmentGraphic(player: Player) {
         switch (this.equipmentType) {
             case "head": {
                 player.body.head.loadTexturePackerFrames(SPRITE_ASSET_ROOT + this.sheetName + "_head.png",

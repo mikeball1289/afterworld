@@ -130,12 +130,18 @@ export default class Animator<T extends IActionMap> extends PIXI.Sprite {
             if (this.onComplete !== undefined) {
                 this.onComplete.call(this.onCompleteContext);
             }
+        }
+
+        // the on complete callback could have mutated our state, so before continuing with loop / idle make sure we 
+        // actually still have to
+        if (Math.floor(this.currentFrame) >= this.animations[this.currentAnimation][1]) {
             if (this.loop) {
                 this.currentFrame -= this.animations[this.currentAnimation][1];
             } else {
                 this.play(this.idle, { loop: true, override: true } );
             }
         }
+
         this.texture = this.frames[this.animations[this.currentAnimation][0]][Math.floor(this.currentFrame)];
         if (Math.floor(this.currentFrame) !== Math.floor(previousFrame)) {
             if (this.onProgress) this.onProgress.call(this.onProgressContext, Math.floor(this.currentFrame));

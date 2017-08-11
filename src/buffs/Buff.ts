@@ -2,23 +2,36 @@ import Actor from "../actors/Actor";
 import World from "../world/World";
 
 export type BuffEvent = "dealDamage" | "takeDamage" | "die" | "attack" | "damageDealt" | "killedEnemy" | "getStats" | "frame";
+export type ConditionType = "invisible" | "intangible" | "stunned";
 
-abstract class Buff {
+export interface IStatBox {
+    stat: string;
+    amount: number;
+}
+
+export default class Buff {
 
     constructor(public id: number, public name: string, public source: string, public duration: number) { }
 
-    public abstract onCreate(actor: Actor, world: World): void;
-    public abstract onExpire(actor: Actor, world: World): void;
+    public onCreate(actor: Actor, world: World): void {
+        return;
+    }
+    public onExpire(actor: Actor, world: World): void {
+        return;
+    }
+    public hasCondition(condition: ConditionType): boolean {
+        return false;
+    }
 
-    public abstract onEvent(name: "dealDamage", payload: number): number;
-    public abstract onEvent(name: "takeDamage", payload: number): number;
-    public abstract onEvent(name: "die"): void;
-    public abstract onEvent(name: "attack"): void;
-    public abstract onEvent(name: "damageDealt", payload: Actor): void;
-    public abstract onEvent(name: "killedEnemy", payload: Actor): void;
-    public abstract onEvent(name: "getStats", payload: { stat: string, amount: number }): number;
-    public abstract onEvent(name: "frame"): void;
-    public abstract onEvent(name: BuffEvent, payload?: any): any;
+    public onEvent(name: "dealDamage", payload: number): number;
+    public onEvent(name: "takeDamage", payload: number): number;
+    public onEvent(name: "die"): void;
+    public onEvent(name: "attack"): void;
+    public onEvent(name: "damageDealt", payload: Actor): void;
+    public onEvent(name: "killedEnemy", payload: Actor): void;
+    public onEvent(name: "getStats", payload: IStatBox): IStatBox;
+    public onEvent(name: "frame"): void;
+    public onEvent(name: BuffEvent, payload?: any): any {
+        return payload;
+    }
 }
-
-export default Buff;

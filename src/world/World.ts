@@ -23,6 +23,7 @@ export default class World extends PIXI.Sprite {
     private currentMapData: IMapDataObject;
     private currentMapName: MapName;
     private queueMapTransition?: keyof typeof mapData;
+    private grayFilter: PIXI.GrayFilter;
 
     private virtualPosition = { x: 0, y: 0 };
 
@@ -33,6 +34,7 @@ export default class World extends PIXI.Sprite {
     // NPC data
     private npcs: NPC[] = [];
     private npcLayer: PIXI.Container;
+    private filterList: PIXI.Filter[] = [];
 
     constructor(startingMap: MapName, public screenWidth: number, public screenHeight: number) {
         super();
@@ -62,6 +64,7 @@ export default class World extends PIXI.Sprite {
         this.currentMapData = mapData[startingMap];
 
         this.uiManager.inventoryUI.refreshInventoryIcons();
+        this.grayFilter = new PIXI.GrayFilter();
 
         // load up the starting map
         this.loadMap(this.currentMapData, () => {
@@ -156,7 +159,6 @@ export default class World extends PIXI.Sprite {
     }
 
     public dieDialogue() {
-        let filter = new PIXI.GrayFilter();
         let grayscale = 0;
         let fade = () => {
             grayscale += 1 / 60;
@@ -165,10 +167,11 @@ export default class World extends PIXI.Sprite {
                 this.uiManager.displayNPCText(ArchangelNPCData);
                 juggler.remove(fade);
             }
-            filter.gray = grayscale;
+            this.grayFilter.gray = grayscale;
         };
-        filter.gray = grayscale;
-        this.worldContainer.filters = [filter];
+        this.grayFilter.gray = grayscale;
+        // this.worldContainer.filters = [filter];
+        this.useFilter(this.grayFilter);
         juggler.add(fade);
         this.transitionTimer = 0;
         this.queueMapTransition = undefined;
@@ -186,8 +189,21 @@ export default class World extends PIXI.Sprite {
             juggler.add(oef);
         } else {
             this.actorManager.player.setAlive(0.5);
-            this.worldContainer.filters = [];
+            // this.worldContainer.filters = [];
+            this.removeFilter(this.grayFilter);
         }
+    }
+
+    public useFilter(filter: PIXI.Filter) {
+        this.filterList.push(filter);
+        this.worldContainer.filters = this.filterList;
+    }
+
+    public removeFilter(filter: PIXI.Filter) {
+        if (!this.filterList) return;
+        let idx = this.filterList.indexOf(filter);
+        if (idx >= 0) this.filterList.splice(idx, 1);
+        this.worldContainer.filters = this.filterList;
     }
 
     public update() {
@@ -253,7 +269,7 @@ export default class World extends PIXI.Sprite {
         if (this.actorManager.player.isDead()) {
             if (revivePlayer) {
                 this.actorManager.player.setAlive(0.5);
-                this.worldContainer.filters = [];
+                this.removeFilter(this.grayFilter);
             } else {
                 this.fadeBlocker.visible = false;
                 return;

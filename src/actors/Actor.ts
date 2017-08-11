@@ -77,7 +77,9 @@ abstract class Actor extends PIXI.Sprite {
 
     public abstract updateImpulse(map: Map): void;
     public abstract handleCollisions(collisions: [boolean, boolean]): void;
-    public abstract frameUpdate(): void;
+    public frameUpdate(): void {
+        this.buffs.tick();
+    }
 }
 
 export default Actor;

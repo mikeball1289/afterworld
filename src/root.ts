@@ -197,6 +197,10 @@ class Controls {
             case InputType.INTERACT: return keyboard.isKeyDown(Key.ENTER) || controller.getButton(ControllerButton.Y);
             case InputType.PRIMARY_ATTACK: return keyboard.isKeyDown(Key.A) || controller.getButton(ControllerButton.X);
             case InputType.SECONDARY_ATTACK: return keyboard.isKeyDown(Key.S) || controller.getButton(ControllerButton.B);
+            case InputType.ABILITY_1: return keyboard.isKeyDown(Key.Q) || controller.getButton(ControllerButton.LB);
+            case InputType.ABILITY_2: return keyboard.isKeyDown(Key.W) || controller.getButton(ControllerButton.LT);
+            case InputType.ABILITY_3: return keyboard.isKeyDown(Key.E) || controller.getButton(ControllerButton.RT);
+            case InputType.ABILITY_4: return keyboard.isKeyDown(Key.R) || controller.getButton(ControllerButton.RB);
             case InputType.INVENTORY: return keyboard.isKeyDown(Key.I) || controller.getButton(ControllerButton.SELECT);
             default: return false;
         }

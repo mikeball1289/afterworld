@@ -1,3 +1,5 @@
+import Player from "../actors/Player";
+import * as pc from "../world/physicalConstants";
 import World from "../world/World";
 
 export default class PlayerStats {
@@ -12,7 +14,7 @@ export default class PlayerStats {
         return this._health;
     }
 
-    constructor(private world: World) {
+    constructor(private player: Player, private world: World) {
         this.fullHeal();
     }
 
@@ -20,5 +22,13 @@ export default class PlayerStats {
         let diff = this.maxHealth - this.health;
         this.health = this.maxHealth;
         return diff;
+    }
+
+    public jumpPower() {
+        return this.player.buffs.process("getStats", { stat: "jumpPower", amount: pc.JUMP_POWER });
+    }
+
+    public walkSpeed() {
+        return this.player.buffs.process("getStats", { stat: "walkSpeed", amount: pc.WALK_IMPULSE });
     }
 }

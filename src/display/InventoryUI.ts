@@ -48,7 +48,6 @@ export default class InventoryUI extends JuggledSprite {
 
     public onEnterFrame() {
         if (!this.isOpen()) {
-            console.log(controls.hasLeadingEdge(InputType.INVENTORY));
             if (!this.world.uiManager.hasInteractiveUI() && controls.hasLeadingEdge(InputType.INVENTORY)) {
                 this.open();
             }

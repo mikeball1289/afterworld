@@ -1,6 +1,6 @@
 import Actor from "../actors/Actor";
 import World from "../world/World";
-import Buff, { BuffEvent } from "./Buff";
+import Buff, { BuffEvent, ConditionType } from "./Buff";
 
 export default class BuffSet {
 
@@ -17,12 +17,33 @@ export default class BuffSet {
         for (let i = this.buffs.length - 1; i >= 0; i --) {
             this.buffs[i].duration --;
             if (this.buffs[i].duration <= 0) {
-                this.buffs[i].onExpire(this.actor, this.world);
                 this.buffs.splice(i, 1);
+                this.buffs[i].onExpire(this.actor, this.world);
             } else {
                 this.buffs[i].onEvent("frame");
             }
         }
+    }
+
+    public hasCondition(condition: ConditionType): boolean {
+        for (let buff of this.buffs) {
+            if (buff.hasCondition(condition)) return true;
+        }
+        return false;
+    }
+
+    public hasBuff(name: string) {
+        for (let buff of this.buffs) {
+            if (buff.name === name) return buff;
+        }
+        return undefined;
+    }
+
+    public hasBuffFromSource(source: string) {
+        for (let buff of this.buffs) {
+            if (buff.source === source) return buff;
+        }
+        return undefined;
     }
 
     public process(name: "dealDamage", payload: number): number;
@@ -38,23 +59,25 @@ export default class BuffSet {
             case "takeDamage": {
                 let damage: number = payload;
                 for (let buff of this.buffs) {
-                    damage = buff.onEvent(name, damage);
+                    damage = buff.onEvent(<any> name, damage);
                 }
-                break;
+                return damage;
             }
             case "getStats": {
                 let statAmount: number = payload.amount;
                 for (let buff of this.buffs) {
-                    statAmount = buff.onEvent(name, { stat: payload.stat, amount: statAmount });
+                    statAmount = buff.onEvent(<any> name, { stat: payload.stat, amount: statAmount }).amount;
                 }
+                return statAmount;
             }
             case "die":
             case "attack":
             case "damageDealt":
             case "killedEnemy": {
                 for (let buff of this.buffs) {
-                    buff.onEvent(name, payload);
+                    buff.onEvent(<any> name, payload);
                 }
+                return;
             }
             default: return;
         }

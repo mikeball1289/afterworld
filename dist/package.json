@@ -1,17 +1,13 @@
 {
-  "name": "sample",
+  "name": "afterworld",
   "main": "index.html",
   "window": {
-    "title": "Something",
+    "title": "AfterWorld",
     "width": 1072,
     "height": 603,
     "resizable": true
   },
   "version": "1.0.0",
-  "dependencies": {
-    "pixi-display": "^1.1.1",
-    "pixi.js": "^4.5.3"
-  },
   "description": "typescript + nw game",
   "repository": "https://www.github.com/HypoLast/",
   "license": "ISC",

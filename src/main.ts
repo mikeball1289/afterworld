@@ -7,7 +7,7 @@ import World from "./world/World";
 export function preload(images: string[]): void;
 export function preload(all: boolean): void;
 export function preload(arg: boolean | string[]) {
-    let app = new PIXI.Application(1072, 603, { backgroundColor: 0x323438, antialias: false });
+    let app = new PIXI.Application(1072, 603, { backgroundColor: 0x323438, antialias: false }); // uv coords are 2048 x 1024
     PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
     document.body.appendChild(app.view);
 

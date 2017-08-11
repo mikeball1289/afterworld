@@ -1,13 +1,13 @@
 import Actor from "../Actors/Actor";
 import Enemy from "../Actors/Enemy";
-import PlayerCharacter from "../Actors/PlayerCharacter";
+import Player from "../Actors/Player";
 import mergeSort from "../mergeSort";
 import Map from "./Map";
 import { IMapDataObject } from "./mapData";
 import World from "./World";
 
 export default class ActorManager extends PIXI.Container {
-    public player: PlayerCharacter;
+    public player: Player;
 
     public enemies: Enemy[] = [];
     private actorLayer: PIXI.Container;
@@ -17,7 +17,7 @@ export default class ActorManager extends PIXI.Container {
         this.actorLayer = new PIXI.Container();
         this.addChild(this.actorLayer);
 
-        this.player = new PlayerCharacter(world);
+        this.player = new Player(world);
         this.actorLayer.addChild(this.player);
     }
 
@@ -72,7 +72,7 @@ export default class ActorManager extends PIXI.Container {
         if (this.enemies.length > 0) this.enemies[this.enemies.length - 1].repel(this.player);
 
         this.actorLayer.children = mergeSort(this.actorLayer.children, (a: Actor, b: Actor) => (a.bottom - b.bottom) ||
-            ((a instanceof PlayerCharacter) ? -1 : (b instanceof PlayerCharacter) ? 1 : 0) );
+            ((a instanceof Player) ? -1 : (b instanceof Player) ? 1 : 0) );
 
         this.player.handleCollisions(map.move(this.player));
         for (let enemy of this.enemies) {

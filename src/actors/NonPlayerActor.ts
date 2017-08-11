@@ -1,9 +1,9 @@
 import Map from "../world/Map";
 import Actor from "./Actor";
-import PlayerCharacter from "./PlayerCharacter";
+import Player from "./Player";
 
 abstract class NonPlayerActor extends Actor {
-    public abstract updateImpulse(map: Map, player?: PlayerCharacter): void;
+    public abstract updateImpulse(map: Map, player?: Player): void;
 }
 
 export default NonPlayerActor;

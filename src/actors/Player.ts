@@ -46,20 +46,20 @@ controlLockInputs[ControlLocks.SECONDARY_ATTACK] = InputType.SECONDARY_ATTACK;
 
 const BODY_ANIMATION_KEYS: (keyof IBodyAnimations)[] = ["back_hand", "feet", "legs", "body", "head", "weapon", "front_hand", "front_arm"];
 
-export default class PlayerCharacter extends Actor {
+export default class Player extends Actor {
     public healthBar: HealthBar;
-    public locked: boolean = false;
+    public attacking: boolean = false;
     public attackCooldown: number = 0;
     public inventory: Inventory;
     public body: IBodyAnimations;
+
+    public stats: PlayerStats;
 
     private jumpBuffer: boolean = true;
     private sprite: PIXI.Sprite;
     private deathFrame: PIXI.Sprite;
     private tintTimer = 0;
     private controlLocks: boolean[] = [];
-
-    private stats: PlayerStats;
 
     private _direction: 1 | -1 = 1;
     set direction(val: 1 | -1) {
@@ -72,7 +72,7 @@ export default class PlayerCharacter extends Actor {
 
     constructor(world: World) {
         super(world);
-        this.stats = new PlayerStats(world);
+        this.stats = new PlayerStats(this, world);
         this.sprite = new PIXI.Sprite();
         this.addChild(this.sprite);
         this.inventory = new Inventory(world);
@@ -120,7 +120,7 @@ export default class PlayerCharacter extends Actor {
     }
 
     public play(animation: keyof PlayerAnimations, options?: IAnimatorOptions) {
-        if (this.locked) return;
+        if (this.attacking) return;
         let partialOptions = {
             loop: options && options.loop,
             override: options && options.override,
@@ -131,6 +131,16 @@ export default class PlayerCharacter extends Actor {
             } else {
                 this.body[key].play(animation, partialOptions);
             }
+        }
+    }
+
+    public get fps(): number {
+        return this.body.head.fps;
+    }
+
+    public set fps(val: number) {
+        for (let key of BODY_ANIMATION_KEYS) {
+            this.body[key].fps = val;
         }
     }
 
@@ -157,27 +167,44 @@ export default class PlayerCharacter extends Actor {
         }
 
         let grounded = map.isGrounded(this);
-        getControls = getControls && !this.locked;
+        getControls = getControls && !this.attacking;
 
-        if (this.hasUseableInput(InputType.PRIMARY_ATTACK, getControls) && this.attackCooldown <= 0) {
-            if (attackFunctions.basicAttack(this, this.world)) {
-                this.attackCooldown = 40;
+        if (this.attackCooldown <= 0) {
+            if (this.hasUseableInput(InputType.PRIMARY_ATTACK, getControls)) {
+                if (attackFunctions.basicAttack(this, this.world)) {
+                    this.attackCooldown = 55;
+                }
+            } else if (this.hasUseableInput(InputType.SECONDARY_ATTACK, getControls)) {
+                if (attackFunctions.explosion(this, this.world)) {
+                    this.attackCooldown = 55;
+                }
+            } else if (this.hasUseableInput(InputType.ABILITY_1, getControls)) {
+                if (attackFunctions.teleport(this, this.world)) {
+                    this.attackCooldown = 55;
+                }
+            } else if (this.hasUseableInput(InputType.ABILITY_2, getControls)) {
+                if (attackFunctions.tremor(this, this.world)) {
+                    this.attackCooldown = 55;
+                }
+            } else if (this.hasUseableInput(InputType.ABILITY_3, getControls)) {
+                if (attackFunctions.ambush(this, this.world)) {
+                    this.attackCooldown = 55;
+                }
+            } else if (this.hasUseableInput(InputType.ABILITY_4, getControls)) {
+                if (attackFunctions.leap(this, this.world)) {
+                    this.attackCooldown = 55;
+                }
             }
         }
-        if (this.hasUseableInput(InputType.SECONDARY_ATTACK, getControls) && this.attackCooldown <= 0) {
-            if (attackFunctions.explosion(this, this.world)) {
-                this.attackCooldown = 40;
-            }
-        }
-        getControls = getControls && !this.locked;
+        getControls = getControls && !this.attacking;
 
         if (grounded) {
             if (this.hasUseableInput(InputType.LEFT, getControls)) {
-                this.velocity.x -= PC.WALK_IMPULSE;
+                this.velocity.x -= this.stats.walkSpeed();
                 this.direction = -1;
                 this.play("walk", { loop: true });
             } else if (this.hasUseableInput(InputType.RIGHT, getControls)) {
-                this.velocity.x += PC.WALK_IMPULSE;
+                this.velocity.x += this.stats.walkSpeed();
                 this.direction = 1;
                 this.play("walk", { loop: true });
             } else {
@@ -198,7 +225,7 @@ export default class PlayerCharacter extends Actor {
                         soundManager.playSound("/sounds/jump_pop.ogg", 0.2);
                     }
                 } else {
-                    this.velocity.y = -PC.JUMP_POWER;
+                    this.velocity.y = -this.stats.jumpPower();
                     this.jumpBuffer = false;
                     soundManager.playSound("/sounds/jump_pop.ogg", 0.2);
                 }
@@ -217,7 +244,7 @@ export default class PlayerCharacter extends Actor {
                 if (this.velocity.x < 0) this.velocity.x = this.velocity.x * PC.FULL_HORIZONTAL_DECAY;
                 if (this.velocity.x < PC.HORIZONTAL_THRESHOLD) this.velocity.x += PC.AERIAL_IMPULSE;
             } else {
-                if (Math.abs(this.velocity.x) > PC.FULL_HORIZONTAL_DECAY / (1 - PC.FULL_HORIZONTAL_DECAY) * PC.WALK_IMPULSE) this.velocity.x *= PC.FULL_HORIZONTAL_DECAY;
+                if (Math.abs(this.velocity.x) > PC.FULL_HORIZONTAL_DECAY / (1 - PC.FULL_HORIZONTAL_DECAY) * this.stats.walkSpeed()) this.velocity.x *= PC.FULL_HORIZONTAL_DECAY;
                 else this.velocity.x *= PC.AERIAL_HORIZONTAL_DECAY;
             }
         }
@@ -279,6 +306,8 @@ export default class PlayerCharacter extends Actor {
     }
 
     public frameUpdate() {
+        super.frameUpdate();
+
         if (this.attackCooldown > 0) {
             this.attackCooldown --;
         }
