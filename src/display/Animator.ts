@@ -32,12 +32,17 @@ export default class Animator<T extends IActionMap> extends PIXI.Sprite {
     private jup: () => void;
     private loader?: PIXI.loaders.Loader;
 
+    constructor(spriteSheet: undefined, frames: undefined, animations: T, idle: keyof T, fps?: number);
     constructor(spriteSheet: PIXI.Texture, frameSize: PIXI.Point, animations: T, idle: keyof T, fps?: number);
     constructor(spriteSheet: PIXI.Texture, frameData: any, animations: T, idle: keyof T, fps?: number);
-    constructor(private spriteSheet: PIXI.Texture, frameSize: any, private animations: T, private idle: keyof T, public fps = 12) {
+    constructor(private spriteSheet: PIXI.Texture | undefined, frameSize: any, private animations: T, private idle: keyof T, public fps = 12) {
         super();
         this.tints = new TintBatch();
         this.currentAnimation = idle;
+
+        this.jup = () => this.update(this.fps / 60);
+        juggler.add(this.jup);
+        if (!spriteSheet) return;
         for (let ani in animations) {
             if (!animations.hasOwnProperty(ani)) continue;
             let frames = [];
@@ -54,8 +59,6 @@ export default class Animator<T extends IActionMap> extends PIXI.Sprite {
             }
             this.frames[row] = frames;
         }
-        this.jup = () => this.update(this.fps / 60);
-        juggler.add(this.jup);
     }
 
     // this is a pretty narrow function, basically useful for swapping out sprite sheets on the
@@ -86,7 +89,7 @@ export default class Animator<T extends IActionMap> extends PIXI.Sprite {
                     frame.destroy();
                 }
             }
-            this.spriteSheet.destroy(true);
+            if (this.spriteSheet) this.spriteSheet.destroy(true);
             this.spriteSheet = sheet;
             this.frames = newFrames;
             this.loader = undefined;
@@ -147,7 +150,9 @@ export default class Animator<T extends IActionMap> extends PIXI.Sprite {
             }
         }
 
-        this.texture = this.frames[this.animations[this.currentAnimation][0]][Math.floor(this.currentFrame)];
+        if (this.spriteSheet) {
+            this.texture = this.frames[this.animations[this.currentAnimation][0]][Math.floor(this.currentFrame)];
+        }
         if (Math.floor(this.currentFrame) !== Math.floor(previousFrame)) {
             if (this.onProgress) this.onProgress.call(this.onProgressContext, Math.floor(this.currentFrame));
         }

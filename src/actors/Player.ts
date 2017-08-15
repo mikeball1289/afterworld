@@ -90,14 +90,14 @@ export default class Player extends Actor {
             cast: [5, 4],
         };
         this.body = {
-            front_arm: new Animator(PIXI.loader.resources["/sprites/front_arm_base.png"].texture, JSON.parse(PIXI.loader.resources["/sprites/front_arm_base.json"].data), frameData, "idle", 6),
-            weapon: new Animator(PIXI.loader.resources["/sprites/weapon_base.png"].texture, JSON.parse(PIXI.loader.resources["/sprites/weapon_base.json"].data), frameData, "idle", 6),
-            head: new Animator(PIXI.loader.resources["/sprites/head_base.png"].texture, JSON.parse(PIXI.loader.resources["/sprites/head_base.json"].data), frameData, "idle", 6),
-            body: new Animator(PIXI.loader.resources["/sprites/body_base.png"].texture, JSON.parse(PIXI.loader.resources["/sprites/body_base.json"].data), frameData, "idle", 6),
-            legs: new Animator(PIXI.loader.resources["/sprites/legs_base.png"].texture, JSON.parse(PIXI.loader.resources["/sprites/legs_base.json"].data), frameData, "idle", 6),
-            feet: new Animator(PIXI.loader.resources["/sprites/feet_base.png"].texture, JSON.parse(PIXI.loader.resources["/sprites/feet_base.json"].data), frameData, "idle", 6),
-            front_hand: new Animator(PIXI.loader.resources["/sprites/front_hand_base.png"].texture, JSON.parse(PIXI.loader.resources["/sprites/front_hand_base.json"].data), frameData, "idle", 6),
-            back_hand: new Animator(PIXI.loader.resources["/sprites/back_hand_base.png"].texture, JSON.parse(PIXI.loader.resources["/sprites/back_hand_base.json"].data), frameData, "idle", 6),
+            front_arm: new Animator(undefined, undefined, frameData, "idle", 6),
+            weapon: new Animator(undefined, undefined, frameData, "idle", 6),
+            head: new Animator(undefined, undefined, frameData, "idle", 6),
+            body: new Animator(undefined, undefined, frameData, "idle", 6),
+            legs: new Animator(undefined, undefined, frameData, "idle", 6),
+            feet: new Animator(undefined, undefined, frameData, "idle", 6),
+            front_hand: new Animator(undefined, undefined, frameData, "idle", 6),
+            back_hand: new Animator(undefined, undefined, frameData, "idle", 6),
         };
         for (let key of BODY_ANIMATION_KEYS) {
             this.sprite.addChild(this.body[key]);
@@ -124,6 +124,8 @@ export default class Player extends Actor {
             let equip = this.inventory.equipment[slot];
             if (equip) {
                 equip.addEquipmentGraphic(this);
+            } else {
+                this.unsetEquipmentGraphic(slot);
             }
         }
     }

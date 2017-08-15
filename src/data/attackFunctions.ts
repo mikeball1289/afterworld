@@ -270,8 +270,8 @@ export function cleave(player: Player, world: World) {
             });
 
             let particle = new GenericEffectParticle(20, fromTextureCache("/images/particles.png", 21, 0, 48, 17));
-            particle.x = player.horizontalCenter + 40 * player.direction;
-            particle.y = player.verticalCenter;
+            particle.x = player.horizontalCenter + (player.inventory.equipment.weapon!.range / 2 + 10) * player.direction;
+            particle.y = player.verticalCenter + 10;
             particle.scale.x = player.direction;
             particle.velocity.x = 2 * player.direction;
             world.particleSystem.add(particle);
