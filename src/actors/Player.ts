@@ -1,7 +1,7 @@
 import ColorTweener from "../ColorTweener";
-import * as attackFunctions from "../data/attackFunctions";
 import Inventory, { IEquipmentSlots } from "../data/Inventory";
 import PlayerStats from "../data/PlayerStats";
+import * as skillFunctions from "../data/skillFunctions";
 import Animator, { IAnimatorOptions } from "../display/Animator";
 import HealthBar from "../display/HealthBar";
 import DamageParticle from "../particlesystem/DamageParticle";
@@ -215,27 +215,27 @@ export default class Player extends Actor {
 
         if (this.globalCooldown <= 0) {
             if (this.hasUseableInput(InputType.PRIMARY_ATTACK, getControls)) {
-                if (attackFunctions.cleave(this, this.world)) {
+                if (skillFunctions.cleave(this, this.world)) {
                     this.globalCooldown = 55;
                 }
             } else if (this.hasUseableInput(InputType.SECONDARY_ATTACK, getControls)) {
-                if (attackFunctions.explosion(this, this.world)) {
+                if (skillFunctions.explosion(this, this.world)) {
                     this.globalCooldown = 55;
                 }
             } else if (this.hasUseableInput(InputType.ABILITY_1, getControls)) {
-                if (attackFunctions.teleport(this, this.world)) {
+                if (skillFunctions.teleport(this, this.world)) {
                     this.globalCooldown = 55;
                 }
             } else if (this.hasUseableInput(InputType.ABILITY_2, getControls)) {
-                if (attackFunctions.envenom(this, this.world)) {
+                if (skillFunctions.envenom(this, this.world)) {
                     this.globalCooldown = 55;
                 }
             } else if (this.hasUseableInput(InputType.ABILITY_3, getControls)) {
-                if (attackFunctions.ambush(this, this.world)) {
+                if (skillFunctions.ambush(this, this.world)) {
                     this.globalCooldown = 55;
                 }
             } else if (this.hasUseableInput(InputType.ABILITY_4, getControls)) {
-                if (attackFunctions.leap(this, this.world)) {
+                if (skillFunctions.leap(this, this.world)) {
                     this.globalCooldown = 55;
                 }
             }

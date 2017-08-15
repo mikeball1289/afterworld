@@ -10,21 +10,8 @@ import { fromTextureCache } from "../pixiTools";
 import { juggler, soundManager } from "../root";
 import World from "../world/World";
 
-export interface IAttackFunction {
+export interface ISkillFunction {
     (player: Player, world: World): boolean;
-}
-
-interface IAttackFunctions {
-    basicAttack: IAttackFunction;
-
-    explosion: IAttackFunction;
-    teleport: IAttackFunction;
-
-    tremor: IAttackFunction;
-    leap: IAttackFunction;
-
-    ambush: IAttackFunction;
-    envenom: IAttackFunction;
 }
 
 const swishes = ["/sounds/swish1.ogg", "/sounds/swish2.ogg", "/sounds/swish3.ogg"];
