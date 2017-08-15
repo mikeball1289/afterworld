@@ -2,6 +2,7 @@ import { fromTextureCache } from "../pixiTools";
 import World from "../world/World";
 import EquipmentItem from "./EquipmentItem";
 import InventoryItem from "./InventoryItem";
+import * as ItemFactory from "./ItemFactory";
 import WeaponItem from "./WeaponItem";
 
 export interface IEquipmentSlots {
@@ -19,19 +20,31 @@ export interface IEquipmentSlots {
 export default class Inventory {
     public static INVENTORY_SIZE = 36;
 
-    public inventoryItems: (InventoryItem | undefined)[] = [];
+    public inventoryItems: (InventoryItem | undefined)[] = [
+        ItemFactory.constructItem("weapon", ItemFactory.itemData.heros_sword),
+    ];
     public equipment: IEquipmentSlots = {
         head: undefined,
         neck: undefined,
-        body: new EquipmentItem(fromTextureCache("/images/item_sheet.png", 0, 0, 40, 40),
-                                    "body", "Cloth Shirt", "cloth_shirt", "A simple cloth shirt"),
+        body: ItemFactory.constructItem("equip", ItemFactory.itemData.cloth_shirt),
         legs: undefined,
         feet: undefined,
         trinket: undefined,
-        weapon: new WeaponItem(fromTextureCache("/images/item_sheet.png", 40, 0, 40, 40), "Iron Dagger", "iron_dagger", "A simple iron dagger", 40),
+        weapon: ItemFactory.constructItem("weapon", ItemFactory.itemData.iron_dagger),
         offhand: undefined,
         gloves: undefined,
     };
 
     constructor(private world: World) { }
+
+    public addItem(item: InventoryItem) {
+        for (let i = 0; i < Inventory.INVENTORY_SIZE; i ++) {
+            if (this.inventoryItems[i] === undefined) {
+                this.inventoryItems[i] = item;
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

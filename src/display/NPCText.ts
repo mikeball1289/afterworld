@@ -121,7 +121,7 @@ export default class NPCText extends JuggledSprite {
             this.highlightOption(this.selectedOption);
         }
 
-        if (controls.hasLeadingEdge(InputType.JUMP)) {
+        if (controls.hasLeadingEdge(InputType.CONFIRM)) {
             if (this.progress < this.showText.length) {
                 this.showAll();
             } else {

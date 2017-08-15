@@ -116,11 +116,48 @@ export default class Player extends Actor {
         this.deathFrame.x = this.size.x / 2;
         this.deathFrame.y = this.size.y;
 
+        this.loadEquipment();
+    }
+
+    public loadEquipment() {
         for (let slot of <(keyof IEquipmentSlots)[]> Object.keys(this.inventory.equipment)) {
             let equip = this.inventory.equipment[slot];
             if (equip) {
                 equip.addEquipmentGraphic(this);
             }
+        }
+    }
+
+    public unsetEquipmentGraphic(slot: keyof IEquipmentSlots) {
+        switch (slot) {
+            case "head": {
+                this.body.head.loadTexturePackerFrames("/sprites/head_base.png", "/sprites/head_base.json");
+                break;
+            }
+            case "body": {
+                this.body.body.loadTexturePackerFrames("/sprites/body_base.png", "/sprites/body_base.json");
+                this.body.front_arm.loadTexturePackerFrames("/sprites/front_arm_base.png", "/sprites/front_arm_base.json");
+                break;
+            }
+            case "legs": {
+                this.body.legs.loadTexturePackerFrames("/sprites/legs_base.png", "/sprites/legs_base.json");
+                break;
+            }
+            case "feet": {
+                this.body.feet.loadTexturePackerFrames("/sprites/feet_base.png", "/sprites/feet_base.json");
+                break;
+            }
+            case "weapon": {
+                this.body.weapon.loadTexturePackerFrames("/sprites/weapon_base.png", "/sprites/weapon_base.json");
+                break;
+            }
+            case "gloves": {
+                this.body.front_hand.loadTexturePackerFrames("/sprites/front_hand_base.png", "/sprites/front_hand_base.json");
+                this.body.back_hand.loadTexturePackerFrames("/sprites/back_hand_base.png", "/sprites/back_hand_base.json");
+                break;
+            }
+            case "offhand":
+            default: break;
         }
     }
 

@@ -9,6 +9,10 @@ const SPRITE_ASSET_ROOT = "/sprites/";
 
 export default class EquipmentItem extends InventoryItem {
 
+    public static isEquipmentItem(obj: any): obj is EquipmentItem {
+        return obj && obj.type === "equipment";
+    }
+
     constructor(graphic: PIXI.Texture, public equipmentType: EquipmentType, name: string, public sheetName: string, description: string | ((world: World) => string)) {
         super(graphic, name, description);
         this.type = "equipment";
