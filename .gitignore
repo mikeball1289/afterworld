@@ -3,3 +3,5 @@ dist/nw
 dist/js
 typings
 .vscode
+art/out
+art/split
