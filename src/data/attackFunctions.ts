@@ -1,9 +1,12 @@
 import Enemy from "../actors/Enemy";
 import Player from "../actors/Player";
+import BuckleDownBuff from "../buffs/BuckleDownBuff";
 import EnvenomedBuff from "../buffs/EnvenomedBuff";
 import StunDebuff from "../buffs/StunDebuff";
 import ColorTweener from "../ColorTweener";
 import FireParticle from "../particlesystem/FireParticle";
+import GenericEffectParticle from "../particleSystem/GenericEffectParticle";
+import { fromTextureCache } from "../pixiTools";
 import { juggler, soundManager } from "../root";
 import World from "../world/World";
 
@@ -28,8 +31,15 @@ const swishes = ["/sounds/swish1.ogg", "/sounds/swish2.ogg", "/sounds/swish3.ogg
 const BASIC_ATTACKS: ["attack1", "attack2"] = ["attack1", "attack2"];
 let castIdx = 0;
 
+function getAttackBox(player: Player) {
+    if (!player.inventory.equipment.weapon) return new PIXI.Rectangle(player.horizontalCenter, player.top + player.size.y * 0.4, 1, 1);
+    return new PIXI.Rectangle(player.horizontalCenter, player.top + player.size.y * 0.4, player.inventory.equipment.weapon.range + 15, 25);
+}
+
 function applyAttack(player: Player, enemy: Enemy, damage: number, knockback: PIXI.Point) {
-    damage = Math.ceil(player.buffs.process("dealDamage", damage));
+    let {damage: d, knockback: k} = player.buffs.process("dealDamage", { damage, knockback} );
+    damage = Math.ceil(d);
+    knockback = k;
     if (enemy.applyAttack(damage, knockback)) {
         player.buffs.process("damageDealt", enemy);
         if (enemy.health <= 0) {
@@ -41,7 +51,7 @@ function applyAttack(player: Player, enemy: Enemy, damage: number, knockback: PI
 }
 
 function meleeHit(player: Player, world: World, knockbackPower = 4) {
-    let attackBox: PIXI.Rectangle = new PIXI.Rectangle(player.horizontalCenter, player.top + player.size.y * 0.4, 75, 25);
+    let attackBox: PIXI.Rectangle = getAttackBox(player);
     let enemies = world.actorManager.enemies;
 
     soundManager.playSound(swishes[Math.floor(Math.random() * swishes.length)], 0.7);
@@ -86,7 +96,7 @@ function drawExplosionParticles(player: Player, world: World) {
     }
 }
 
-function explosion(player: Player, world: World) {
+export function explosion(player: Player, world: World) {
     if (!world.map || !world.map.isGrounded(player)) return false;
     player.play("cast", {
         onProgress: (frame) => {
@@ -119,7 +129,7 @@ function explosion(player: Player, world: World) {
     return true;
 }
 
-function basicAttack(player: Player, world: World) {
+export function basicAttack(player: Player, world: World) {
     let randomAttack = BASIC_ATTACKS[Math.floor(Math.random() * 2)];
     player.play(randomAttack, {
         onProgress: (frame) => {
@@ -134,7 +144,7 @@ function basicAttack(player: Player, world: World) {
     return true;
 }
 
-function tremor(player: Player, world: World) {
+export function tremor(player: Player, world: World) {
     if (!world.map || !world.map.isGrounded(player)) return false;
     let idx = castIdx ++;
     player.play("cast", {
@@ -177,7 +187,7 @@ function tremor(player: Player, world: World) {
     return true;
 }
 
-function ambush(player: Player, world: World) {
+export function ambush(player: Player, world: World) {
     let hitFn = (frame: number) => {
         if (frame !== 2) return;
         meleeHit(player, world, 1);
@@ -210,38 +220,97 @@ function ambush(player: Player, world: World) {
     return true;
 }
 
-let attackFunctions: IAttackFunctions = {
-    basicAttack,
-    explosion,
-    tremor,
-    ambush,
+function splashHit(player: Player, world: World, hitFn: (enemy: Enemy) => boolean) {
+    let attackBox = getAttackBox(player);
+    let enemies = world.actorManager.enemies;
 
-    teleport: (player, world) => {
-        if (!world.map || !world.map.isGrounded(player)) return false;
-        let tempVelocity = player.velocity;
-        player.velocity = new PIXI.Point(200 * player.direction, 0);
-        world.map.move(player);
-        player.velocity = tempVelocity;
-        return true;
-    },
+    soundManager.playSound(swishes[Math.floor(Math.random() * swishes.length)], 0.7);
 
-    leap: (player, world) => {
-        if (!world.map || !world.map.isGrounded(player)) return false;
-        player.velocity.y = -player.stats.jumpPower() * 1.55;
-        player.velocity.x += player.stats.walkSpeed() * 15 * player.direction;
-        return true;
-    },
-
-    envenom: (player, world) => {
-        let existing = player.buffs.hasBuff("Envenomed");
-        if (existing) {
-            (<EnvenomedBuff> existing).refresh();
-        } else {
-            player.buffs.addBuff(new EnvenomedBuff("Envenomed"));
+    let attackFn = (enemy: Enemy): boolean => {
+        if (enemy.left < attackBox.right && enemy.right > attackBox.left && enemy.top < attackBox.bottom && enemy.bottom > attackBox.top) {
+            return hitFn(enemy);
         }
-        return true;
-    },
+        return false;
+    };
 
-};
+    if (player.direction === -1) {
+        attackBox.x -= attackBox.width;
+        for (let i = enemies.length - 1; i >= 0; i --) {
+            attackFn(enemies[i]);
+        }
+    } else {
+        // tslint:disable-next-line:prefer-for-of
+        for (let i = 0; i < enemies.length; i ++) {
+            attackFn(enemies[i]);
+        }
+    }
+}
 
-export default attackFunctions;
+export function cleave(player: Player, world: World) {
+    let randomAttack = BASIC_ATTACKS[Math.floor(Math.random() * 2)];
+    player.play(randomAttack, {
+        onProgress: (frame) => {
+            if (frame !== 2) return;
+            let enemiesHit = 0;
+            splashHit(player, world, (enemy) => {
+                if (enemiesHit >= 3) return false;
+                let damage = Math.random() * 3 + 2;
+                let knockback: PIXI.Point;
+                if (enemiesHit === 0) {
+                    damage *= 1.5;
+                    knockback = new PIXI.Point(4 * player.direction, 0);
+                } else {
+                    knockback = new PIXI.Point(1 * player.direction);
+                }
+                if (applyAttack(player, enemy, damage, knockback)) {
+                    enemiesHit ++;
+                    return true;
+                }
+                return false;
+            });
+
+            let particle = new GenericEffectParticle(20, fromTextureCache("/images/particles.png", 21, 0, 48, 17));
+            particle.x = player.horizontalCenter + 40 * player.direction;
+            particle.y = player.verticalCenter;
+            particle.scale.x = player.direction;
+            particle.velocity.x = 2 * player.direction;
+            world.particleSystem.add(particle);
+        },
+        onComplete: () => {
+            player.attacking = false;
+        },
+    } );
+    player.attacking = true;
+    return true;
+}
+
+export function buckleDown(player: Player, world: World) {
+    player.buffs.addBuff(new BuckleDownBuff(240, "Buckle Down"));
+}
+
+export function teleport(player: Player, world: World) {
+    if (!world.map || !world.map.isGrounded(player)) return false;
+    let tempVelocity = player.velocity;
+    player.velocity = new PIXI.Point(200 * player.direction, 0);
+    world.map.move(player);
+    player.velocity = tempVelocity;
+    return true;
+}
+
+export function leap(player: Player, world: World) {
+    if (!world.map || !world.map.isGrounded(player)) return false;
+    player.velocity.y = -player.stats.jumpPower() * 1.55;
+    player.velocity.x += player.stats.walkSpeed() * 15 * player.direction;
+    return true;
+}
+
+export function envenom(player: Player, world: World) {
+    let existing = player.buffs.hasBuff("Envenomed");
+    if (existing) {
+        (<EnvenomedBuff> existing).refresh();
+    } else {
+        console.log("hi");
+        player.buffs.addBuff(new EnvenomedBuff("Envenomed"));
+    }
+    return true;
+}

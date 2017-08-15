@@ -1,3 +1,4 @@
+import Animator from "../display/Animator";
 import DamageParticle from "../particlesystem/DamageParticle";
 import { soundManager } from "../root";
 import { ICombatObject } from "./ActorInterfaces";
@@ -12,6 +13,7 @@ abstract class Enemy extends NonPlayerActor implements ICombatObject {
     }
 
     public health: number = 0;
+    public animator: Animator<{ die: [number, number] }>;
     private isAnEnemy = true;
 
     public abstract isDead(): boolean;

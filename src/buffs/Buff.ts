@@ -23,8 +23,8 @@ export default class Buff {
         return false;
     }
 
-    public onEvent(name: "dealDamage", payload: number): number;
-    public onEvent(name: "takeDamage", payload: number): number;
+    public onEvent(name: "dealDamage", payload: { damage: number, knockback: PIXI.Point }): { damage: number, knockback: PIXI.Point };
+    public onEvent(name: "takeDamage", payload: { damage: number, knockback: PIXI.Point }): { damage: number, knockback: PIXI.Point };
     public onEvent(name: "die"): void;
     public onEvent(name: "attack"): void;
     public onEvent(name: "damageDealt", payload: Actor): void;

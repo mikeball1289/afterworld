@@ -210,7 +210,7 @@ class Controls {
 export let controls = new Controls();
 
 class SoundManager {
-    public static GLOBAL_VOLUME = 0.4;
+    public static GLOBAL_VOLUME = 0;
     private music: { [songName: string]: HTMLAudioElement } = {};
     private tags: { [tag: string]: boolean } = {};
 

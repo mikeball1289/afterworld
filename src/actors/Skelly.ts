@@ -28,7 +28,7 @@ const VIEW_DISTANCE = 400;
 export default class Skelly extends Enemy {
     public weight = 1.8;
 
-    private animator: Animator<{
+    public animator: Animator<{
         idle: [number, number];
         walk: [number, number];
         attack: [number, number];

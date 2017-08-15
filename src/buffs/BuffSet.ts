@@ -17,8 +17,9 @@ export default class BuffSet {
         for (let i = this.buffs.length - 1; i >= 0; i --) {
             this.buffs[i].duration --;
             if (this.buffs[i].duration <= 0) {
+                let buff = this.buffs[i];
                 this.buffs.splice(i, 1);
-                this.buffs[i].onExpire(this.actor, this.world);
+                buff.onExpire(this.actor, this.world);
             } else {
                 this.buffs[i].onEvent("frame");
             }
@@ -46,8 +47,8 @@ export default class BuffSet {
         return undefined;
     }
 
-    public process(name: "dealDamage", payload: number): number;
-    public process(name: "takeDamage", payload: number): number;
+    public process(name: "dealDamage", payload: { damage: number, knockback: PIXI.Point }): { damage: number, knockback: PIXI.Point };
+    public process(name: "takeDamage", payload: { damage: number, knockback: PIXI.Point }): { damage: number, knockback: PIXI.Point };
     public process(name: "die"): void;
     public process(name: "attack"): void;
     public process(name: "damageDealt", payload: Actor): void;
@@ -57,7 +58,7 @@ export default class BuffSet {
         switch (name) {
             case "dealDamage":
             case "takeDamage": {
-                let damage: number = payload;
+                let damage: { damage: number, knockback: PIXI.Point } = payload;
                 for (let buff of this.buffs) {
                     damage = buff.onEvent(<any> name, damage);
                 }

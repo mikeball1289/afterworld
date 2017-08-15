@@ -1,6 +1,8 @@
+import { fromTextureCache } from "../pixiTools";
 import World from "../world/World";
 import EquipmentItem from "./EquipmentItem";
 import InventoryItem from "./InventoryItem";
+import WeaponItem from "./WeaponItem";
 
 export interface IEquipmentSlots {
     head: EquipmentItem | undefined;
@@ -9,7 +11,7 @@ export interface IEquipmentSlots {
     legs: EquipmentItem | undefined;
     feet: EquipmentItem | undefined;
     trinket: EquipmentItem | undefined;
-    weapon: EquipmentItem | undefined;
+    weapon: WeaponItem | undefined;
     offhand: EquipmentItem | undefined;
     gloves: EquipmentItem | undefined;
 }
@@ -21,12 +23,12 @@ export default class Inventory {
     public equipment: IEquipmentSlots = {
         head: undefined,
         neck: undefined,
-        body: new EquipmentItem(new PIXI.Texture(PIXI.loader.resources["/images/item_sheet.png"].texture.baseTexture, new PIXI.Rectangle(0, 0, 40, 40)),
+        body: new EquipmentItem(fromTextureCache("/images/item_sheet.png", 0, 0, 40, 40),
                                     "body", "Cloth Shirt", "cloth_shirt", "A simple cloth shirt"),
         legs: undefined,
         feet: undefined,
         trinket: undefined,
-        weapon: undefined,
+        weapon: new WeaponItem(fromTextureCache("/images/item_sheet.png", 40, 0, 40, 40), "Iron Dagger", "iron_dagger", "A simple iron dagger", 40),
         offhand: undefined,
         gloves: undefined,
     };

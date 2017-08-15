@@ -1,6 +1,7 @@
 import NPCText, { INPCLike } from "../display/NPCText";
 import World from "../world/World";
 import InventoryUI from "./InventoryUI";
+import PlayerHUD from "./PlayerHUD";
 
 export default class UIManager {
 
@@ -13,6 +14,7 @@ export default class UIManager {
     public npcText: NPCText;
 
     public inventoryUI: InventoryUI;
+    public playerHud: PlayerHUD;
 
     constructor(private world: World) {
         this.worldLayer = new PIXI.Container();
@@ -22,6 +24,9 @@ export default class UIManager {
             this.worldLayers[i] = new PIXI.Container();
             this.worldLayer.addChild(this.worldLayers[i]);
         }
+
+        this.playerHud = new PlayerHUD();
+        this.overlayLayer.addChild(this.playerHud);
 
         this.npcText = new NPCText(world);
         this.npcText.pivot.set(this.npcText.width / 2, this.npcText.height / 2);

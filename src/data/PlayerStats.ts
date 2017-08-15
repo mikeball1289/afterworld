@@ -3,8 +3,15 @@ import * as pc from "../world/physicalConstants";
 import World from "../world/World";
 
 export default class PlayerStats {
+
+    public energy = 100;
+    public maxEnergy = 100;
+
+    public mana = 50;
+    public maxMana = 50;
+
     public maxHealth = 50;
-    public _health = 50;
+    private _health = 50;
     set health(val) {
         if (val < 0) val = 0;
         if (val > this.maxHealth) val = this.maxHealth;

@@ -1,4 +1,5 @@
 import ColorTweener from "../ColorTweener";
+import { fromTextureCache } from "../pixiTools";
 import Map from "../world/Map";
 import { GRAVITY } from "../world/physicalConstants";
 import World from "../world/World";
@@ -11,7 +12,7 @@ export default class FireParticle extends Particle {
 
     constructor(private startingLifetime: number, private tinter: ColorTweener) {
         super();
-        this.sprite = new PIXI.Sprite(PIXI.loader.resources["/images/fire_particle.png"].texture);
+        this.sprite = new PIXI.Sprite(fromTextureCache("/images/particles.png", 0, 0, 20, 20));
         this.sprite.anchor.set(0.5);
         this.addChild(this.sprite);
 

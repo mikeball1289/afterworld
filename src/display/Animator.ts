@@ -1,3 +1,4 @@
+import TintBatch from "../display/TintBatch";
 import { juggler } from "../root";
 
 // ActionMap is a map of animation names -> [animation index, animation length]
@@ -18,6 +19,8 @@ export interface IAnimatorOptions {
 
 export default class Animator<T extends IActionMap> extends PIXI.Sprite {
 
+    public tints: TintBatch;
+
     private currentFrame = 0;
     private currentAnimation: keyof T;
     private onComplete?: () => void;
@@ -33,6 +36,7 @@ export default class Animator<T extends IActionMap> extends PIXI.Sprite {
     constructor(spriteSheet: PIXI.Texture, frameData: any, animations: T, idle: keyof T, fps?: number);
     constructor(private spriteSheet: PIXI.Texture, frameSize: any, private animations: T, private idle: keyof T, public fps = 12) {
         super();
+        this.tints = new TintBatch();
         this.currentAnimation = idle;
         for (let ani in animations) {
             if (!animations.hasOwnProperty(ani)) continue;
@@ -124,6 +128,7 @@ export default class Animator<T extends IActionMap> extends PIXI.Sprite {
     }
 
     private update(dt: number = 1) {
+        this.tint = this.tints.getTint();
         let previousFrame = this.currentFrame;
         this.currentFrame += dt;
         if (Math.floor(this.currentFrame) >= this.animations[this.currentAnimation][1]) {

@@ -1,5 +1,5 @@
 import ColorTweener from "../ColorTweener";
-import attackFunctions from "../data/attackFunctions";
+import * as attackFunctions from "../data/attackFunctions";
 import Inventory, { IEquipmentSlots } from "../data/Inventory";
 import PlayerStats from "../data/PlayerStats";
 import Animator, { IAnimatorOptions } from "../display/Animator";
@@ -47,9 +47,13 @@ controlLockInputs[ControlLocks.SECONDARY_ATTACK] = InputType.SECONDARY_ATTACK;
 const BODY_ANIMATION_KEYS: (keyof IBodyAnimations)[] = ["back_hand", "feet", "legs", "body", "head", "weapon", "front_hand", "front_arm"];
 
 export default class Player extends Actor {
+    public static isPlayer(obj: any): obj is Player {
+        return obj && obj.isPlayer;
+    }
+
     public healthBar: HealthBar;
     public attacking: boolean = false;
-    public attackCooldown: number = 0;
+    public globalCooldown: number = 0;
     public inventory: Inventory;
     public body: IBodyAnimations;
 
@@ -58,7 +62,6 @@ export default class Player extends Actor {
     private jumpBuffer: boolean = true;
     private sprite: PIXI.Sprite;
     private deathFrame: PIXI.Sprite;
-    private tintTimer = 0;
     private controlLocks: boolean[] = [];
 
     private _direction: 1 | -1 = 1;
@@ -69,6 +72,8 @@ export default class Player extends Actor {
     get direction() {
         return this._direction;
     }
+
+    private isPlayer = true;
 
     constructor(world: World) {
         super(world);
@@ -169,30 +174,30 @@ export default class Player extends Actor {
         let grounded = map.isGrounded(this);
         getControls = getControls && !this.attacking;
 
-        if (this.attackCooldown <= 0) {
+        if (this.globalCooldown <= 0) {
             if (this.hasUseableInput(InputType.PRIMARY_ATTACK, getControls)) {
-                if (attackFunctions.basicAttack(this, this.world)) {
-                    this.attackCooldown = 55;
+                if (attackFunctions.cleave(this, this.world)) {
+                    this.globalCooldown = 55;
                 }
             } else if (this.hasUseableInput(InputType.SECONDARY_ATTACK, getControls)) {
                 if (attackFunctions.explosion(this, this.world)) {
-                    this.attackCooldown = 55;
+                    this.globalCooldown = 55;
                 }
             } else if (this.hasUseableInput(InputType.ABILITY_1, getControls)) {
                 if (attackFunctions.teleport(this, this.world)) {
-                    this.attackCooldown = 55;
+                    this.globalCooldown = 55;
                 }
             } else if (this.hasUseableInput(InputType.ABILITY_2, getControls)) {
-                if (attackFunctions.tremor(this, this.world)) {
-                    this.attackCooldown = 55;
+                if (attackFunctions.envenom(this, this.world)) {
+                    this.globalCooldown = 55;
                 }
             } else if (this.hasUseableInput(InputType.ABILITY_3, getControls)) {
                 if (attackFunctions.ambush(this, this.world)) {
-                    this.attackCooldown = 55;
+                    this.globalCooldown = 55;
                 }
             } else if (this.hasUseableInput(InputType.ABILITY_4, getControls)) {
                 if (attackFunctions.leap(this, this.world)) {
-                    this.attackCooldown = 55;
+                    this.globalCooldown = 55;
                 }
             }
         }
@@ -238,9 +243,11 @@ export default class Player extends Actor {
             this.velocity.y += PC.GRAVITY;
             if (Math.abs(this.velocity.y) > PC.TERMINAL_VELOCITY) this.velocity.y *= PC.AERIAL_DRAG;
             if (this.hasUseableInput(InputType.LEFT, getControls)) {
+                this.direction = -1;
                 if (this.velocity.x > 0) this.velocity.x = this.velocity.x * PC.FULL_HORIZONTAL_DECAY;
                 if (this.velocity.x > -PC.HORIZONTAL_THRESHOLD) this.velocity.x -= PC.AERIAL_IMPULSE;
             } else if (this.hasUseableInput(InputType.RIGHT, getControls)) {
+                this.direction = 1;
                 if (this.velocity.x < 0) this.velocity.x = this.velocity.x * PC.FULL_HORIZONTAL_DECAY;
                 if (this.velocity.x < PC.HORIZONTAL_THRESHOLD) this.velocity.x += PC.AERIAL_IMPULSE;
             } else {
@@ -279,7 +286,17 @@ export default class Player extends Actor {
 
     public tintAll(tint: number = 0xFFFFFF) {
         for (let key of BODY_ANIMATION_KEYS) {
-            this.body[key].tint = tint;
+            this.body[key].tints.addTint(tint);
+        }
+    }
+
+    public unTintAll(tint?: number) {
+        for (let key of BODY_ANIMATION_KEYS) {
+            if (tint === undefined) {
+                this.body[key].tints.reset();
+            } else {
+                this.body[key].tints.removeTint(tint);
+            }
         }
     }
 
@@ -299,8 +316,8 @@ export default class Player extends Actor {
             this.die();
         } else {
             this.applyImpulse(knockback.x, knockback.y);
-            this.tintTimer = 10;
             this.tintAll(0xFFCCCC);
+            juggler.afterFrames(10, () => this.unTintAll(0xFFCCCC));
         }
         return true;
     }
@@ -308,21 +325,20 @@ export default class Player extends Actor {
     public frameUpdate() {
         super.frameUpdate();
 
-        if (this.attackCooldown > 0) {
-            this.attackCooldown --;
+        if (this.globalCooldown > 0) {
+            this.globalCooldown --;
         }
 
         if (this.fallthrough && Math.abs(this.y - this.fallthrough) >= 5) {
             this.fallthrough = undefined;
         }
-        if (this.tintTimer > 0) {
-            this.tintTimer --;
-            if (this.tintTimer <= 0) this.tintAll();
-        }
 
         this.healthBar.x = this.horizontalCenter;
         this.healthBar.y = this.top - 40;
         this.healthBar.setAmount(this.stats.health / this.stats.maxHealth);
+        this.world.uiManager.playerHud.setHP(this.stats.health, this.stats.maxHealth);
+        this.world.uiManager.playerHud.setEP(this.stats.energy, this.stats.maxEnergy);
+        this.world.uiManager.playerHud.setMP(this.stats.mana, this.stats.maxMana);
     }
 
     public handleCollisions(collisions: [boolean, boolean]) {

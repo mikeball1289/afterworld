@@ -16,15 +16,12 @@ export default class EnemyPoisonedDebuff extends Buff {
     public onCreate(actor: Actor) {
         if (!Enemy.isEnemy(actor)) throw new Error("Can't poison things that aren't enemies for now");
         this.actor = actor;
-        if (actor.tint === 0xFFFFFF) {
-            actor.tint = 0xDDFFDD;
-        }
+        actor.animator.tints.addTint(0xAAFFAA);
     }
 
     public onExpire(actor: Actor) {
-        if (!actor.buffs.hasBuff("Poisoned")) {
-            actor.tint = 0xFFFFFF;
-        }
+        if (!Enemy.isEnemy(actor)) throw new Error("Can't poison things that aren't enemies for now");
+        actor.animator.tints.removeTint(0xAAFFAA);
     }
 
     public onEvent(name: BuffEvent, payload?: any): any {
