@@ -33,6 +33,8 @@ interface IBodyAnimations {
     back_hand: Animator<PlayerAnimations>;
     legs: Animator<PlayerAnimations>;
     feet: Animator<PlayerAnimations>;
+    offhand_front: Animator<PlayerAnimations>;
+    offhand_back: Animator<PlayerAnimations>;
 }
 
 enum ControlLocks {
@@ -46,7 +48,7 @@ controlLockInputs[ControlLocks.JUMP] = InputType.JUMP;
 controlLockInputs[ControlLocks.PRIMARY_ATTACK] = InputType.PRIMARY_ATTACK;
 controlLockInputs[ControlLocks.SECONDARY_ATTACK] = InputType.SECONDARY_ATTACK;
 
-const BODY_ANIMATION_KEYS: (keyof IBodyAnimations)[] = ["back_hand", "feet", "legs", "body", "head", "weapon", "front_hand", "front_arm"];
+const BODY_ANIMATION_KEYS: (keyof IBodyAnimations)[] = ["offhand_back", "back_hand", "offhand_front", "feet", "legs", "body", "head", "weapon", "front_hand", "front_arm"];
 
 export default class Player extends Actor {
     public static isPlayer(obj: any): obj is Player {
@@ -101,6 +103,8 @@ export default class Player extends Actor {
             feet: new Animator(undefined, undefined, frameData, "idle", 6),
             front_hand: new Animator(undefined, undefined, frameData, "idle", 6),
             back_hand: new Animator(undefined, undefined, frameData, "idle", 6),
+            offhand_back: new Animator(undefined, undefined, frameData, "idle", 6),
+            offhand_front: new Animator(undefined, undefined, frameData, "idle", 6),
         };
         for (let key of BODY_ANIMATION_KEYS) {
             this.sprite.addChild(this.body[key]);

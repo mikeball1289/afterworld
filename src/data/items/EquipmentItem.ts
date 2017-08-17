@@ -1,6 +1,7 @@
-import Player from "../actors/Player";
-import World from "../world/World";
-import { IEquipmentSlots } from "./Inventory";
+import Player from "../../actors/Player";
+import World from "../../world/World";
+import { IEquipmentSlots } from "../Inventory";
+import GemItem from "./GemItem";
 import InventoryItem from "./InventoryItem";
 
 type EquipmentType = keyof IEquipmentSlots;
@@ -13,9 +14,18 @@ export default class EquipmentItem extends InventoryItem {
         return obj && obj.type === "equipment";
     }
 
+    public socket?: {
+        gem?: GemItem;
+    } = undefined;
+
     constructor(graphic: PIXI.Texture, public equipmentType: EquipmentType, name: string, public sheetName: string, description: string | ((world: World) => string)) {
         super(graphic, name, description);
         this.type = "equipment";
+    }
+
+    public get gem() {
+        if (this.socket) return this.socket.gem;
+        return undefined;
     }
 
     public addEquipmentGraphic(player: Player) {
@@ -54,7 +64,13 @@ export default class EquipmentItem extends InventoryItem {
                                                          SPRITE_ASSET_ROOT + this.sheetName + "_back_hand.json");
                 break;
             }
-            case "offhand":
+            case "offhand": {
+                player.body.offhand_front.loadTexturePackerFrames(SPRITE_ASSET_ROOT + this.sheetName + "_offhand_front.png",
+                                                         SPRITE_ASSET_ROOT + this.sheetName + "_offhand_front.json");
+                player.body.offhand_back.loadTexturePackerFrames(SPRITE_ASSET_ROOT + this.sheetName + "_offhand_back.png",
+                                                         SPRITE_ASSET_ROOT + this.sheetName + "_offhand_back.json");
+                break;
+            }
             default: break;
         }
     }

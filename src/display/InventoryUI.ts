@@ -1,6 +1,6 @@
-import EquipmentItem from "../data/EquipmentItem";
 import { IEquipmentSlots } from "../data/Inventory";
 import Inventory from "../data/Inventory";
+import EquipmentItem from "../data/items/EquipmentItem";
 import JuggledSprite from "../display/JuggledSprite";
 import { fromTextureCache } from "../pixiTools";
 import { controls, InputType } from "../root";

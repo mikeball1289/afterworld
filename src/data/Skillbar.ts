@@ -12,6 +12,7 @@ export default class Skillbar extends PIXI.Container {
     private equippedSkills: (Skill | undefined)[] = [];
     private skillIcons: (PIXI.Sprite)[] = [];
     private cooldownSpinners: ClockSpindown[] = [];
+    private cooldownNumbers: PIXI.Text[] = [];
     private skillLayer: PIXI.Container;
     private spindownLayer: PIXI.Container;
     private skillCooldowns: number[] = new Array(NUM_SKILLS).fill(0);
@@ -36,8 +37,23 @@ export default class Skillbar extends PIXI.Container {
             spinner.x = position[0] + 25;
             spinner.y = position[1] + 25;
             spinner.alpha = 0.8;
+
+            let num = new PIXI.Text("", {
+                align: "center",
+                fill: 0xFF0000,
+                fontSize: 28,
+                fontFamily: "SilkScreenNormal",
+                stroke: 0,
+                strokeThickness: 2,
+            } );
+            num.anchor.set(0.5, 1);
+            num.x = position[0] + 26;
+            num.y = position[1] + 39;
+
             this.spindownLayer.addChild(spinner);
+            this.spindownLayer.addChild(num);
             this.cooldownSpinners.push(spinner);
+            this.cooldownNumbers.push(num);
         }
 
         this.skills[0] = skillData.basic_attack;
@@ -105,11 +121,16 @@ export default class Skillbar extends PIXI.Container {
             if (skill.gcd && this.globalCooldown > 0 && this.globalCooldown > this.skillCooldowns[i]) {
                 this.cooldownSpinners[i].visible = true;
                 this.cooldownSpinners[i].setProgress(this.globalCooldown / this.player.stats.globalCooldown);
+                this.cooldownNumbers[i].visible = false;
             } else if (this.skillCooldowns[i] > 0) {
                 this.cooldownSpinners[i].visible = true;
                 this.cooldownSpinners[i].setProgress(this.skillCooldowns[i] / skill.cooldown);
+                this.cooldownNumbers[i].visible = true;
+                let cdSeconds = Math.round(this.skillCooldowns[i] / 6) / 10;
+                this.cooldownNumbers[i].text = cdSeconds >= 10 ? cdSeconds.toFixed(0) : cdSeconds.toFixed(1);
             } else {
                 this.cooldownSpinners[i].visible = false;
+                this.cooldownNumbers[i].visible = false;
             }
         }
     }

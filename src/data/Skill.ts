@@ -1,8 +1,8 @@
 import Player from "../actors/Player";
 import World from "../world/World";
 import Cost from "./costs/Cost";
+import { WeaponType } from "./items/WeaponItem";
 import { ISkillFunction } from "./skillFunctions";
-import { WeaponType } from "./WeaponItem";
 
 export default class Skill {
 
