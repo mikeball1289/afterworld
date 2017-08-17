@@ -45,31 +45,28 @@ export default class Skillbar extends PIXI.Container {
         this.skillIcons[0].texture = skillData.basic_attack.icon;
     }
 
-    public addSkill(skill: Skill, primary = false) {
-        if (!primary) {
-            this.skills.push(skill);
-            for (let i = 0; i < NUM_SKILLS; i ++) {
-                if (this.equippedSkills[i] === undefined) {
-                    this.equippedSkills[i] = skill;
-                    this.skillIcons[i].texture = skill.icon;
-                    return;
-                }
+    public addSkill(skill: Skill) {
+        let alreadyHadSkill = this.skills.indexOf(skill) > 0;
+        this.skills.push(skill);
+        if (alreadyHadSkill) return; // if we already had a copy of the skill, don't add it to the bar
+        for (let i = 0; i < NUM_SKILLS; i ++) {
+            if (this.equippedSkills[i] === undefined) {
+                this.equippedSkills[i] = skill;
+                this.skillIcons[i].texture = skill.icon;
+                return;
             }
-        } else {
-            this.skills[0] = skill;
-            this.equippedSkills[0] = skill;
-            this.skillIcons[0].texture = skill.icon;
         }
     }
 
     public removeSkill(skill: Skill) {
         let idx = this.skills.indexOf(skill);
-        if (idx < 0) return;
+        if (idx < 0) return; // if we don't even have the skill then that's it
+        this.skills.splice(idx, 1);
+        if (this.skills.indexOf(skill) < 0) return; // if we still have a copy of the skill, don't remove it from the bar
         let slotIdx = this.equippedSkills.indexOf(skill);
-        // TODO:
-        // if (idx === 0) {
-            // 
-        // }
+        if (slotIdx < 0) return; // it wasn't even slotted lol
+        this.equippedSkills[slotIdx] = undefined;
+        this.skillIcons[slotIdx].texture = PIXI.Texture.EMPTY; // remove the image from the bar
     }
 
     public useSkill(index: number) {

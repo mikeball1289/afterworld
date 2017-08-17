@@ -11,5 +11,6 @@
   "description": "typescript + nw game",
   "repository": "https://www.github.com/HypoLast/",
   "license": "ISC",
-  "readme": "../README.md"
+  "readme": "../README.md",
+  "chromium-args" : "--mixed-context"
 }
