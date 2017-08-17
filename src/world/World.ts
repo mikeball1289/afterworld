@@ -64,6 +64,7 @@ export default class World extends PIXI.Sprite {
         this.currentMapData = mapData[startingMap];
 
         this.uiManager.inventoryUI.refreshInventoryIcons();
+        this.uiManager.overlayLayer.addChild(this.actorManager.player.skillBar);
         this.grayFilter = new PIXI.GrayFilter();
 
         // load up the starting map
@@ -231,7 +232,7 @@ export default class World extends PIXI.Sprite {
             this.virtualPosition.x = this.screenWidth / 2 - this.map.digitalWidth / 2;
         }
         if (this.map.digitalHeight > this.screenHeight) {
-            let targetY = -this.actorManager.player.y + this.screenHeight / 2 - this.actorManager.player.size.y / 2;
+            let targetY = -this.actorManager.player.y + this.screenHeight * 0.65 - this.actorManager.player.size.y / 2;
             this.virtualPosition.y += (targetY - this.virtualPosition.y) / 15;
             this.virtualPosition.y = Math.min(Math.max(this.virtualPosition.y, -this.map.digitalHeight + this.screenHeight), 0);
         } else {

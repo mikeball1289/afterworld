@@ -6,6 +6,7 @@ import StunDebuff from "../buffs/StunDebuff";
 import ColorTweener from "../ColorTweener";
 import FireParticle from "../particlesystem/FireParticle";
 import GenericEffectParticle from "../particleSystem/GenericEffectParticle";
+import VacuumParticle from "../particlesystem/VacuumParticle";
 import { fromTextureCache } from "../pixiTools";
 import { juggler, soundManager } from "../root";
 import World from "../world/World";
@@ -273,6 +274,16 @@ export function cleave(player: Player, world: World) {
 
 export function buckleDown(player: Player, world: World) {
     player.buffs.addBuff(new BuckleDownBuff(240, "Buckle Down"));
+    for (let i = 0; i < 100; i ++) {
+        let tinter = new ColorTweener(0x5B94A5, 0xDBDBDB);
+        let angle = Math.random() * Math.PI * 2;
+        let particle = new VacuumParticle(new PIXI.Point(Math.sin(angle) * 50, -Math.cos(angle) * 50),
+                                            player,
+                                            20 + Math.random() * 10, 10, tinter);
+        particle.rotation = angle;
+        world.particleSystem.add(particle);
+    }
+    return true;
 }
 
 export function teleport(player: Player, world: World) {
@@ -286,8 +297,8 @@ export function teleport(player: Player, world: World) {
 
 export function leap(player: Player, world: World) {
     if (!world.map || !world.map.isGrounded(player)) return false;
-    player.velocity.y = -player.stats.jumpPower() * 1.55;
-    player.velocity.x += player.stats.walkSpeed() * 15 * player.direction;
+    player.velocity.y = -player.stats.jumpPower * 1.55;
+    player.velocity.x += player.stats.walkSpeed * 15 * player.direction;
     return true;
 }
 

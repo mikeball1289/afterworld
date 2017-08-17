@@ -5,7 +5,7 @@ import JuggledSprite from "../display/JuggledSprite";
 import { fromTextureCache } from "../pixiTools";
 import { controls, InputType } from "../root";
 import World from "../world/World";
-import OptionBox from "./OptionBox";
+import OptionBox from "./widgets/OptionBox";
 
 enum MovementDirection {
     UP,

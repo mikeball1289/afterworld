@@ -84,6 +84,18 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         },
         bgTrack: "/sounds/CarrotWine_How_to_spend_winter.ogg",
     },
+
+    dark_forest1: {
+        map: "/maps/dark_forest1_geometry.png",
+        background: "/maps/dark_forest1_back.png",
+        entrances: {
+            default: p(144, 956),
+        },
+        exits: {},
+        npcs: [],
+        enemies: () => [],
+        bgTrack: "/sounds/CarrotWine_How_to_spend_winter.ogg",
+    },
 };
 
 export default mapData;

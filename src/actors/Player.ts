@@ -1,6 +1,8 @@
 import ColorTweener from "../ColorTweener";
 import Inventory, { IEquipmentSlots } from "../data/Inventory";
 import PlayerStats from "../data/PlayerStats";
+import SkillBar from "../data/Skillbar";
+import skillData from "../data/skillData";
 import * as skillFunctions from "../data/skillFunctions";
 import Animator, { IAnimatorOptions } from "../display/Animator";
 import HealthBar from "../display/HealthBar";
@@ -53,11 +55,11 @@ export default class Player extends Actor {
 
     public healthBar: HealthBar;
     public attacking: boolean = false;
-    public globalCooldown: number = 0;
     public inventory: Inventory;
     public body: IBodyAnimations;
 
     public stats: PlayerStats;
+    public skillBar: SkillBar;
 
     private jumpBuffer: boolean = true;
     private sprite: PIXI.Sprite;
@@ -78,6 +80,7 @@ export default class Player extends Actor {
     constructor(world: World) {
         super(world);
         this.stats = new PlayerStats(this, world);
+        this.skillBar = new SkillBar(this, world);
         this.sprite = new PIXI.Sprite();
         this.addChild(this.sprite);
         this.inventory = new Inventory(world);
@@ -115,6 +118,12 @@ export default class Player extends Actor {
         this.deathFrame.anchor.set(0.5, 1);
         this.deathFrame.x = this.size.x / 2;
         this.deathFrame.y = this.size.y;
+
+        this.skillBar.addSkill(skillData.cleave);
+        this.skillBar.addSkill(skillData.buckle_down);
+        this.skillBar.addSkill(skillData.envenom);
+        this.skillBar.addSkill(skillData.leap);
+        this.skillBar.addSkill(skillData.tremor);
 
         this.loadEquipment();
     }
@@ -213,42 +222,21 @@ export default class Player extends Actor {
         let grounded = map.isGrounded(this);
         getControls = getControls && !this.attacking;
 
-        if (this.globalCooldown <= 0) {
-            if (this.hasUseableInput(InputType.PRIMARY_ATTACK, getControls)) {
-                if (skillFunctions.cleave(this, this.world)) {
-                    this.globalCooldown = 55;
-                }
-            } else if (this.hasUseableInput(InputType.SECONDARY_ATTACK, getControls)) {
-                if (skillFunctions.explosion(this, this.world)) {
-                    this.globalCooldown = 55;
-                }
-            } else if (this.hasUseableInput(InputType.ABILITY_1, getControls)) {
-                if (skillFunctions.teleport(this, this.world)) {
-                    this.globalCooldown = 55;
-                }
-            } else if (this.hasUseableInput(InputType.ABILITY_2, getControls)) {
-                if (skillFunctions.envenom(this, this.world)) {
-                    this.globalCooldown = 55;
-                }
-            } else if (this.hasUseableInput(InputType.ABILITY_3, getControls)) {
-                if (skillFunctions.ambush(this, this.world)) {
-                    this.globalCooldown = 55;
-                }
-            } else if (this.hasUseableInput(InputType.ABILITY_4, getControls)) {
-                if (skillFunctions.leap(this, this.world)) {
-                    this.globalCooldown = 55;
-                }
-            }
-        }
+        if (this.hasUseableInput(InputType.PRIMARY_ATTACK, getControls)) this.skillBar.useSkill(0);
+        if (this.hasUseableInput(InputType.SECONDARY_ATTACK, getControls)) this.skillBar.useSkill(1);
+        if (this.hasUseableInput(InputType.ABILITY_1, getControls)) this.skillBar.useSkill(2);
+        if (this.hasUseableInput(InputType.ABILITY_2, getControls)) this.skillBar.useSkill(3);
+        if (this.hasUseableInput(InputType.ABILITY_3, getControls)) this.skillBar.useSkill(4);
+        if (this.hasUseableInput(InputType.ABILITY_4, getControls)) this.skillBar.useSkill(5);
         getControls = getControls && !this.attacking;
 
         if (grounded) {
             if (this.hasUseableInput(InputType.LEFT, getControls)) {
-                this.velocity.x -= this.stats.walkSpeed();
+                this.velocity.x -= this.stats.walkSpeed;
                 this.direction = -1;
                 this.play("walk", { loop: true });
             } else if (this.hasUseableInput(InputType.RIGHT, getControls)) {
-                this.velocity.x += this.stats.walkSpeed();
+                this.velocity.x += this.stats.walkSpeed;
                 this.direction = 1;
                 this.play("walk", { loop: true });
             } else {
@@ -269,7 +257,7 @@ export default class Player extends Actor {
                         soundManager.playSound("/sounds/jump_pop.ogg", 0.2);
                     }
                 } else {
-                    this.velocity.y = -this.stats.jumpPower();
+                    this.velocity.y = -this.stats.jumpPower;
                     this.jumpBuffer = false;
                     soundManager.playSound("/sounds/jump_pop.ogg", 0.2);
                 }
@@ -290,7 +278,7 @@ export default class Player extends Actor {
                 if (this.velocity.x < 0) this.velocity.x = this.velocity.x * PC.FULL_HORIZONTAL_DECAY;
                 if (this.velocity.x < PC.HORIZONTAL_THRESHOLD) this.velocity.x += PC.AERIAL_IMPULSE;
             } else {
-                if (Math.abs(this.velocity.x) > PC.FULL_HORIZONTAL_DECAY / (1 - PC.FULL_HORIZONTAL_DECAY) * this.stats.walkSpeed()) this.velocity.x *= PC.FULL_HORIZONTAL_DECAY;
+                if (Math.abs(this.velocity.x) > PC.FULL_HORIZONTAL_DECAY / (1 - PC.FULL_HORIZONTAL_DECAY) * this.stats.walkSpeed) this.velocity.x *= PC.FULL_HORIZONTAL_DECAY;
                 else this.velocity.x *= PC.AERIAL_HORIZONTAL_DECAY;
             }
         }
@@ -329,7 +317,7 @@ export default class Player extends Actor {
         }
     }
 
-    public unTintAll(tint?: number) {
+    public untintAll(tint?: number) {
         for (let key of BODY_ANIMATION_KEYS) {
             if (tint === undefined) {
                 this.body[key].tints.reset();
@@ -346,6 +334,9 @@ export default class Player extends Actor {
     public applyDamage(damage: number, knockback: PIXI.Point) {
         if (this.isDead()) return false;
 
+        let { damage: d, knockback: k } = this.buffs.process("takeDamage", { damage, knockback } );
+        damage = d;
+        knockback = k;
         let particle = new DamageParticle(damage, "playerDamage", this);
         this.world.particleSystem.add(particle, false);
         this.world.uiManager.worldLayers[1].addChild(particle);
@@ -356,7 +347,7 @@ export default class Player extends Actor {
         } else {
             this.applyImpulse(knockback.x, knockback.y);
             this.tintAll(0xFFCCCC);
-            juggler.afterFrames(10, () => this.unTintAll(0xFFCCCC));
+            juggler.afterFrames(10, () => this.untintAll(0xFFCCCC));
         }
         return true;
     }
@@ -364,9 +355,8 @@ export default class Player extends Actor {
     public frameUpdate() {
         super.frameUpdate();
 
-        if (this.globalCooldown > 0) {
-            this.globalCooldown --;
-        }
+        this.skillBar.update();
+        this.stats.update();
 
         if (this.fallthrough && Math.abs(this.y - this.fallthrough) >= 5) {
             this.fallthrough = undefined;

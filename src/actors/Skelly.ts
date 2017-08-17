@@ -200,25 +200,6 @@ export default class Skelly extends Enemy {
             this.attackCooldown --;
         }
 
-        // switch (this.state) {
-        //     case MovementStates.WALKING: {
-        //         this.walkingUpdate(map, player);
-        //         break;
-        //     }
-        //     case MovementStates.CHASING: {
-        //         this.chasingUpdate(map, player);
-        //         break;
-        //     }
-        //     case MovementStates.ATTACKING: {
-        //         this.attackingUpdate(map, player);
-        //         break;
-        //     }
-        //     case MovementStates.IDLE:
-        //     default: {
-        //         this.idleUpdate(map, player);
-        //         break;
-        //     }
-        // }
         if (this.buffs.hasCondition("stunned")) {
             if (this.state === MovementStates.ATTACKING) {
                 this.state = MovementStates.CHASING;
@@ -345,6 +326,7 @@ export default class Skelly extends Enemy {
                 onProgress: (frame) => {
                     if (frame === 3) {
                         soundManager.playSound("/sounds/skelly_scratch.ogg", 1, "scratch");
+                        // player.applyDamage(16, new PIXI.Point());
                         player.applyDamage(Math.floor(Math.random() * 2 + 1), new PIXI.Point());
                     }
                 },

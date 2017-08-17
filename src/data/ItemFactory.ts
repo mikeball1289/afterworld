@@ -44,6 +44,22 @@ export let itemData = {
         range: 40,
         description: "A simple iron dagger.",
     },
+
+    leather_pants: <T> {
+        type: "legs",
+        name: "Leather Pants",
+        sheetName: "leather_pants",
+        icon: p(3, 0),
+        description: "A pair of stitched leather pants.",
+    },
+
+    leather_boots: <T> {
+        type: "feet",
+        name: "Leather Shoes",
+        sheetName: "leather_boots",
+        icon: p(4, 0),
+        description: "A pair of stitched leather shoes.",
+    },
 };
 
 export function constructItem(type: "weapon", data: IItemData): WeaponItem;
