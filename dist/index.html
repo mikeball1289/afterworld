@@ -43,13 +43,13 @@
 
         document.fonts.onloadingdone = () => {
             document.body.removeChild(document.getElementById("silkscreen-normal"));
-            // window.addEventListener("keyup", function starter(e) {
-            //     if (e.keyCode === 32) {
-            //         window.removeEventListener("keyup", starter);
-            //         start();
-            //     }
-            // } );
-            start();
+            window.addEventListener("keyup", function starter(e) {
+                if (e.keyCode === 32) {
+                    window.removeEventListener("keyup", starter);
+                    start();
+                }
+            } );
+            // start();
         };
     </script>
 </body>

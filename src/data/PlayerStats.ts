@@ -8,7 +8,7 @@ export default class PlayerStats {
     public energyAcc = 0;
     public manaAcc = 0;
 
-    public healthRegen = 1 / 100;
+    public healthRegen = 1 / 1000;
     public energyRegen = 1 / 12;
     public manaRegen = 1 / 100;
 

@@ -199,10 +199,10 @@ class Controls {
             case InputType.INTERACT: return keyboard.isKeyDown(Key.ENTER) || controller.getButton(ControllerButton.Y);
             case InputType.PRIMARY_ATTACK: return keyboard.isKeyDown(Key.A) || controller.getButton(ControllerButton.X);
             case InputType.SECONDARY_ATTACK: return keyboard.isKeyDown(Key.S) || controller.getButton(ControllerButton.B);
-            case InputType.ABILITY_1: return keyboard.isKeyDown(Key.Q) || controller.getButton(ControllerButton.LB);
-            case InputType.ABILITY_2: return keyboard.isKeyDown(Key.W) || controller.getButton(ControllerButton.LT);
-            case InputType.ABILITY_3: return keyboard.isKeyDown(Key.E) || controller.getButton(ControllerButton.RT);
-            case InputType.ABILITY_4: return keyboard.isKeyDown(Key.R) || controller.getButton(ControllerButton.RB);
+            case InputType.ABILITY_1: return keyboard.isKeyDown(Key.Q) || controller.getButton(ControllerButton.LT);
+            case InputType.ABILITY_2: return keyboard.isKeyDown(Key.W) || controller.getButton(ControllerButton.LB);
+            case InputType.ABILITY_3: return keyboard.isKeyDown(Key.E) || controller.getButton(ControllerButton.RB);
+            case InputType.ABILITY_4: return keyboard.isKeyDown(Key.R) || controller.getButton(ControllerButton.RT);
             case InputType.INVENTORY: return keyboard.isKeyDown(Key.I) || controller.getButton(ControllerButton.SELECT);
             case InputType.CONFIRM: return keyboard.isKeyDown(Key.SPACE) || controller.getButton(ControllerButton.A);
             case InputType.CANCEL: return keyboard.isKeyDown(Key.BACKSPACE) || controller.getButton(ControllerButton.B);
@@ -214,7 +214,7 @@ class Controls {
 export let controls = new Controls();
 
 class SoundManager {
-    public static GLOBAL_VOLUME = 0;
+    public static GLOBAL_VOLUME = 0.4;
     private music: { [songName: string]: HTMLAudioElement } = {};
     private tags: { [tag: string]: boolean } = {};
 

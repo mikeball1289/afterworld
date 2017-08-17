@@ -28,7 +28,7 @@ function main(app: PIXI.Application) {
     root.root.setStage(app.stage);
 
     // let world = new World("dark_forest1", app.view.width, app.view.height);
-    let world = new World("dark_forest1", app.view.width, app.view.height);
+    let world = new World("map1", app.view.width, app.view.height);
     app.stage.addChild(world);
     let fps = 60;
     let lastTick = 0;
