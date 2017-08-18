@@ -16,7 +16,7 @@ interface IItemData {
 
 type T = IItemData;
 
-let p: (x: number, y: number) => [number, number] = (x, y) => [x, y];
+let p: <T>(x: T, y: T) => [T, T] = (x, y) => [x, y];
 
 export let itemData = {
     heros_sword: <T> {

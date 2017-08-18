@@ -24,7 +24,7 @@ export interface IMapDataObject {
     bgTrack: string;
 }
 
-let p: (x: number, y: number) => [number, number] = (x, y) => [x, y];
+let p: <T>(x: T, y: T) => [T, T] = (x, y) => [x, y];
 
 let mapData: { [mapname: string]: IMapDataObject } = {
     map1: {
@@ -36,7 +36,7 @@ let mapData: { [mapname: string]: IMapDataObject } = {
                 image: "/npcs/npc.png",
                 position: {
                     x: 1645,
-                    y: 1172,
+                    y: 1172 - 85,
                 },
                 getText: () => { return { text: "Hey hey cool cat. I'm John, the coolest\nguy in these parts. " +
                         "Did you know you can\ntalk to cool catz like me by pressing\nEnter on a keyboard or 'Y' on a gamepad?" +
@@ -48,23 +48,23 @@ let mapData: { [mapname: string]: IMapDataObject } = {
             for (let i = 0; i < 10; i ++) {
                 let skelly = new Skelly(world);
                 skelly.x = 500 + Math.random() * 400;
-                skelly.y = 1023 - skelly.size.y;
+                skelly.y = 1023 - skelly.size.y - 85;
                 // skelly.x = 200 + Math.random() * 2800;
                 // skelly.y = 200;
                 enemies.push(skelly);
             }
             let skelly = new Skelly(world);
             skelly.x = 2750;
-            skelly.y = 1030;
+            skelly.y = 1030 - 85;
             enemies.push(skelly);
             return enemies;
         },
         entrances: {
-            default: p(1112, 955),
-            map2: p(2890, 1158),
+            default: p(1112, 955 - 85),
+            map2: p(2890, 1158 - 85),
         },
         exits: {
-            map2: p(2890, 1158),
+            map2: p(2890, 1158 - 85),
         },
         bgTrack: "/sounds/CarrotWine_How_to_spend_winter.ogg",
     },
@@ -72,11 +72,11 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         map: "/maps/map2.png",
         background: "/maps/map2_back.png",
         entrances: {
-            default: p(313, 259),
-            map1: p(85, 464),
+            default: p(313, 259 - 85),
+            map1: p(85, 464 - 85),
         },
         exits: {
-            map1: p(85, 464),
+            map1: p(85, 464 - 85),
         },
         npcs: [],
         enemies: () => {
@@ -89,7 +89,7 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         map: "/maps/dark_forest1_geometry.png",
         background: "/maps/dark_forest1_back.png",
         entrances: {
-            default: p(144, 956),
+            default: p(144, 956 - 85),
         },
         exits: {},
         npcs: [],
