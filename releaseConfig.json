@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "outDir": "dist/js",
+        "lib": ["es2015.core", "dom", "es5"],
+        "strictNullChecks": true,
+        "noImplicitAny": true
+    },
+    "files": [
+        "typings/index.d.ts"
+    ],
+    "include": [
+        "src/**/*.ts"
+    ]
+}

@@ -87,7 +87,8 @@ export default class World extends PIXI.Sprite {
         }
         loader.load( () => {
             try {
-                this.map = new Map(loader.resources.map.texture, loader.resources.background.texture);
+                // tslint:disable-next-line:no-string-literal
+                this.map = new Map(loader.resources["map"].texture, loader.resources["background"].texture);
             } catch (e) {
                 console.log(e);
                 throw e;

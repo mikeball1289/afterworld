@@ -1,0 +1,2 @@
+webpack ./main.js bundle.js --target "node" --output-library-target "commonjs2"
+uglifyjs bundle.js --compress --mangle -o bundle.min.js

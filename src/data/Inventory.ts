@@ -1,9 +1,9 @@
 import { fromTextureCache } from "../pixiTools";
 import World from "../world/World";
-import EquipmentItem from "./EquipmentItem";
-import InventoryItem from "./InventoryItem";
-import * as ItemFactory from "./ItemFactory";
-import WeaponItem from "./WeaponItem";
+import EquipmentItem from "./items/EquipmentItem";
+import InventoryItem from "./items/InventoryItem";
+import * as ItemFactory from "./items/ItemFactory";
+import WeaponItem from "./items/WeaponItem";
 
 export interface IEquipmentSlots {
     head: EquipmentItem | undefined;

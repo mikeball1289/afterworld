@@ -12,6 +12,7 @@ export default class Skillbar extends PIXI.Container {
     private equippedSkills: (Skill | undefined)[] = [];
     private skillIcons: (PIXI.Sprite)[] = [];
     private cooldownSpinners: ClockSpindown[] = [];
+    private cooldownNumbers: PIXI.Text[] = [];
     private skillLayer: PIXI.Container;
     private spindownLayer: PIXI.Container;
     private skillCooldowns: number[] = new Array(NUM_SKILLS).fill(0);
@@ -36,8 +37,23 @@ export default class Skillbar extends PIXI.Container {
             spinner.x = position[0] + 25;
             spinner.y = position[1] + 25;
             spinner.alpha = 0.8;
+
+            let num = new PIXI.Text("", {
+                align: "center",
+                fill: 0xFF0000,
+                fontSize: 28,
+                fontFamily: "SilkScreenNormal",
+                stroke: 0,
+                strokeThickness: 2,
+            } );
+            num.anchor.set(0.5, 1);
+            num.x = position[0] + 26;
+            num.y = position[1] + 39;
+
             this.spindownLayer.addChild(spinner);
+            this.spindownLayer.addChild(num);
             this.cooldownSpinners.push(spinner);
+            this.cooldownNumbers.push(num);
         }
 
         this.skills[0] = skillData.basic_attack;
@@ -45,31 +61,28 @@ export default class Skillbar extends PIXI.Container {
         this.skillIcons[0].texture = skillData.basic_attack.icon;
     }
 
-    public addSkill(skill: Skill, primary = false) {
-        if (!primary) {
-            this.skills.push(skill);
-            for (let i = 0; i < NUM_SKILLS; i ++) {
-                if (this.equippedSkills[i] === undefined) {
-                    this.equippedSkills[i] = skill;
-                    this.skillIcons[i].texture = skill.icon;
-                    return;
-                }
+    public addSkill(skill: Skill) {
+        let alreadyHadSkill = this.skills.indexOf(skill) > 0;
+        this.skills.push(skill);
+        if (alreadyHadSkill) return; // if we already had a copy of the skill, don't add it to the bar
+        for (let i = 0; i < NUM_SKILLS; i ++) {
+            if (this.equippedSkills[i] === undefined) {
+                this.equippedSkills[i] = skill;
+                this.skillIcons[i].texture = skill.icon;
+                return;
             }
-        } else {
-            this.skills[0] = skill;
-            this.equippedSkills[0] = skill;
-            this.skillIcons[0].texture = skill.icon;
         }
     }
 
     public removeSkill(skill: Skill) {
         let idx = this.skills.indexOf(skill);
-        if (idx < 0) return;
+        if (idx < 0) return; // if we don't even have the skill then that's it
+        this.skills.splice(idx, 1);
+        if (this.skills.indexOf(skill) < 0) return; // if we still have a copy of the skill, don't remove it from the bar
         let slotIdx = this.equippedSkills.indexOf(skill);
-        // TODO:
-        // if (idx === 0) {
-            // 
-        // }
+        if (slotIdx < 0) return; // it wasn't even slotted lol
+        this.equippedSkills[slotIdx] = undefined;
+        this.skillIcons[slotIdx].texture = PIXI.Texture.EMPTY; // remove the image from the bar
     }
 
     public useSkill(index: number) {
@@ -108,11 +121,16 @@ export default class Skillbar extends PIXI.Container {
             if (skill.gcd && this.globalCooldown > 0 && this.globalCooldown > this.skillCooldowns[i]) {
                 this.cooldownSpinners[i].visible = true;
                 this.cooldownSpinners[i].setProgress(this.globalCooldown / this.player.stats.globalCooldown);
+                this.cooldownNumbers[i].visible = false;
             } else if (this.skillCooldowns[i] > 0) {
                 this.cooldownSpinners[i].visible = true;
                 this.cooldownSpinners[i].setProgress(this.skillCooldowns[i] / skill.cooldown);
+                this.cooldownNumbers[i].visible = true;
+                let cdSeconds = Math.round(this.skillCooldowns[i] / 6) / 10;
+                this.cooldownNumbers[i].text = cdSeconds >= 10 ? cdSeconds.toFixed(0) : cdSeconds.toFixed(1);
             } else {
                 this.cooldownSpinners[i].visible = false;
+                this.cooldownNumbers[i].visible = false;
             }
         }
     }

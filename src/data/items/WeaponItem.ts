@@ -1,4 +1,4 @@
-import World from "../world/World";
+import World from "../../world/World";
 import EquipmentItem from "./EquipmentItem";
 
 export type WeaponType = "heavy" | "light" | "magic";
