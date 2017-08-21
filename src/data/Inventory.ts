@@ -22,6 +22,8 @@ export default class Inventory {
 
     public inventoryItems: (InventoryItem | undefined)[] = [
         ItemFactory.constructItem("weapon", ItemFactory.itemData.heros_sword),
+        ItemFactory.constructItem("weapon", ItemFactory.itemData.woodchopping_axe),
+        ItemFactory.constructItem("equip", ItemFactory.itemData.wooden_buckler),
     ];
     public equipment: IEquipmentSlots = {
         head: undefined,

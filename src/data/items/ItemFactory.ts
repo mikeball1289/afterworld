@@ -3,7 +3,7 @@ import EquipmentItem from "./EquipmentItem";
 import InventoryItem from "./InventoryItem";
 import WeaponItem from "./WeaponItem";
 
-type ItemType = "feet" | "legs" | "heavy" | "light" | "magic" | "head" | "body" | "item" | "neck" | "trinket" | "gloves";
+type ItemType = "feet" | "legs" | "heavy" | "light" | "magic" | "head" | "body" | "item" | "neck" | "trinket" | "gloves" | "offhand";
 
 interface IItemData {
     type: ItemType;
@@ -14,21 +14,21 @@ interface IItemData {
     description: string;
 }
 
-type T = IItemData;
+type I = IItemData;
 
 let p: <T>(x: T, y: T) => [T, T] = (x, y) => [x, y];
 
 export let itemData = {
-    heros_sword: <T> {
+    heros_sword: <I> {
         type: "heavy",
         name: "Hero's Sword",
         sheetName: "heros_sword",
         icon: p(2, 0),
         range: 60,
-        description: "A mighty sword weilded by a true hero.",
+        description: "A mighty <red>sword</red> <green>weilded</green> by a true hero.",
     },
 
-    cloth_shirt: <T> {
+    cloth_shirt: <I> {
         type: "body",
         name: "Cloth Shirt",
         sheetName: "cloth_shirt",
@@ -36,7 +36,7 @@ export let itemData = {
         description: "A simple cloth shirt.",
     },
 
-    iron_dagger: <T> {
+    iron_dagger: <I> {
         type: "light",
         name: "Iron Dagger",
         sheetName: "iron_dagger",
@@ -45,7 +45,7 @@ export let itemData = {
         description: "A simple iron dagger.",
     },
 
-    leather_pants: <T> {
+    leather_pants: <I> {
         type: "legs",
         name: "Leather Pants",
         sheetName: "leather_pants",
@@ -53,12 +53,29 @@ export let itemData = {
         description: "A pair of stitched leather pants.",
     },
 
-    leather_boots: <T> {
+    leather_boots: <I> {
         type: "feet",
         name: "Leather Shoes",
         sheetName: "leather_boots",
         icon: p(4, 0),
         description: "A pair of stitched leather shoes.",
+    },
+
+    woodchopping_axe: <I> {
+        type: "heavy",
+        name: "Woodchopping Axe",
+        sheetName: "woodchopping_axe",
+        icon: p(8, 0),
+        range: 50,
+        description: "A medium-sized axe, clearly intended for chopping wood.",
+    },
+
+    wooden_buckler: <I> {
+        type: "offhand",
+        name: "Wooden Buckler",
+        sheetName: "wood_buckler",
+        icon: p(9, 0),
+        description: "The woodsman said it was a buckler, but it just looks like half a log. Oh well.",
     },
 };
 

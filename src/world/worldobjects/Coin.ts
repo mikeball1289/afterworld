@@ -1,25 +1,26 @@
-import Map from "../world/Map";
-import { GRAVITY } from "../world/physicalConstants";
-import World from "../world/World";
-import Particle from "./Particle";
+import Animator from "../../display/Animator";
+import { fromTextureCache } from "../../pixiTools";
+import Map from "../Map";
+import { GRAVITY } from "../physicalConstants";
+import World from "../World";
 
-export default class DebrisParticle extends Particle {
+export default class Coin extends PIXI.Container {
 
-    public rotationVelocity = 0;
-    private image: PIXI.Sprite;
+    public velocity: PIXI.Point;
+    private sprite: Animator<{bronze: [number, number], gold: [number, number], silver: [number, number]}>;
 
-    constructor(texture: PIXI.Texture) {
+    constructor(amount: number) {
         super();
-        this.image = new PIXI.Sprite(texture);
-        this.addChild(this.image);
-        this.image.anchor.set(0.5);
-        this.lifetime = 60;
+        this.sprite = new Animator(fromTextureCache("/images/coins.png"), new PIXI.Point(20, 30), {
+            bronze: [0, 4],
+            silver: [1, 4],
+            gold: [2, 4],
+        }, "bronze", 12);
     }
 
     public update(world: World) {
-        if (!world.map) return this.destroy();
         this.velocity.y += GRAVITY;
-        this.image.rotation += this.rotationVelocity;
+        if (!world.map) return;
         let magnitude = Math.ceil(Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y));
         for (let i = 0; i < magnitude; i ++) {
             if (this.velocity.x !== 0) {
@@ -45,14 +46,6 @@ export default class DebrisParticle extends Particle {
         }
         if (this.velocity.y === 0) {
             this.velocity.x *= 0.95;
-            this.rotationVelocity *= 0.95;
-        }
-        if (Math.abs(this.velocity.x) < 1 && Math.abs(this.velocity.y) < 1) {
-            this.lifetime --;
-            this.alpha = Math.ceil(this.lifetime / 15) / 4;
-            if (this.lifetime <= 0) {
-                this.destroy();
-            }
         }
     }
 }

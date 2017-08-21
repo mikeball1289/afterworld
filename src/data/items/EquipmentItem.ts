@@ -14,6 +14,8 @@ export default class EquipmentItem extends InventoryItem {
         return obj && obj.type === "equipment";
     }
 
+    public ilvl: number = 0;
+
     public socket?: {
         gem?: GemItem;
     } = undefined;
@@ -23,9 +25,18 @@ export default class EquipmentItem extends InventoryItem {
         this.type = "equipment";
     }
 
+    public generate(level: number) {
+        this.ilvl = level;
+        return this;
+    }
+
     public get gem() {
         if (this.socket) return this.socket.gem;
         return undefined;
+    }
+
+    public getDescription(world: World) {
+        return "LV " + this.ilvl + "\n" + super.getDescription(world);
     }
 
     public addEquipmentGraphic(player: Player) {

@@ -37,12 +37,12 @@ export default class NPCText extends JuggledSprite {
         this.talkerSprite.y = 125;
         this.addChild(this.talkerSprite);
 
-        this.textField = new PIXI.Text("", { wordWrap: true, wordWrapWidth: 450, fontFamily: "SilkscreenNormal", fontSize: 17 } );
+        this.textField = new PIXI.Text("", { wordWrap: true, wordWrapWidth: 450, fontFamily: DEFAULT_FONT, fontSize: 17 } );
         this.textField.x = 136;
         this.textField.y = 45;
         this.addChild(this.textField);
 
-        this.nameField = new PIXI.Text("", { wordWrap: true, wordWrapWidth: 450, fontFamily: "SilkscreenNormal", fontSize: 26 } );
+        this.nameField = new PIXI.Text("", { wordWrap: true, wordWrapWidth: 450, fontFamily: DEFAULT_FONT, fontSize: 26 } );
         this.nameField.x = 136;
         this.nameField.y = 6;
         this.addChild(this.nameField);
@@ -77,7 +77,7 @@ export default class NPCText extends JuggledSprite {
             this.selectedOption = 0;
             for (let i = 0; i < this.options.length; i ++) {
                 let option = this.options[i];
-                let text = new PIXI.Text(option, { fontFamily: "SilkscreenNormal", fontSize: 17 } );
+                let text = new PIXI.Text(option, { fontFamily: DEFAULT_FONT, fontSize: 17 } );
                 text.x = 166;
                 text.y = this.textField.y + this.textField.height + 5 + i * 20;
                 this.addChild(text);

@@ -1,6 +1,7 @@
 import { IEquipmentSlots } from "../data/Inventory";
 import Inventory from "../data/Inventory";
 import EquipmentItem from "../data/items/EquipmentItem";
+import { NUM_SKILLS } from "../data/Skillbar";
 import JuggledSprite from "../display/JuggledSprite";
 import { fromTextureCache } from "../pixiTools";
 import { controls, InputType } from "../root";
@@ -26,6 +27,8 @@ const EQUIPMENT_INDEX_TYPES: (keyof IEquipmentSlots)[] = [
     "gloves",
 ];
 
+const SKILLBAR_INDEX_MAPPING = [2, 3, 4, 5, 0, 1];
+
 type SelectionArea = "items" | "equipment" | "skills";
 
 export default class InventoryUI extends JuggledSprite {
@@ -40,6 +43,9 @@ export default class InventoryUI extends JuggledSprite {
     private optionBox: OptionBox;
     private moveMode = false;
     private moveIndex = 0;
+    private titleText: PIXI.Text;
+    private descriptionText: PIXI.Text;
+    private descriptionPanel: PIXI.Container;
 
     constructor(private world: World) {
         super(fromTextureCache("/images/inventory_ui.png", 0, 0, 871, 496));
@@ -55,6 +61,44 @@ export default class InventoryUI extends JuggledSprite {
         this.addChild(this.selectionHighlight);
         this.addChild(this.optionBox);
         this.highlightSelection();
+
+        this.descriptionPanel = new PIXI.Container();
+        this.descriptionPanel.x = 576;
+        this.descriptionPanel.y = 70;
+        this.titleText = new PIXI.Text("", {
+            fontFamily: DEFAULT_FONT,
+            fontSize: 26,
+            wordWrap: true,
+            wordWrapWidth: 294,
+        } );
+        this.titleText.y = 4;
+        this.descriptionPanel.addChild(this.titleText);
+
+        this.descriptionText = new MultiStyleText("", {
+            default: {
+                fontFamily: DEFAULT_FONT,
+                fontSize: 16,
+                wordWrap: true,
+                wordWrapWidth: 294,
+            },
+            red: {
+                fontFamily: DEFAULT_FONT,
+                fontSize: 16,
+                wordWrap: true,
+                wordWrapWidth: 294,
+                fill: 0xFF0000,
+            },
+            green: {
+                fontFamily: DEFAULT_FONT,
+                fontSize: 16,
+                wordWrap: true,
+                wordWrapWidth: 294,
+                fill: 0x00FF00,
+            },
+        } );
+        this.descriptionText.y = 6;
+        this.descriptionPanel.addChild(this.descriptionText);
+        this.addChild(this.descriptionPanel);
     }
 
     public onEnterFrame() {
@@ -146,6 +190,7 @@ export default class InventoryUI extends JuggledSprite {
 
     public open() {
         this.visible = true;
+        this.showDescription();
     }
 
     public close() {
@@ -180,6 +225,37 @@ export default class InventoryUI extends JuggledSprite {
             sprite.y = coords[1] + 5;
             this.itemTextures.addChild(sprite);
         }
+
+        let skills = this.world.actorManager.player.skillBar.equippedSkills;
+        for (let i = 0; i < NUM_SKILLS; i ++) {
+            let skill = skills[SKILLBAR_INDEX_MAPPING[i]];
+            if (skill === undefined) continue;
+            let sprite = new PIXI.Sprite(skill.icon);
+            let coords = this.getItemFrameCoords({ area: "skills", index: i });
+            sprite.x = coords[0];
+            sprite.y = coords[1];
+            this.itemTextures.addChild(sprite);
+        }
+    }
+
+    public showDescription() {
+        let player = this.world.actorManager.player;
+        this.titleText.text = "";
+        this.descriptionText.text = "";
+        if (this.selection.area === "items") {
+            let item = player.inventory.inventoryItems[this.selection.index];
+            if (item) {
+                this.titleText.text = item.getName();
+                this.descriptionText.text = item.getDescription(this.world);
+            }
+        } else if (this.selection.area === "equipment") {
+            let equipment = player.inventory.equipment[EQUIPMENT_INDEX_TYPES[this.selection.index]];
+            if (equipment) {
+                this.titleText.text = equipment.getName();
+                this.descriptionText.text = equipment.getDescription(this.world);
+            }
+        }
+        this.descriptionText.y = this.titleText.height + 6;
     }
 
     public moveSelection(direction: MovementDirection) {
@@ -188,6 +264,8 @@ export default class InventoryUI extends JuggledSprite {
                 case MovementDirection.UP: {
                     if (Math.floor(this.selection.index / 6) > 0) {
                         this.setSelection(this.selection.index - 6);
+                    } else if (!this.moveMode) {
+                        this.setSelection(this.selection.index, "skills");
                     }
                     break;
                 }
@@ -217,6 +295,8 @@ export default class InventoryUI extends JuggledSprite {
             if (direction === MovementDirection.UP) {
                 if (this.selection.index !== 0 && this.selection.index !== 2 && this.selection.index !== 7) {
                     this.setSelection(this.selection.index - 1);
+                } else if (this.selection.index === 2) {
+                    this.setSelection(0, "skills");
                 }
             } else if (direction === MovementDirection.DOWN) {
                 if (this.selection.index !== 1 && this.selection.index !== 6 && this.selection.index !== 8) {
@@ -237,7 +317,16 @@ export default class InventoryUI extends JuggledSprite {
                     this.setSelection(0, "items");
                 }
             }
+        } else if (this.selection.area === "skills") {
+            if (direction === MovementDirection.LEFT) {
+                if (this.selection.index > 0) this.setSelection(this.selection.index - 1);
+            } else if (direction === MovementDirection.RIGHT) {
+                if (this.selection.index < 5) this.setSelection(this.selection.index + 1);
+            } else if (direction === MovementDirection.DOWN) {
+                this.setSelection(this.selection.index, "items");
+            }
         }
+        this.showDescription();
     }
 
     private highlightSelection() {
@@ -255,6 +344,8 @@ export default class InventoryUI extends JuggledSprite {
             } else {
                 return [151, 271 + (selection.index - 7) * 52];
             }
+        } else if (selection.area === "skills") {
+            return [125 + 52 * selection.index + (selection.index >= 4 ? 30 : 0), 26];
         }
         return [0, 0];
     }

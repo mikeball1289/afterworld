@@ -29,7 +29,7 @@ export default class OptionBox extends PIXI.Container {
         for (let i = 0; i < options.length; i ++) {
             let option = options[i];
             let text = new PIXI.Text(option, {
-                fontFamily: "SilkScreenNormal",
+                fontFamily: DEFAULT_FONT,
                 fontSize: 18,
             });
             text.x = 22;

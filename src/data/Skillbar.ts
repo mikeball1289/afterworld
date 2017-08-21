@@ -5,11 +5,11 @@ import Skill from "./Skill";
 import skillData from "./skillData";
 
 export const NUM_SKILLS = 6;
-const iconPositions: [number, number][] = [[613, 6], [665, 6], [375, 6], [427, 6], [479, 6], [531, 6]];
+const iconPositions: [number, number][] = [[613, 539], [665, 539], [375, 539], [427, 539], [479, 539], [531, 539]];
 
 export default class Skillbar extends PIXI.Container {
+    public equippedSkills: (Skill | undefined)[] = [];
     private skills: Skill[] = [];
-    private equippedSkills: (Skill | undefined)[] = [];
     private skillIcons: (PIXI.Sprite)[] = [];
     private cooldownSpinners: ClockSpindown[] = [];
     private cooldownNumbers: PIXI.Text[] = [];
@@ -42,7 +42,7 @@ export default class Skillbar extends PIXI.Container {
                 align: "center",
                 fill: 0xFF0000,
                 fontSize: 28,
-                fontFamily: "SilkScreenNormal",
+                fontFamily: DEFAULT_FONT,
                 stroke: 0,
                 strokeThickness: 2,
             } );

@@ -7,7 +7,7 @@ export default class TextParticle extends Particle {
     constructor(value: string, color: number) {
         super();
         let text = new PIXI.Text(value, {
-            fontFamily: "SilkscreenNormal",
+            fontFamily: DEFAULT_FONT,
             fontSize: 32,
             align: "center",
             stroke: 0x383838,

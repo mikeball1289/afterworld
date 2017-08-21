@@ -32,7 +32,7 @@ function main(app: PIXI.Application) {
     app.stage.addChild(world);
     let fps = 60;
     let lastTick = 0;
-    let fpsDisplay = new PIXI.Text("0", { align: "right", fontFamily: "SilkscreenNormal", fontSize: 17 } );
+    let fpsDisplay = new PIXI.Text("0", { align: "right", fontFamily: DEFAULT_FONT, fontSize: 17 } );
     fpsDisplay.anchor.set(1);
     fpsDisplay.x = app.view.width;
     fpsDisplay.y = app.view.height;

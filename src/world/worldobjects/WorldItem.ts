@@ -1,25 +1,24 @@
-import Map from "../world/Map";
-import { GRAVITY } from "../world/physicalConstants";
-import World from "../world/World";
-import Particle from "./Particle";
+import InventoryItem from "../../data/items/InventoryItem";
+import Map from "../Map";
+import { GRAVITY } from "../physicalConstants";
+import World from "../World";
 
-export default class DebrisParticle extends Particle {
+export default class WorldItem extends PIXI.Container {
 
-    public rotationVelocity = 0;
-    private image: PIXI.Sprite;
+    public velocity: PIXI.Point;
+    private sprite: PIXI.Sprite;
 
-    constructor(texture: PIXI.Texture) {
+    constructor(private item: InventoryItem) {
         super();
-        this.image = new PIXI.Sprite(texture);
-        this.addChild(this.image);
-        this.image.anchor.set(0.5);
-        this.lifetime = 60;
+        this.velocity = new PIXI.Point();
+        this.sprite = new PIXI.Sprite(item.graphic);
+        this.sprite.anchor.set(0.5, 0.9);
+        this.addChild(this.sprite);
     }
 
     public update(world: World) {
-        if (!world.map) return this.destroy();
+        if (!world.map) return;
         this.velocity.y += GRAVITY;
-        this.image.rotation += this.rotationVelocity;
         let magnitude = Math.ceil(Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y));
         for (let i = 0; i < magnitude; i ++) {
             if (this.velocity.x !== 0) {
@@ -39,20 +38,10 @@ export default class DebrisParticle extends Particle {
                 {
                     this.y -= this.velocity.y / magnitude;
                     this.velocity.y = 0;
+                    this.velocity.x = 0;
                 }
             }
             if (this.velocity.x === 0 && this.velocity.y === 0) break;
-        }
-        if (this.velocity.y === 0) {
-            this.velocity.x *= 0.95;
-            this.rotationVelocity *= 0.95;
-        }
-        if (Math.abs(this.velocity.x) < 1 && Math.abs(this.velocity.y) < 1) {
-            this.lifetime --;
-            this.alpha = Math.ceil(this.lifetime / 15) / 4;
-            if (this.lifetime <= 0) {
-                this.destroy();
-            }
         }
     }
 }

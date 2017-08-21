@@ -32,15 +32,16 @@
     <script src="/GrayFilter.js"></script>
     <!-- <script src="/foreign/pixi-filters/bin/filters.js"></script> -->
     <script src="/foreign/shockwave.js"></script>
+    <script src="/foreign/MultiStyleText.js"></script>
 </head>
 <body>
     <p style="font-family: SilkscreenNormal; visibility: hidden;" id="silkscreen-normal">SilkscreenNormal</p> 
     <script>
-        global.document = window.document;
+        DEFAULT_FONT = "SilkscreenNormal";
 
         function start() {
-            // let main = require("./js/main");
-            let main = require("./js/bundle.min.js");
+            let main = require("./js/main");
+            // let main = require("./js/bundle.min.js");
             main.preload(true);
         }
 

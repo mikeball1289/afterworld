@@ -1,6 +1,6 @@
 import Player from "../../actors/Player";
 
-export type CostType = "health" | "energy" | "mana";
+export type CostType = "health" | "energy";
 
 export default class Cost {
 
@@ -10,7 +10,6 @@ export default class Cost {
         switch (this.costType) {
             case "health": return player.stats.health >= this.costAmout;
             case "energy": return player.stats.energy >= this.costAmout;
-            case "mana": return player.stats.mana >= this.costAmout;
             default: return false;
         }
     }
@@ -26,13 +25,6 @@ export default class Cost {
         } else if (this.costType === "energy") {
             if (player.stats.energy >= this.costAmout) {
                 player.stats.energy -= this.costAmout;
-                return true;
-            } else {
-                return false;
-            }
-        } else if (this.costType === "mana") {
-            if (player.stats.mana >= this.costAmout) {
-                player.stats.mana -= this.costAmout;
                 return true;
             } else {
                 return false;
