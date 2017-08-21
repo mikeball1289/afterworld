@@ -72,11 +72,11 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         map: "/maps/map2.png",
         background: "/maps/map2_back.png",
         entrances: {
-            default: p(313, 259 - 85),
-            map1: p(85, 464 - 85),
+            default: p(313, 259),
+            map1: p(85, 464),
         },
         exits: {
-            map1: p(85, 464 - 85),
+            map1: p(85, 464),
         },
         npcs: [],
         enemies: () => {

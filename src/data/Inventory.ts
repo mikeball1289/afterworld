@@ -43,10 +43,38 @@ export default class Inventory {
         for (let i = 0; i < Inventory.INVENTORY_SIZE; i ++) {
             if (this.inventoryItems[i] === undefined) {
                 this.inventoryItems[i] = item;
+                this.world.uiManager.inventoryUI.refreshInventoryIcons();
                 return true;
             }
         }
         return false;
+    }
+
+    public removeItem(index: number): InventoryItem | undefined;
+    public removeItem(item: InventoryItem): InventoryItem | undefined;
+    public removeItem(search: (item: InventoryItem) => boolean): InventoryItem | undefined;
+    public removeItem(i: number | InventoryItem | ((item: InventoryItem) => boolean)) {
+        if (typeof i === "number") {
+            let item = this.inventoryItems[i];
+            this.inventoryItems[i] = undefined;
+            this.world.uiManager.inventoryUI.refreshInventoryIcons();
+            return item;
+        } else if (typeof i === "function") {
+            for (let idx = 0; idx < this.inventoryItems.length; idx ++) {
+                let item = this.inventoryItems[idx];
+                if (!item) continue;
+                if (i(item)) return this.removeItem(idx);
+            }
+            return undefined;
+        } else {
+            let idx = this.inventoryItems.indexOf(i);
+            if (idx < 0) return undefined;
+            return this.removeItem(idx);
+        }
+    }
+
+    public hasSpace() {
+        return this.inventoryItems.length < Inventory.INVENTORY_SIZE || this.inventoryItems.indexOf(undefined) >= 0;
     }
 
 }

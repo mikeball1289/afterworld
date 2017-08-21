@@ -6,6 +6,7 @@ import JuggledSprite from "../display/JuggledSprite";
 import { fromTextureCache } from "../pixiTools";
 import { controls, InputType } from "../root";
 import World from "../world/World";
+import WorldItem from "../world/worldobjects/WorldItem";
 import OptionBox from "./widgets/OptionBox";
 
 enum MovementDirection {
@@ -95,6 +96,13 @@ export default class InventoryUI extends JuggledSprite {
                 wordWrapWidth: 294,
                 fill: 0x00FF00,
             },
+            or: {
+                fontFamily: DEFAULT_FONT,
+                fontSize: 16,
+                wordWrap: true,
+                wordWrapWidth: 294,
+                fill: 0xFF9000,
+            },
         } );
         this.descriptionText.y = 6;
         this.descriptionPanel.addChild(this.descriptionText);
@@ -169,14 +177,10 @@ export default class InventoryUI extends JuggledSprite {
                             item.addEquipmentGraphic(this.world.actorManager.player);
                             this.refreshInventoryIcons();
                         } else if (option === 1) {
-                            this.moveMode = true;
-                            this.moveIndex = this.selection.index;
-                            this.moveHighlight.visible = true;
-                            this.moveHighlight.x = p[0];
-                            this.moveHighlight.y = p[1];
-                        }/* else if (option === 2) {
-                            
-                        }*/
+                            this.beginMove(p);
+                        } else if (option === 2) {
+                            this.dropItem();
+                        }
                     } );
                 }
             }
@@ -253,6 +257,12 @@ export default class InventoryUI extends JuggledSprite {
             if (equipment) {
                 this.titleText.text = equipment.getName();
                 this.descriptionText.text = equipment.getDescription(this.world);
+            }
+        } else if (this.selection.area === "skills") {
+            let skill = player.skillBar.equippedSkills[SKILLBAR_INDEX_MAPPING[this.selection.index]];
+            if (skill) {
+                this.titleText.text = skill.getName();
+                this.descriptionText.text = skill.getDescription();
             }
         }
         this.descriptionText.y = this.titleText.height + 6;
@@ -348,5 +358,24 @@ export default class InventoryUI extends JuggledSprite {
             return [125 + 52 * selection.index + (selection.index >= 4 ? 30 : 0), 26];
         }
         return [0, 0];
+    }
+
+    private beginMove(frameCoords: [number, number]) {
+        this.moveMode = true;
+        this.moveIndex = this.selection.index;
+        this.moveHighlight.visible = true;
+        this.moveHighlight.x = frameCoords[0];
+        this.moveHighlight.y = frameCoords[1];
+    }
+
+    private dropItem() {
+        let item = this.world.actorManager.player.inventory.removeItem(this.selection.index);
+        if (!item) return;
+        let worldItem = new WorldItem(item);
+        worldItem.x = this.world.actorManager.player.horizontalCenter;
+        worldItem.y = this.world.actorManager.player.verticalCenter;
+        worldItem.velocity.y = -8;
+        this.world.addWorldItem(worldItem);
+        this.refreshInventoryIcons();
     }
 }

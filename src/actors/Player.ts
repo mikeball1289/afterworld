@@ -309,7 +309,8 @@ export default class Player extends Actor {
     }
 
     public setAlive(healthPercent: number) {
-        this.stats.health = Math.ceil(this.stats.maxHealth * healthPercent);
+        this.stats.setHealth(Math.ceil(this.stats.maxHealth * healthPercent), true);
+        this.stats.energy = this.stats.maxEnergy;
         this.removeChild(this.deathFrame);
         this.addChild(this.sprite);
         this.sprite.scale.x = this.direction;

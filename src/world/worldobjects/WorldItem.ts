@@ -1,3 +1,4 @@
+import Player from "../../actors/Player";
 import InventoryItem from "../../data/items/InventoryItem";
 import Map from "../Map";
 import { GRAVITY } from "../physicalConstants";
@@ -8,7 +9,7 @@ export default class WorldItem extends PIXI.Container {
     public velocity: PIXI.Point;
     private sprite: PIXI.Sprite;
 
-    constructor(private item: InventoryItem) {
+    constructor(public item: InventoryItem) {
         super();
         this.velocity = new PIXI.Point();
         this.sprite = new PIXI.Sprite(item.graphic);
@@ -43,5 +44,9 @@ export default class WorldItem extends PIXI.Container {
             }
             if (this.velocity.x === 0 && this.velocity.y === 0) break;
         }
+    }
+
+    public withinPickupRange(player: Player) {
+        return this.x - 20 < player.right && this.x + 20 > player.left && this.y > player.top && this.y - 10 < player.bottom;
     }
 }

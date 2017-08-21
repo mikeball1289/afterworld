@@ -6,6 +6,7 @@ import { juggler, soundManager } from "../root";
 import ActorManager from "./ActorManager";
 import Map from "./Map";
 import mapData, { IMapDataObject } from "./mapData";
+import WorldItem from "./worldobjects/WorldItem";
 
 type MapName = keyof typeof mapData;
 const TRANSITION_SPEED = 0.033;
@@ -36,10 +37,14 @@ export default class World extends PIXI.Sprite {
     private npcLayer: PIXI.Container;
     private filterList: PIXI.Filter[] = [];
 
+    private worldItems: WorldItem[] = [];
+    private worldObjectLayer: PIXI.Container;
+
     constructor(startingMap: MapName, public screenWidth: number, public screenHeight: number) {
         super();
 
         this.worldContainer = new PIXI.Container();
+        this.worldObjectLayer = new PIXI.Container();
         this.npcLayer = new PIXI.Container();
         this.uiManager = new UIManager(this);
         this.particleSystem = new ParticleSystem(this);
@@ -50,6 +55,7 @@ export default class World extends PIXI.Sprite {
         this.worldContainer.addChild(this.npcLayer);
         this.worldContainer.addChild(this.actorManager);
         this.worldContainer.addChild(this.particleSystem);
+        this.worldContainer.addChild(this.worldObjectLayer);
         this.worldContainer.addChild(this.uiManager.worldLayer);
 
         this.addChild(this.uiManager.overlayLayer);
@@ -134,13 +140,30 @@ export default class World extends PIXI.Sprite {
         }
     }
 
+    public addWorldItem(item: WorldItem) {
+        this.worldItems.push(item);
+        this.worldObjectLayer.addChild(item);
+    }
+
     // if the player is eligible for an interaction event begin the interation
     public attemptInteraction() {
         if (this.queueMapTransition) return; // but not if we're in the process of a transition
+        if (this.actorManager.player.inventory.hasSpace()) {
+            for (let i = 0; i < this.worldItems.length; i ++) {
+                let item = this.worldItems[i];
+                if (item.withinPickupRange(this.actorManager.player)) {
+                    this.worldItems.splice(i, 1);
+                    this.worldObjectLayer.removeChild(item);
+                    this.actorManager.player.inventory.addItem(item.item);
+                    item.destroy();
+                    return;
+                }
+            }
+        }
         for (let npc of this.npcs) {
             if (npc.withinTalkingRange(this.actorManager.player)) {
                 this.uiManager.displayNPCText(npc);
-                break;
+                return;
             }
         }
     }
@@ -197,6 +220,7 @@ export default class World extends PIXI.Sprite {
     }
 
     public useFilter(filter: PIXI.Filter) {
+        if (this.filterList.indexOf(filter) >= 0) return;
         this.filterList.push(filter);
         this.worldContainer.filters = this.filterList;
     }
@@ -212,6 +236,9 @@ export default class World extends PIXI.Sprite {
         if (!this.map) return;
 
         this.actorManager.update(this.map, this.queueMapTransition === undefined && !this.uiManager.hasInteractiveUI());
+        for (let item of this.worldItems) {
+            item.update(this);
+        }
         this.particleSystem.update();
 
         let foundInteractable = false;
