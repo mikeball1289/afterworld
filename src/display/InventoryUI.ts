@@ -80,27 +80,18 @@ export default class InventoryUI extends JuggledSprite {
                 fontFamily: DEFAULT_FONT,
                 fontSize: 16,
                 wordWrap: true,
-                wordWrapWidth: 294,
+                wordWrapWidth: 291,
             },
             red: {
                 fontFamily: DEFAULT_FONT,
-                fontSize: 16,
-                wordWrap: true,
-                wordWrapWidth: 294,
                 fill: 0xFF0000,
             },
             green: {
                 fontFamily: DEFAULT_FONT,
-                fontSize: 16,
-                wordWrap: true,
-                wordWrapWidth: 294,
                 fill: 0x00FF00,
             },
             or: {
                 fontFamily: DEFAULT_FONT,
-                fontSize: 16,
-                wordWrap: true,
-                wordWrapWidth: 294,
                 fill: 0xFF9000,
             },
         } );

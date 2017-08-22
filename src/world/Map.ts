@@ -64,6 +64,7 @@ export default class Map {
     }
 
     public backgroundSprite: PIXI.Sprite;
+    public foregroundSprite: PIXI.Sprite;
     private mapData: Uint8Array;
     private mapWidth: number = 0;
     private mapHeight: number = 0;
@@ -71,7 +72,7 @@ export default class Map {
     get digitalWidth() { return this.mapWidth; }
     get digitalHeight() { return this.mapHeight; }
 
-    constructor(private mapTexture: PIXI.Texture, backgroundImage: PIXI.Texture) {
+    constructor(private mapTexture: PIXI.Texture, backgroundImage: PIXI.Texture, foregroundImage?: PIXI.Texture) {
         let mapDataTex = mapTexture;
         let canvas = document.createElement("canvas");
         this.mapWidth = canvas.width = mapDataTex.width;
@@ -93,11 +94,13 @@ export default class Map {
             else throw new Error("Invalid map data at " + ((i / 4) % this.mapWidth) + ", " + Math.floor((i / 4) / this.mapWidth) + " " + data.data[i] + " " + data.data[i + 1] + " " + data.data[i + 2]);
         }
         this.backgroundSprite = new PIXI.Sprite(backgroundImage);
+        if (foregroundImage) this.foregroundSprite = new PIXI.Sprite(foregroundImage);
     }
 
     public destroy(options?: boolean | PIXI.IDestroyOptions) {
         this.mapTexture.destroy(true);
         this.backgroundSprite.destroy(true);
+        if (this.foregroundSprite) this.foregroundSprite.destroy(true);
         this.mapData = new Uint8Array(0); // clear the map data on destruction
     }
 
@@ -146,7 +149,11 @@ export default class Map {
             if (movingY) {
                 actor.position.y += actor.velocity.y / magnitude;
                 if (actor.velocity.y < 0) {
-                    // iunno
+                    if (Map.testLine({ x: actor.left, y: actor.top}, { x: actor.right, y: actor.top }, (x, y) => Map.isSolid(this.getPixelData(x, y)))) {
+                        movingY = false;
+                        collisions[1] = true;
+                        actor.position.y = Math.ceil(actor.position.y);
+                    }
                 } else {
                     // if we're hitting the ground, give 'em the goods
                     // if we're inside of a passable solid, then we haven't actually gotten through

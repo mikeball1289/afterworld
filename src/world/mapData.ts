@@ -14,6 +14,7 @@ export interface INPCData {
 export interface IMapDataObject {
     map: string;
     background: string;
+    foreground?: string;
     npcs: INPCData[];
     enemies: (world: World) => Enemy[];
     entrances: {
@@ -88,6 +89,7 @@ let mapData: { [mapname: string]: IMapDataObject } = {
     dark_forest1: {
         map: "/maps/dark_forest1_geometry.png",
         background: "/maps/dark_forest1_back.png",
+        foreground: "/maps/dark_forest1_foreground.png",
         entrances: {
             default: p(144, 956 - 85),
         },

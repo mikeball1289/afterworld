@@ -126,8 +126,8 @@ export default class Player extends Actor {
         this.skillBar.addSkill(skillData.cleave);
         this.skillBar.addSkill(skillData.buckle_down);
         this.skillBar.addSkill(skillData.envenom);
-        // this.skillBar.addSkill(skillData.leap);
-        // this.skillBar.addSkill(skillData.tremor);
+        this.skillBar.addSkill(skillData.leap);
+        this.skillBar.addSkill(skillData.tremor);
 
         this.loadEquipment();
     }

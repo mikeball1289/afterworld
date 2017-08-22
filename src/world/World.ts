@@ -1,3 +1,5 @@
+// tslint:disable:no-string-literal
+
 import ArchangelNPCData from "../display/ArchangelNPCData";
 import NPC from "../display/NPC";
 import UIManager from "../display/UIManager";
@@ -40,10 +42,13 @@ export default class World extends PIXI.Sprite {
     private worldItems: WorldItem[] = [];
     private worldObjectLayer: PIXI.Container;
 
+    private foregroundLayer: PIXI.Container;
+
     constructor(startingMap: MapName, public screenWidth: number, public screenHeight: number) {
         super();
 
         this.worldContainer = new PIXI.Container();
+        this.foregroundLayer = new PIXI.Container();
         this.worldObjectLayer = new PIXI.Container();
         this.npcLayer = new PIXI.Container();
         this.uiManager = new UIManager(this);
@@ -56,6 +61,7 @@ export default class World extends PIXI.Sprite {
         this.worldContainer.addChild(this.actorManager);
         this.worldContainer.addChild(this.particleSystem);
         this.worldContainer.addChild(this.worldObjectLayer);
+        this.worldContainer.addChild(this.foregroundLayer);
         this.worldContainer.addChild(this.uiManager.worldLayer);
 
         this.addChild(this.uiManager.overlayLayer);
@@ -88,19 +94,24 @@ export default class World extends PIXI.Sprite {
         let loader = new PIXI.loaders.Loader();
         loader.add("map", mapDataObject.map)
               .add("background", mapDataObject.background);
+        if (mapDataObject.foreground) loader.add("foreground", mapDataObject.foreground);
         for (let npc of mapDataObject.npcs) {
             loader.add(npc.name, npc.image);
         }
         loader.load( () => {
             try {
-                // tslint:disable-next-line:no-string-literal
-                this.map = new Map(loader.resources["map"].texture, loader.resources["background"].texture);
+                let foregroundTexture: PIXI.Texture | undefined;
+                if (loader.resources["foreground"]) {
+                    foregroundTexture = loader.resources["foreground"].texture;
+                }
+                this.map = new Map(loader.resources["map"].texture, loader.resources["background"].texture, foregroundTexture);
             } catch (e) {
                 console.log(e);
                 throw e;
             }
             if (!this.map) throw new Error("Map failed to create");
             this.worldContainer.addChildAt(this.map.backgroundSprite, 0);
+            if (this.map.foregroundSprite) this.foregroundLayer.addChild(this.map.foregroundSprite);
             for (let npc of mapDataObject.npcs) {
                 let npcSprite = new NPC(loader.resources[npc.name].texture, npc);
                 this.npcs.push(npcSprite);
@@ -172,6 +183,7 @@ export default class World extends PIXI.Sprite {
         // clean up previous map objects
         if (!this.map) return;
         this.removeChild(this.map.backgroundSprite);
+        if (this.map.foregroundSprite) this.foregroundLayer.removeChild(this.map.foregroundSprite);
         this.map.destroy(true);
         this.map = undefined;
         for (let npc of this.npcs) {

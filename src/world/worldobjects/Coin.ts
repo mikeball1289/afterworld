@@ -27,7 +27,7 @@ export default class Coin extends PIXI.Container {
                 this.x += this.velocity.x / magnitude;
                 if (Map.isWalled(world.map.getPixelData(this.x, this.y))) {
                     this.x -= this.velocity.x / magnitude;
-                    this.velocity.x = 0;
+                    this.velocity.x *= -0.5;
                 }
                 if (Map.isPassable(world.map.getPixelData(this.x, this.y))) {
                     this.y --;
@@ -39,7 +39,7 @@ export default class Coin extends PIXI.Container {
                     (this.velocity.y > 0) && Map.isWalkable(world.map.getPixelData(this.x, this.y)))
                 {
                     this.y -= this.velocity.y / magnitude;
-                    this.velocity.y = 0;
+                    this.velocity.y *= -0.5;
                 }
             }
             if (this.velocity.x === 0 && this.velocity.y === 0) break;
