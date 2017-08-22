@@ -141,3 +141,13 @@ declare class MultiStyleText extends PIXI.Text {
     protected updateTexture(): void;
     private assign(destination, ...sources);
 }
+
+declare module "png-js" {
+    export class load {
+        public width: number;
+        public height: number;
+        constructor(path: string);
+
+        public decode(fn: (pixelData: Buffer) => void): void;
+    }
+}

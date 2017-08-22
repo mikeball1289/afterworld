@@ -1,5 +1,6 @@
 // tslint:disable:no-string-literal
 
+import * as PNG from "png-js";
 import ArchangelNPCData from "../display/ArchangelNPCData";
 import NPC from "../display/NPC";
 import UIManager from "../display/UIManager";
@@ -92,33 +93,35 @@ export default class World extends PIXI.Sprite {
         soundManager.playMusic(mapDataObject.bgTrack);
         this.map = undefined;
         let loader = new PIXI.loaders.Loader();
-        loader.add("map", mapDataObject.map)
-              .add("background", mapDataObject.background);
+        loader.add("background", mapDataObject.background);
         if (mapDataObject.foreground) loader.add("foreground", mapDataObject.foreground);
         for (let npc of mapDataObject.npcs) {
             loader.add(npc.name, npc.image);
         }
         loader.load( () => {
-            try {
-                let foregroundTexture: PIXI.Texture | undefined;
-                if (loader.resources["foreground"]) {
-                    foregroundTexture = loader.resources["foreground"].texture;
+            let data = new PNG.load("." + mapDataObject.map);
+            data.decode( (pixels) => {
+                try {
+                    let foregroundTexture: PIXI.Texture | undefined;
+                    if (loader.resources["foreground"]) {
+                        foregroundTexture = loader.resources["foreground"].texture;
+                    }
+                    this.map = new Map(data.width, data.height, pixels, loader.resources["background"].texture, foregroundTexture);
+                } catch (e) {
+                    console.log(e);
+                    throw e;
                 }
-                this.map = new Map(loader.resources["map"].texture, loader.resources["background"].texture, foregroundTexture);
-            } catch (e) {
-                console.log(e);
-                throw e;
-            }
-            if (!this.map) throw new Error("Map failed to create");
-            this.worldContainer.addChildAt(this.map.backgroundSprite, 0);
-            if (this.map.foregroundSprite) this.foregroundLayer.addChild(this.map.foregroundSprite);
-            for (let npc of mapDataObject.npcs) {
-                let npcSprite = new NPC(loader.resources[npc.name].texture, npc);
-                this.npcs.push(npcSprite);
-                this.npcLayer.addChild(npcSprite);
-            }
-            this.actorManager.loadEnemies(mapDataObject);
-            if (done) done();
+                if (!this.map) throw new Error("Map failed to create");
+                this.worldContainer.addChildAt(this.map.backgroundSprite, 0);
+                if (this.map.foregroundSprite) this.foregroundLayer.addChild(this.map.foregroundSprite);
+                for (let npc of mapDataObject.npcs) {
+                    let npcSprite = new NPC(loader.resources[npc.name].texture, npc);
+                    this.npcs.push(npcSprite);
+                    this.npcLayer.addChild(npcSprite);
+                }
+                this.actorManager.loadEnemies(mapDataObject);
+                if (done) done();
+            } );
         } );
     }
 

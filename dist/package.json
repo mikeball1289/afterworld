@@ -12,5 +12,8 @@
   "repository": "https://www.github.com/HypoLast/",
   "license": "ISC",
   "readme": "../README.md",
-  "chromium-args" : "--mixed-context"
+  "chromium-args": "--mixed-context",
+  "dependencies": {
+    "png-js": "^0.1.1"
+  }
 }

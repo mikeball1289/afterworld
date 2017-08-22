@@ -66,39 +66,41 @@ export default class Map {
     public backgroundSprite: PIXI.Sprite;
     public foregroundSprite: PIXI.Sprite;
     private mapData: Uint8Array;
-    private mapWidth: number = 0;
-    private mapHeight: number = 0;
+    // private mapWidth: number = 0;
+    // private mapHeight: number = 0;
 
     get digitalWidth() { return this.mapWidth; }
     get digitalHeight() { return this.mapHeight; }
 
-    constructor(private mapTexture: PIXI.Texture, backgroundImage: PIXI.Texture, foregroundImage?: PIXI.Texture) {
-        let mapDataTex = mapTexture;
-        let canvas = document.createElement("canvas");
-        this.mapWidth = canvas.width = mapDataTex.width;
-        this.mapHeight = canvas.height = mapDataTex.height;
-        let ctx = canvas.getContext("2d");
-        if (!ctx || !mapDataTex.baseTexture.source) throw new Error("Failed to generate map data");
-        ctx.drawImage(mapDataTex.baseTexture.source, 0, 0);
-        let data = ctx.getImageData(0, 0, mapDataTex.width, mapDataTex.height);
-        this.mapData = new Uint8Array(data.data.length / 4);
-        for (let i = 0; i < data.data.length; i += 4) { // packed as RGBA, so bump by 4 each iteration
-            if (data.data[i] === 0x00 && data.data[i + 1] === 0x00 && data.data[i + 2] === 0x00) this.mapData[i / 4] = GroundType.SOLID;
-            else if (data.data[i] === 0xFF && data.data[i + 1] === 0xFF && data.data[i + 2] === 0xFF) this.mapData[i / 4] = GroundType.AIR;
-            else if (data.data[i] === 0xFF && data.data[i + 1] === 0x00 && data.data[i + 2] === 0x00) this.mapData[i / 4] = GroundType.PASSABLE_SOLID;
-            else if (data.data[i] === 0x00 && data.data[i + 1] === 0xFF && data.data[i + 2] === 0x00) this.mapData[i / 4] = GroundType.PASSABLE_RAMP;
-            else if (data.data[i] === 0xFF && data.data[i + 1] === 0x00 && data.data[i + 2] === 0xDC) this.mapData[i / 4] = GroundType.DROPPABLE;
-            else if (data.data[i] === 0xFF && data.data[i + 1] === 0xFF && data.data[i + 2] === 0x00) this.mapData[i / 4] = GroundType.POINT_PASSABLE;
-            else if (data.data[i] === 0xAA && data.data[i + 1] === 0xAA && data.data[i + 2] === 0xAA) this.mapData[i / 4] = GroundType.SOLID_NO_FEAR;
-            else if (data.data[i] === 0xFF && data.data[i + 1] === 0x88 && data.data[i + 2] === 0x99) this.mapData[i / 4] = GroundType.DROPPABLE_NO_FEAR;
-            else throw new Error("Invalid map data at " + ((i / 4) % this.mapWidth) + ", " + Math.floor((i / 4) / this.mapWidth) + " " + data.data[i] + " " + data.data[i + 1] + " " + data.data[i + 2]);
+    constructor(private mapWidth: number, private mapHeight: number, mapDataArray: Buffer, backgroundImage: PIXI.Texture, foregroundImage?: PIXI.Texture) {
+        // let mapDataTex = mapTexture;
+        // let canvas = document.createElement("canvas");
+        // this.mapWidth = canvas.width = mapDataTex.width;
+        // this.mapHeight = canvas.height = mapDataTex.height;
+        // let ctx = canvas.getContext("2d");
+        // if (!ctx || !mapDataTex.baseTexture.source) throw new Error("Failed to generate map data");
+        // ctx.imageSmoothingEnabled = false;
+        // ctx.drawImage(mapDataTex.baseTexture.source, 0, 0);
+        // let data = ctx.getImageData(0, 0, mapDataTex.width, mapDataTex.height);
+        this.mapData = new Uint8Array(mapDataArray.length / 4);
+        for (let i = 0; i < mapDataArray.length; i += 4) { // packed as RGBA, so bump by 4 each iteration
+            if (mapDataArray[i] === 0x00 && mapDataArray[i + 1] === 0x00 && mapDataArray[i + 2] === 0x00) this.mapData[i / 4] = GroundType.SOLID;
+            else if (mapDataArray[i] === 0xFF && mapDataArray[i + 1] === 0xFF && mapDataArray[i + 2] === 0xFF) this.mapData[i / 4] = GroundType.AIR;
+            else if (mapDataArray[i] === 0xFF && mapDataArray[i + 1] === 0x00 && mapDataArray[i + 2] === 0x00) this.mapData[i / 4] = GroundType.PASSABLE_SOLID;
+            else if (mapDataArray[i] === 0x00 && mapDataArray[i + 1] === 0xFF && mapDataArray[i + 2] === 0x00) this.mapData[i / 4] = GroundType.PASSABLE_RAMP;
+            else if (mapDataArray[i] === 0xFF && mapDataArray[i + 1] === 0x00 && mapDataArray[i + 2] === 0xDC) this.mapData[i / 4] = GroundType.DROPPABLE;
+            else if (mapDataArray[i] === 0xFF && mapDataArray[i + 1] === 0x00 && mapDataArray[i + 2] === 0xFF) this.mapData[i / 4] = GroundType.DROPPABLE;
+            else if (mapDataArray[i] === 0xFF && mapDataArray[i + 1] === 0xFF && mapDataArray[i + 2] === 0x00) this.mapData[i / 4] = GroundType.POINT_PASSABLE;
+            else if (mapDataArray[i] === 0xAA && mapDataArray[i + 1] === 0xAA && mapDataArray[i + 2] === 0xAA) this.mapData[i / 4] = GroundType.SOLID_NO_FEAR;
+            else if (mapDataArray[i] === 0xFF && mapDataArray[i + 1] === 0x88 && mapDataArray[i + 2] === 0x99) this.mapData[i / 4] = GroundType.DROPPABLE_NO_FEAR;
+            else throw new Error("Invalid map data at " + ((i / 4) % this.mapWidth) + ", " + Math.floor((i / 4) / this.mapWidth) + " " + mapDataArray[i] + " " + mapDataArray[i + 1] + " " + mapDataArray[i + 2]);
         }
         this.backgroundSprite = new PIXI.Sprite(backgroundImage);
         if (foregroundImage) this.foregroundSprite = new PIXI.Sprite(foregroundImage);
     }
 
     public destroy(options?: boolean | PIXI.IDestroyOptions) {
-        this.mapTexture.destroy(true);
+        // this.mapTexture.destroy(true);
         this.backgroundSprite.destroy(true);
         if (this.foregroundSprite) this.foregroundSprite.destroy(true);
         this.mapData = new Uint8Array(0); // clear the map data on destruction
@@ -131,10 +133,10 @@ export default class Map {
                         (x, y) => Map.isSolid(this.getPixelData(x, y)), 2 );
     }
 
-    public actorIsInPassable(actor: Actor) {
+    public actorIsInPassable(actor: Actor, offset: number = 0) {
         if (actor.fallthrough !== undefined && Math.abs(actor.y - actor.fallthrough) < 5) return true;
-        return Map.isPointWalkable(this.getPixelData(actor.horizontalCenter, actor.bottom - 2)) ||
-                Map.testLine({ x: actor.left, y: actor.bottom - 2 }, { x: actor.right - EPSILON, y: actor.bottom - 2 },
+        return Map.isPointWalkable(this.getPixelData(actor.horizontalCenter, actor.bottom - 2 + offset)) ||
+                Map.testLine({ x: actor.left, y: actor.bottom - 2 + offset }, { x: actor.right - EPSILON, y: actor.bottom - 2 + offset },
                     (x, y) => Map.isPassable(this.getPixelData(x, y)), actor.right - actor.left);
     }
 
@@ -184,7 +186,7 @@ export default class Map {
                     }
                 }
                 if (!movingY) { // we're walking along the ground, detect 1px slopes
-                    if (this.actorIsOnWalkableGround(actor, -1)) {
+                    if (this.actorIsOnWalkableGround(actor, -1) && !this.actorIsInPassable(actor, -1)) {
                         actor.position.y --;
                     } else if (!this.actorIsOnWalkableGround(actor) && this.actorIsOnWalkableGround(actor, 1)) {
                         actor.position.y ++;
