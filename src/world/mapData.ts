@@ -1,5 +1,6 @@
 import Enemy from "../actors/Enemy";
 import Skelly from "../actors/Skelly";
+import TutorialGhost from "../actors/TutorialGhost";
 import World from "../world/World";
 
 export interface INPCData {
@@ -40,8 +41,7 @@ let mapData: { [mapname: string]: IMapDataObject } = {
                     y: 1172 - 85,
                 },
                 getText: () => { return { text: "Hey hey cool cat. I'm John, the coolest\nguy in these parts. " +
-                        "Did you know you can\ntalk to cool catz like me by pressing\nEnter on a keyboard or 'Y' on a gamepad?" +
-                        "\n\nAlso why you naked?" }; },
+                        "Did you know you can\ntalk to cool catz like me by pressing\nEnter on a keyboard or 'Y' on a gamepad?" }; },
             },
         ],
         enemies: (world: World) => {
@@ -95,7 +95,15 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         },
         exits: {},
         npcs: [],
-        enemies: () => [],
+        enemies: (world) => {
+            let ghostie1 = new TutorialGhost(world);
+            ghostie1.x = 2100;
+            ghostie1.y = 820;
+            let ghostie2 = new TutorialGhost(world);
+            ghostie2.x = 180;
+            ghostie2.y = 820;
+            return [ghostie1, ghostie2];
+        },
         bgTrack: "/sounds/CarrotWine_How_to_spend_winter.ogg",
     },
 };

@@ -194,6 +194,9 @@ export default class World extends PIXI.Sprite {
             npc.destroy(true);
         }
         this.npcs = [];
+        this.particleSystem.removeAll();
+        this.worldObjectLayer.removeChildren();
+        this.worldItems = [];
 
         this.actorManager.unloadEnemies();
     }

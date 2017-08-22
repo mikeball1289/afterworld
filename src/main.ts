@@ -39,16 +39,6 @@ function main(app: PIXI.Application) {
     fpsDisplay.y = app.view.height;
     app.stage.addChild(fpsDisplay);
 
-    let ani = new Animator(fromTextureCache("/images/ghost_sheet.png"), new PIXI.Point(50, 50), {
-        idle: [0, 2],
-        beginAttack: [1, 3],
-        attack: [2, 1],
-        curious: [3, 3],
-        die: [4, 3],
-    }, "idle", 6);
-    (<any> window).ani = ani;
-    app.stage.addChild(ani);
-
     root.juggler.add( () => {
         world.update();
 
