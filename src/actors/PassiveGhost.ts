@@ -76,12 +76,12 @@ export default class PassiveGhost extends Enemy {
         return this._health;
     }
 
-    constructor(world: World) {
+    constructor(world: World, spriteSheetName: string = "/images/ghost_sheet.png") {
         super(world);
         this.size.x = 40;
         this.size.y = 40;
 
-        this.animator = new Animator(fromTextureCache("/images/ghost_sheet.png"), new PIXI.Point(50, 50), {
+        this.animator = new Animator(fromTextureCache(spriteSheetName), new PIXI.Point(50, 50), {
             idle: [0, 2],
             beginAttack: [1, 2],
             attack: [2, 1],

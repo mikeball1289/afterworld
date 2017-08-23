@@ -65,8 +65,24 @@ export default class Animator<T extends IActionMap> extends PIXI.Sprite {
     // fly for the player sprite to switch equipment
     public loadTexturePackerFrames(spriteSheet: string, data: string) {
         if (this.loader) this.loader.removeAllListeners();
+        if (spriteSheet === "/sprites/wood_buckler_offhand_front.png") {
+            console.log("break");
+        }
         this.loader = new PIXI.loaders.Loader();
         this.loader.add(spriteSheet).add(data, { xhrType: "text" });
+        this.loader.on("error", () => {
+            console.log("Failed to load " + spriteSheet);
+            for (let frameLine of this.frames) {
+                for (let frame of frameLine) {
+                    frame.destroy();
+                }
+            }
+            if (this.spriteSheet) this.spriteSheet.destroy(true);
+            this.frames = [];
+            this.spriteSheet = undefined;
+            this.texture = PIXI.Texture.EMPTY;
+            this.loader = undefined;
+        } );
         this.loader.load( () => {
             if (!this.loader) return;
             let newFrames = [];
