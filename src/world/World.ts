@@ -166,10 +166,9 @@ export default class World extends PIXI.Sprite {
             for (let i = 0; i < this.worldItems.length; i ++) {
                 let item = this.worldItems[i];
                 if (item.withinPickupRange(this.actorManager.player)) {
+                    item.pickup(this.actorManager.player);
                     this.worldItems.splice(i, 1);
-                    this.worldObjectLayer.removeChild(item);
                     this.actorManager.player.inventory.addItem(item.item);
-                    item.destroy();
                     return;
                 }
             }

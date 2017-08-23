@@ -11,6 +11,7 @@ interface IItemData {
     sheetName?: string;
     icon: [number, number];
     range?: number;
+    id?: number;
     description: string;
 }
 
@@ -78,6 +79,13 @@ export let itemData = {
         description: "The woodsman said it was a buckler, but it just looks like half a log. Oh well.",
     },
 };
+
+{
+    let i = 0;
+    for (let itemName of Keys(itemData)) {
+        itemData[itemName].id = i ++;
+    }
+}
 
 export function constructItem(type: "weapon", data: IItemData): WeaponItem;
 export function constructItem(type: "equip", data: IItemData): EquipmentItem;

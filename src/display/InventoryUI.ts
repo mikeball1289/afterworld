@@ -129,53 +129,7 @@ export default class InventoryUI extends JuggledSprite {
             this.moveMode = false;
             this.moveHighlight.visible = false;
         } else if (controls.hasLeadingEdge(InputType.CONFIRM)) {
-            let inventory = this.world.actorManager.player.inventory;
-            if (this.moveMode) {
-                this.moveMode = false;
-                this.moveHighlight.visible = false;
-                let item = inventory.inventoryItems[this.moveIndex];
-                inventory.inventoryItems[this.moveIndex] = inventory.inventoryItems[this.selection.index];
-                inventory.inventoryItems[this.selection.index] = item;
-                this.refreshInventoryIcons();
-                return;
-            }
-
-            let p = this.getItemFrameCoords(this.selection);
-            this.optionBox.x = p[0] + 52;
-            this.optionBox.y = p[1] + 30;
-            if (this.selection.area === "equipment") {
-                let equip = inventory.equipment[EQUIPMENT_INDEX_TYPES[this.selection.index]];
-                if (!equip) return;
-                this.optionBox.open(["Unequip", "Cancel"], (option) => {
-                    if (option === 0 && equip) {
-                        if (inventory.addItem(equip)) {
-                            inventory.equipment[EQUIPMENT_INDEX_TYPES[this.selection.index]] = undefined;
-                            this.world.actorManager.player.unsetEquipmentGraphic(EQUIPMENT_INDEX_TYPES[this.selection.index]);
-                            this.refreshInventoryIcons();
-                        }
-                    }
-                } );
-            } else if (this.selection.area === "items") {
-                let item = inventory.inventoryItems[this.selection.index];
-                if (!item) return;
-                if (EquipmentItem.isEquipmentItem(item)) {
-                    this.optionBox.open(["Equip", "Move", "Drop", "Cancel"], (option) => {
-                        if (!(item && EquipmentItem.isEquipmentItem(item))) return;
-                        if (option === 0) {
-                            let oldItem = inventory.equipment[item.equipmentType];
-                            inventory.equipment[item.equipmentType] = item;
-                            inventory.inventoryItems[this.selection.index] = oldItem;
-                            item.addEquipmentGraphic(this.world.actorManager.player);
-                            this.refreshInventoryIcons();
-                        } else if (option === 1) {
-                            this.beginMove(p);
-                        } else if (option === 2) {
-                            this.dropItem();
-                        }
-                    } );
-                }
-            }
-
+            this.select();
         }
     }
 
@@ -323,7 +277,7 @@ export default class InventoryUI extends JuggledSprite {
                 if (this.selection.index > 0) this.setSelection(this.selection.index - 1);
             } else if (direction === MovementDirection.RIGHT) {
                 if (this.selection.index < 5) this.setSelection(this.selection.index + 1);
-            } else if (direction === MovementDirection.DOWN) {
+            } else if (direction === MovementDirection.DOWN && !this.moveMode) {
                 this.setSelection(this.selection.index, "items");
             }
         }
@@ -349,6 +303,63 @@ export default class InventoryUI extends JuggledSprite {
             return [125 + 52 * selection.index + (selection.index >= 4 ? 30 : 0), 26];
         }
         return [0, 0];
+    }
+
+    private select() {
+        let inventory = this.world.actorManager.player.inventory;
+        if (this.moveMode) {
+            this.moveMode = false;
+            this.moveHighlight.visible = false;
+            if (this.selection.area === "items") {
+                let item = inventory.inventoryItems[this.moveIndex];
+                inventory.inventoryItems[this.moveIndex] = inventory.inventoryItems[this.selection.index];
+                inventory.inventoryItems[this.selection.index] = item;
+            } else if (this.selection.area === "skills") {
+                let skillbar = this.world.actorManager.player.skillBar;
+                skillbar.swapSkills(SKILLBAR_INDEX_MAPPING[this.moveIndex], SKILLBAR_INDEX_MAPPING[this.selection.index]);
+            }
+            this.refreshInventoryIcons();
+            return;
+        }
+
+        let p = this.getItemFrameCoords(this.selection);
+        this.optionBox.x = p[0] + 52;
+        this.optionBox.y = p[1] + 30;
+        if (this.selection.area === "equipment") {
+            let equip = inventory.equipment[EQUIPMENT_INDEX_TYPES[this.selection.index]];
+            if (!equip) return;
+            this.optionBox.open(["Unequip", "Cancel"], (option) => {
+                if (option === 0 && equip) {
+                    inventory.unequip(EQUIPMENT_INDEX_TYPES[this.selection.index]);
+                    this.refreshInventoryIcons();
+                }
+            } );
+        } else if (this.selection.area === "items") {
+            let item = inventory.inventoryItems[this.selection.index];
+            if (!item) return;
+            if (EquipmentItem.isEquipmentItem(item)) {
+                this.optionBox.open(["Equip", "Move", "Drop", "Cancel"], (option) => {
+                    if (!(item && EquipmentItem.isEquipmentItem(item))) return;
+                    if (option === 0) {
+                        inventory.equipItem(this.selection.index);
+                        this.refreshInventoryIcons();
+                    } else if (option === 1) {
+                        this.beginMove(p);
+                    } else if (option === 2) {
+                        this.dropItem();
+                    }
+                } );
+            }
+        } else if (this.selection.area === "skills") {
+            let skill = this.world.actorManager.player.skillBar.equippedSkills[SKILLBAR_INDEX_MAPPING[this.selection.index]];
+            if (!skill) return;
+            this.optionBox.open(["Move", "Cancel"], (option) => {
+                if (!skill) return;
+                if (option === 0) {
+                    this.beginMove(p);
+                }
+            } );
+        }
     }
 
     private beginMove(frameCoords: [number, number]) {

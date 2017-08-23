@@ -31,7 +31,7 @@ export default class Ghost extends PassiveGhost {
     }
 
     constructor(world: World) {
-        super(world);
+        super(world, "/images/ghost_hostile_sheet.png");
     }
 
     public updateImpulse(map: Map, player?: Player) {

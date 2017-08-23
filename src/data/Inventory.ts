@@ -45,10 +45,10 @@ export default class Inventory {
             if (this.inventoryItems[i] === undefined) {
                 this.inventoryItems[i] = item;
                 this.world.uiManager.inventoryUI.refreshInventoryIcons();
-                return true;
+                return i;
             }
         }
-        return false;
+        return -1;
     }
 
     public removeItem(index: number): InventoryItem | undefined;
@@ -76,6 +76,44 @@ export default class Inventory {
 
     public hasSpace() {
         return this.inventoryItems.length < Inventory.INVENTORY_SIZE || this.inventoryItems.indexOf(undefined) >= 0;
+    }
+
+    public equipItem(item: EquipmentItem): boolean;
+    public equipItem(atIndex: number): boolean;
+    public equipItem(i: number | EquipmentItem) {
+        let item: EquipmentItem;
+        let idx: number;
+        if (typeof i === "number") {
+            let idxItem = this.inventoryItems[i];
+            if (!EquipmentItem.isEquipmentItem(idxItem)) return false;
+            item = idxItem;
+            idx = i;
+        } else {
+            throw new Error("Not yet implemented.");
+        }
+        let oldItem = this.equipment[item.equipmentType];
+        let oldSkill = oldItem ? oldItem.getSkill() : undefined;
+        let newSkill = item.getSkill();
+        this.equipment[item.equipmentType] = item;
+        this.inventoryItems[idx] = oldItem;
+        item.addEquipmentGraphic(this.world.actorManager.player);
+
+        let player = this.world.actorManager.player;
+        if (newSkill) player.skillBar.addSkill(newSkill);
+        if (oldSkill) player.skillBar.addSkill(oldSkill);
+        return true;
+    }
+
+    public unequip(slot: keyof IEquipmentSlots) {
+        let player = this.world.actorManager.player;
+        let item = this.equipment[slot];
+        if (!this.hasSpace() || !item) return false;
+        this.addItem(item);
+        this.equipment[slot] = undefined;
+        let skill = item.getSkill();
+        if (skill) player.skillBar.removeSkill(skill);
+        player.unsetEquipmentGraphic(slot);
+        return true;
     }
 
 }

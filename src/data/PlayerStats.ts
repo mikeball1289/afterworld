@@ -1,9 +1,12 @@
 import Player from "../actors/Player";
+import SoftTextParticle from "../particlesystem/SoftTextParticle";
 import { juggler } from "../root";
 import * as pc from "../world/physicalConstants";
 import World from "../world/World";
 
 export default class PlayerStats {
+
+    private healthTickTimer = 0;
 
     private _energy = 100;
     private _health = 50;
@@ -47,8 +50,18 @@ export default class PlayerStats {
 
     public update() {
         this.healthAcc += this.healthRegen;
-        this.health += Math.floor(this.healthAcc);
-        this.healthAcc -= Math.floor(this.healthAcc);
+        this.healthTickTimer ++;
+        if (this.healthTickTimer >= 60 && this.healthAcc >= 1) {
+            let healing = Math.floor(this.healthAcc);
+            this.health += healing;
+            this.healthAcc -= healing;
+            let particle = new SoftTextParticle(healing.toFixed(0), 0x08CC08);
+            particle.velocity.y = -0.75;
+            particle.x = this.player.horizontalCenter;
+            particle.y = this.player.top;
+            this.world.particleSystem.add(particle, false);
+            this.world.uiManager.worldLayers[1].addChild(particle);
+        }
         this.energyAcc += this.energyRegen;
         this.energy += Math.floor(this.energyAcc);
         this.energyAcc -= Math.floor(this.energyAcc);

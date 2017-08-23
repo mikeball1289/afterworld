@@ -2,7 +2,6 @@ import Player from "../actors/Player";
 import ClockSpindown from "../display/widgets/ClockSpindown";
 import World from "../world/World";
 import Skill from "./Skill";
-import skillData from "./skillData";
 
 export const NUM_SKILLS = 6;
 const iconPositions: [number, number][] = [[613, 539], [665, 539], [375, 539], [427, 539], [479, 539], [531, 539]];
@@ -83,6 +82,18 @@ export default class Skillbar extends PIXI.Container {
         if (slotIdx < 0) return; // it wasn't even slotted lol
         this.equippedSkills[slotIdx] = undefined;
         this.skillIcons[slotIdx].texture = PIXI.Texture.EMPTY; // remove the image from the bar
+    }
+
+    public swapSkills(idx1: number, idx2: number) {
+        let skill = this.equippedSkills[idx1];
+        this.equippedSkills[idx1] = this.equippedSkills[idx2];
+        this.equippedSkills[idx2] = skill;
+        let skill1 = this.equippedSkills[idx1];
+        if (skill1 === undefined) this.skillIcons[idx1].texture = PIXI.Texture.EMPTY;
+        else this.skillIcons[idx1].texture = skill1.icon;
+        let skill2 = this.equippedSkills[idx1];
+        if (skill2 === undefined) this.skillIcons[idx1].texture = PIXI.Texture.EMPTY;
+        else this.skillIcons[idx1].texture = skill2.icon;
     }
 
     public useSkill(index: number) {

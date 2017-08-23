@@ -151,3 +151,5 @@ declare module "png-js" {
         public decode(fn: (pixelData: Buffer) => void): void;
     }
 }
+
+declare function Keys<T>(obj: T): (keyof T)[];

@@ -1,5 +1,6 @@
 import Player from "../../actors/Player";
 import InventoryItem from "../../data/items/InventoryItem";
+import { juggler } from "../../root";
 import Map from "../Map";
 import { GRAVITY } from "../physicalConstants";
 import World from "../World";
@@ -7,7 +8,9 @@ import World from "../World";
 export default class WorldItem extends PIXI.Container {
 
     public velocity: PIXI.Point;
+    private pickupDuration: number = 0;
     private sprite: PIXI.Sprite;
+    private targetPlayer: Player;
 
     constructor(public item: InventoryItem) {
         super();
@@ -48,5 +51,23 @@ export default class WorldItem extends PIXI.Container {
 
     public withinPickupRange(player: Player) {
         return this.x - 20 < player.right && this.x + 20 > player.left && this.y > player.top && this.y - 10 < player.bottom;
+    }
+
+    public pickup(player: Player) {
+        this.targetPlayer = player;
+        this.pickupDuration = 30;
+        juggler.add(this.onEnterFrame, this);
+    }
+
+    private onEnterFrame() {
+        this.x += (this.targetPlayer.horizontalCenter - this.x) * 0.2;
+        this.y += (this.targetPlayer.verticalCenter - this.y) * 0.2;
+        this.alpha = this.pickupDuration / 30;
+        this.pickupDuration --;
+        if (this.pickupDuration < 0) {
+            if (this.parent) this.parent.removeChild(this);
+            juggler.remove(this.onEnterFrame, this);
+            this.destroy();
+        }
     }
 }

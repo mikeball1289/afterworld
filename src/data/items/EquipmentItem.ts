@@ -1,6 +1,7 @@
 import Player from "../../actors/Player";
 import World from "../../world/World";
 import { IEquipmentSlots } from "../Inventory";
+import Skill from "../Skill";
 import GemItem from "./GemItem";
 import InventoryItem from "./InventoryItem";
 
@@ -37,6 +38,11 @@ export default class EquipmentItem extends InventoryItem {
 
     public getDescription(world: World) {
         return "LV " + this.ilvl + "\n" + super.getDescription(world);
+    }
+
+    public getSkill(): Skill | undefined {
+        if (this.gem) return this.gem.skill;
+        return undefined;
     }
 
     public addEquipmentGraphic(player: Player) {

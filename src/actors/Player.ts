@@ -2,7 +2,7 @@ import ColorTweener from "../ColorTweener";
 import Inventory, { IEquipmentSlots } from "../data/Inventory";
 import PlayerStats from "../data/PlayerStats";
 import SkillBar from "../data/Skillbar";
-import skillData from "../data/skillData";
+import * as skillData from "../data/skillData";
 import * as skillFunctions from "../data/skillFunctions";
 import Animator, { IAnimatorOptions } from "../display/Animator";
 import HealthBar from "../display/HealthBar";
@@ -124,7 +124,7 @@ export default class Player extends Actor {
         this.deathFrame.y = this.size.y;
 
         // this.skillBar.addSkill(skillData.cleave);
-        // this.skillBar.addSkill(skillData.buckle_down);
+        // this.skillBar.addSkill(skillData.buckleDown);
         // this.skillBar.addSkill(skillData.envenom);
         // this.skillBar.addSkill(skillData.leap);
         // this.skillBar.addSkill(skillData.tremor);
@@ -133,7 +133,7 @@ export default class Player extends Actor {
     }
 
     public loadEquipment() {
-        for (let slot of <(keyof IEquipmentSlots)[]> Object.keys(this.inventory.equipment)) {
+        for (let slot of Keys(this.inventory.equipment)) {
             let equip = this.inventory.equipment[slot];
             if (equip) {
                 equip.addEquipmentGraphic(this);
