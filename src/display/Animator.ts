@@ -109,8 +109,12 @@ export default class Animator<T extends IActionMap> extends PIXI.Sprite {
         this.onProgressContext = options.onProgressContext;
     }
 
-    public setProgress(amount: number) {
+    public set progress(amount: number) {
         this.currentFrame = amount * this.animations[this.currentAnimation][1];
+    }
+
+    public get progress() {
+        return this.currentFrame / this.animations[this.currentAnimation][1];
     }
 
     public destroy(options?: boolean | PIXI.IDestroyOptions, source = false) {

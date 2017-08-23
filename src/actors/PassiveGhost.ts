@@ -8,10 +8,9 @@ import World from "../world/World";
 import Enemy from "./Enemy";
 import Player from "./Player";
 
-enum MovementStates {
+export enum MovementStates {
     IDLE,
     WALKING,
-    ATTACKING,
     DEAD,
 }
 
@@ -22,7 +21,7 @@ const FULL_HORIZONTAL_DECAY = 0.88;
 
 const MAX_HEALTH = 10;
 
-export default class TutorialGhost extends Enemy {
+export default class PassiveGhost extends Enemy {
     public weight = 1;
 
     public animator: Animator<{
@@ -38,7 +37,6 @@ export default class TutorialGhost extends Enemy {
     private healthBar: HealthBar;
 
     private goingUp: boolean = false;
-    private attackCooldown = 0;
 
     set state(val: MovementStates) {
         this._state = val;
@@ -85,7 +83,7 @@ export default class TutorialGhost extends Enemy {
 
         this.animator = new Animator(fromTextureCache("/images/ghost_sheet.png"), new PIXI.Point(50, 50), {
             idle: [0, 2],
-            beginAttack: [1, 3],
+            beginAttack: [1, 2],
             attack: [2, 1],
             curious: [3, 3],
             die: [4, 3],
@@ -166,27 +164,13 @@ export default class TutorialGhost extends Enemy {
             return;
         }
 
-        if (this.attackCooldown > 0) {
-            this.attackCooldown --;
-        }
-
         if (this.buffs.hasCondition("stunned")) {
-            if (this.state === MovementStates.ATTACKING) {
-                this.state = MovementStates.IDLE;
-            }
             this.idleUpdate(map, player);
         } else if (this.state === MovementStates.IDLE) {
             this.idleUpdate(map, player);
         } else if (this.state === MovementStates.WALKING) {
             this.walkingUpdate(map, player);
-        } else if (this.state === MovementStates.ATTACKING) {
-            this.attackingUpdate(map, player);
         }
-    }
-
-    private attackingUpdate(map: Map, player?: Player) {
-        this.velocity.x *= IDLE_GROUNDED_DECAY;
-        if (Math.abs(this.velocity.x) < EPSILON) this.velocity.x = 0;
     }
 
     private idleUpdate(map: Map, player?: Player) {

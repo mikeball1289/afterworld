@@ -4,6 +4,13 @@ import Map from "../world/Map";
 import { repulsionForce } from "../world/physicalConstants";
 import World from "../world/World";
 
+export interface IBoxLike {
+    top: number;
+    bottom: number;
+    left: number;
+    right: number;
+}
+
 abstract class Actor extends PIXI.Sprite {
     private static ID_IDX = 1;
 
@@ -79,6 +86,10 @@ abstract class Actor extends PIXI.Sprite {
     public abstract handleCollisions(collisions: [boolean, boolean]): void;
     public frameUpdate(): void {
         this.buffs.tick();
+    }
+
+    public hitTest(other: Actor | IBoxLike): boolean {
+        return this.left <= other.right && this.right >= other.left && this.top <= other.bottom && this.bottom >= other.bottom;
     }
 }
 

@@ -123,11 +123,11 @@ export default class Player extends Actor {
         this.deathFrame.x = this.size.x / 2;
         this.deathFrame.y = this.size.y;
 
-        this.skillBar.addSkill(skillData.cleave);
-        this.skillBar.addSkill(skillData.buckle_down);
-        this.skillBar.addSkill(skillData.envenom);
-        this.skillBar.addSkill(skillData.leap);
-        this.skillBar.addSkill(skillData.tremor);
+        // this.skillBar.addSkill(skillData.cleave);
+        // this.skillBar.addSkill(skillData.buckle_down);
+        // this.skillBar.addSkill(skillData.envenom);
+        // this.skillBar.addSkill(skillData.leap);
+        // this.skillBar.addSkill(skillData.tremor);
 
         this.loadEquipment();
     }

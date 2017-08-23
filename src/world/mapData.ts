@@ -1,6 +1,7 @@
 import Enemy from "../actors/Enemy";
+import Ghost from "../actors/Ghost";
+import PassiveGhost from "../actors/PassiveGhost";
 import Skelly from "../actors/Skelly";
-import TutorialGhost from "../actors/TutorialGhost";
 import World from "../world/World";
 
 export interface INPCData {
@@ -96,10 +97,10 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         exits: {},
         npcs: [],
         enemies: (world) => {
-            let ghostie1 = new TutorialGhost(world);
+            let ghostie1 = new PassiveGhost(world);
             ghostie1.x = 2100;
             ghostie1.y = 820;
-            let ghostie2 = new TutorialGhost(world);
+            let ghostie2 = new Ghost(world);
             ghostie2.x = 180;
             ghostie2.y = 820;
             return [ghostie1, ghostie2];

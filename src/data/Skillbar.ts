@@ -56,9 +56,9 @@ export default class Skillbar extends PIXI.Container {
             this.cooldownNumbers.push(num);
         }
 
-        this.skills[0] = skillData.basic_attack;
-        this.equippedSkills[0] = skillData.basic_attack;
-        this.skillIcons[0].texture = skillData.basic_attack.icon;
+        // this.skills[0] = skillData.basic_attack;
+        // this.equippedSkills[0] = skillData.basic_attack;
+        // this.skillIcons[0].texture = skillData.basic_attack.icon;
     }
 
     public addSkill(skill: Skill) {

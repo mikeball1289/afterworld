@@ -24,6 +24,7 @@ export default class Inventory {
         ItemFactory.constructItem("weapon", ItemFactory.itemData.heros_sword),
         ItemFactory.constructItem("weapon", ItemFactory.itemData.woodchopping_axe),
         ItemFactory.constructItem("equip", ItemFactory.itemData.wooden_buckler),
+        ItemFactory.constructItem("weapon", ItemFactory.itemData.iron_dagger),
     ];
     public equipment: IEquipmentSlots = {
         head: undefined,
@@ -32,7 +33,7 @@ export default class Inventory {
         legs: ItemFactory.constructItem("equip", ItemFactory.itemData.leather_pants),
         feet: ItemFactory.constructItem("equip", ItemFactory.itemData.leather_boots),
         trinket: undefined,
-        weapon: ItemFactory.constructItem("weapon", ItemFactory.itemData.iron_dagger),
+        weapon: undefined,
         offhand: undefined,
         gloves: undefined,
     };

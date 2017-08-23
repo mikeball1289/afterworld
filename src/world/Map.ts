@@ -66,22 +66,11 @@ export default class Map {
     public backgroundSprite: PIXI.Sprite;
     public foregroundSprite: PIXI.Sprite;
     private mapData: Uint8Array;
-    // private mapWidth: number = 0;
-    // private mapHeight: number = 0;
 
     get digitalWidth() { return this.mapWidth; }
     get digitalHeight() { return this.mapHeight; }
 
     constructor(private mapWidth: number, private mapHeight: number, mapDataArray: Buffer, backgroundImage: PIXI.Texture, foregroundImage?: PIXI.Texture) {
-        // let mapDataTex = mapTexture;
-        // let canvas = document.createElement("canvas");
-        // this.mapWidth = canvas.width = mapDataTex.width;
-        // this.mapHeight = canvas.height = mapDataTex.height;
-        // let ctx = canvas.getContext("2d");
-        // if (!ctx || !mapDataTex.baseTexture.source) throw new Error("Failed to generate map data");
-        // ctx.imageSmoothingEnabled = false;
-        // ctx.drawImage(mapDataTex.baseTexture.source, 0, 0);
-        // let data = ctx.getImageData(0, 0, mapDataTex.width, mapDataTex.height);
         this.mapData = new Uint8Array(mapDataArray.length / 4);
         for (let i = 0; i < mapDataArray.length; i += 4) { // packed as RGBA, so bump by 4 each iteration
             if (mapDataArray[i] === 0x00 && mapDataArray[i + 1] === 0x00 && mapDataArray[i + 2] === 0x00) this.mapData[i / 4] = GroundType.SOLID;
@@ -100,7 +89,6 @@ export default class Map {
     }
 
     public destroy(options?: boolean | PIXI.IDestroyOptions) {
-        // this.mapTexture.destroy(true);
         this.backgroundSprite.destroy(true);
         if (this.foregroundSprite) this.foregroundSprite.destroy(true);
         this.mapData = new Uint8Array(0); // clear the map data on destruction
