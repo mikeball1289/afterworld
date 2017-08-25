@@ -37,6 +37,23 @@ type SelectionArea = "items" | "equipment" | "skills";
 
 export default class InventoryUI extends JuggledSprite {
 
+    public static getItemFrameCoords(selection: { area: SelectionArea, index: number }): [number, number] {
+        if (selection.area === "items") {
+            return [244 + (selection.index % 6) * 52, 148 + Math.floor(selection.index / 6) * 52];
+        } else if (selection.area === "equipment") {
+            if (selection.index < 2) {
+                return [44, 304 + selection.index * 52];
+            } else if (selection.index < 7) {
+                return [98, 189 + (selection.index - 2) * 52];
+            } else {
+                return [151, 311 + (selection.index - 7) * 52];
+            }
+        } else if (selection.area === "skills") {
+            return [125 + 52 * selection.index + (selection.index >= 4 ? 30 : 0), 66];
+        }
+        return [0, 0];
+    }
+
     public selection: {
         area: SelectionArea;
         index: number;
@@ -205,7 +222,7 @@ export default class InventoryUI extends JuggledSprite {
                         }
                     }
                 }
-                let coords = this.getItemFrameCoords({ area: "items", index: i });
+                let coords = InventoryUI.getItemFrameCoords({ area: "items", index: i });
                 sprite.x = coords[0] + 5;
                 sprite.y = coords[1] + 5;
                 this.itemTextures.addChild(sprite);
@@ -223,7 +240,7 @@ export default class InventoryUI extends JuggledSprite {
                     sprite.addChild(new PIXI.Sprite(fromTextureCache("/images/inventory_ui.png", 105, 501, 40, 40)));
                 }
             }
-            let coords = this.getItemFrameCoords({ area: "equipment", index: i });
+            let coords = InventoryUI.getItemFrameCoords({ area: "equipment", index: i });
             sprite.x = coords[0] + 5;
             sprite.y = coords[1] + 5;
             this.itemTextures.addChild(sprite);
@@ -234,7 +251,7 @@ export default class InventoryUI extends JuggledSprite {
             let skill = skills[SKILLBAR_INDEX_MAPPING[i]];
             if (skill === undefined) continue;
             let sprite = new PIXI.Sprite(skill.icon);
-            let coords = this.getItemFrameCoords({ area: "skills", index: i });
+            let coords = InventoryUI.getItemFrameCoords({ area: "skills", index: i });
             sprite.x = coords[0];
             sprite.y = coords[1];
             this.itemTextures.addChild(sprite);
@@ -340,9 +357,9 @@ export default class InventoryUI extends JuggledSprite {
 
     private highlightSelection() {
         if (!this.socketMode) {
-            [this.selectionHighlight.x, this.selectionHighlight.y] = this.getItemFrameCoords(this.selection);
+            [this.selectionHighlight.x, this.selectionHighlight.y] = InventoryUI.getItemFrameCoords(this.selection);
         } else {
-            [this.socketHighlight.x, this.socketHighlight.y] = this.getItemFrameCoords(this.selection);
+            [this.socketHighlight.x, this.socketHighlight.y] = InventoryUI.getItemFrameCoords(this.selection);
             let item = this.selectedItem();
             if (item && EquipmentItem.isEquipmentItem(item) && item.canAddGem()) {
                 this.socketHighlight.texture = this.socketTextures[0];
@@ -350,23 +367,6 @@ export default class InventoryUI extends JuggledSprite {
                 this.socketHighlight.texture = this.socketTextures[1];
             }
         }
-    }
-
-    private getItemFrameCoords(selection: { area: SelectionArea, index: number }): [number, number] {
-        if (selection.area === "items") {
-            return [244 + (selection.index % 6) * 52, 148 + Math.floor(selection.index / 6) * 52];
-        } else if (selection.area === "equipment") {
-            if (selection.index < 2) {
-                return [44, 304 + selection.index * 52];
-            } else if (selection.index < 7) {
-                return [98, 189 + (selection.index - 2) * 52];
-            } else {
-                return [151, 311 + (selection.index - 7) * 52];
-            }
-        } else if (selection.area === "skills") {
-            return [125 + 52 * selection.index + (selection.index >= 4 ? 30 : 0), 66];
-        }
-        return [0, 0];
     }
 
     private selectedItem() {
@@ -419,7 +419,7 @@ export default class InventoryUI extends JuggledSprite {
             return;
         }
 
-        let p = this.getItemFrameCoords(this.selection);
+        let p = InventoryUI.getItemFrameCoords(this.selection);
         this.optionBox.x = p[0] + 52;
         this.optionBox.y = p[1] + 30;
         if (this.selection.area === "equipment") {
@@ -455,7 +455,7 @@ export default class InventoryUI extends JuggledSprite {
                         this.socketHighlight.visible = true;
                         this.moveHighlight.visible = true;
                         this.selectionHighlight.visible = false;
-                        [this.moveHighlight.x, this.moveHighlight.y] = this.getItemFrameCoords(this.selection);
+                        [this.moveHighlight.x, this.moveHighlight.y] = InventoryUI.getItemFrameCoords(this.selection);
                         this.highlightSelection();
                     } else if (option === 1) {
                         this.beginMove(p);

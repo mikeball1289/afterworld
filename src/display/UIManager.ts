@@ -40,7 +40,6 @@ export default class UIManager {
         this.overlayLayer.addChild(this.npcText);
 
         this.selectMenuContainer = new PIXI.Container();
-        // this.selectMenuContainer.alpha = 0.2;
 
         this.inventoryUI = new InventoryUI(world);
         this.inventoryUI.x = Math.round(world.screenWidth / 2 - this.inventoryUI.width / 2);
@@ -78,6 +77,7 @@ export default class UIManager {
     public openSelectMenu() {
         this.selectMenuRenderTarget.visible = true;
         this.inventoryUI.bringToFront();
+        // this.statUI.bringToFront();
     }
 
     public closeSelectMenu() {
@@ -94,6 +94,18 @@ export default class UIManager {
             root.app.renderer.render(this.selectMenuContainer, this.selectMenuBatchTexture);
             if (controls.hasLeadingEdge(InputType.INVENTORY)) {
                 this.closeSelectMenu();
+            } else if (controls.hasLeadingEdge(InputType.TAB_LEFT)) {
+                if (this.inventoryUI.isOpen) {
+                    this.statUI.bringToFront();
+                } else if (this.statUI.isOpen) {
+                    this.inventoryUI.bringToFront();
+                }
+            } else if (controls.hasLeadingEdge(InputType.TAB_RIGHT)) {
+                if (this.inventoryUI.isOpen) {
+                    this.statUI.bringToFront();
+                } else if (this.statUI.isOpen) {
+                    this.inventoryUI.bringToFront();
+                }
             }
         }
     }

@@ -100,6 +100,21 @@ export default class EquipmentItem extends InventoryItem {
         return true;
     }
 
+    public fillStats(level: number, stats: IEquipmentStats): this {
+        this.stats = stats;
+        return this;
+    }
+
+    public prefix(prefix: string): this {
+        this.name = prefix + " " + this.name;
+        return this;
+    }
+
+    public postfix(postfix: string): this {
+        this.name = this.name + " " + postfix;
+        return this;
+    }
+
     public addEquipmentGraphic(player: Player) {
         switch (this.equipmentType) {
             case "head": {

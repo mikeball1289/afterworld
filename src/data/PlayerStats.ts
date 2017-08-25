@@ -139,7 +139,7 @@ export default class PlayerStats {
     }
 
     public get magicAttackDamageRange() {
-        return this.hitCache(this.calcPhysicalAttackDamageRange, "MagicDamage");
+        return this.hitCache(this.calcMagicAttackDamageRange, "MagicDamage");
     }
 
     public get armor() {
@@ -177,17 +177,17 @@ export default class PlayerStats {
 
     // base 5 + equipment stats
     private calcAgility() {
-        return this.processBuffs("agility", 5 + this.getEquipmentStats("agility"));
+        return this.processBuffs("agility", 1 + this.getEquipmentStats("agility"));
     }
 
     // base 5 + equipment stats
     private calcStrength() {
-        return this.processBuffs("strength", 5 + this.getEquipmentStats("strength"));
+        return this.processBuffs("strength", 1 + this.getEquipmentStats("strength"));
     }
 
     // base 5 + equipment stats
     private calcIntelligence() {
-        return this.processBuffs("intelligence", 5 + this.getEquipmentStats("intelligence"));
+        return this.processBuffs("intelligence", 1 + this.getEquipmentStats("intelligence"));
     }
 
     private calcCooldownReduction() {
@@ -201,21 +201,23 @@ export default class PlayerStats {
 
     // base 1/20 + equipment stats
     private calcEnergyRegen() {
-        return this.processBuffs("energyRegen", 1 / 20 + this.getEquipmentStats("energyRegen") / 60);
+        return this.processBuffs("energyRegen", 1 / 30 + this.getEquipmentStats("energyRegen") / 60);
     }
 
     // stuff with strength and agility, agility is the main contributor to the minimum attack damage
     private calcPhysicalAttackDamageRange(): [number, number] {
         let damage = this.strength * 0.6 + this.agility * 0.4 + this.getEquipmentStats("physicalDamage");
         let min = (this.strength * 0.5 + this.agility) / 10;
-        return [Math.max(damage * min), Math.max(damage)];
+        min = min / (min + 1);
+        return [Math.ceil(damage * min), Math.ceil(damage)];
     }
 
     // mostly just intelligence, little bit of agility on the min
     private calcMagicAttackDamageRange(): [number, number] {
         let damage = this.intelligence * 0.9 + this.getEquipmentStats("magicDamage");
         let min = (this.agility * 0.2 + this.intelligence * 0.5) / 5;
-        return [Math.max(damage * min), Math.max(damage)];
+        min = min / (min + 1);
+        return [Math.ceil(damage * min), Math.ceil(damage)];
     }
 
     // literally just your armor

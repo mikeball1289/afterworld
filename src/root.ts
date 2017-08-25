@@ -167,6 +167,8 @@ export enum InputType {
     INVENTORY,
     CONFIRM,
     CANCEL,
+    TAB_LEFT,
+    TAB_RIGHT,
 
     TOTAL,
 }
@@ -211,6 +213,8 @@ class Controls {
             case InputType.INVENTORY: return keyboard.isKeyDown(Key.I) || controller.getButton(ControllerButton.SELECT);
             case InputType.CONFIRM: return keyboard.isKeyDown(Key.SPACE) || controller.getButton(ControllerButton.A);
             case InputType.CANCEL: return keyboard.isKeyDown(Key.BACKSPACE) || controller.getButton(ControllerButton.B);
+            case InputType.TAB_LEFT: return keyboard.isKeyDown(Key.Q) || controller.getButton(ControllerButton.LT);
+            case InputType.TAB_RIGHT: return keyboard.isKeyDown(Key.R) || controller.getButton(ControllerButton.RT);
             default: return false;
         }
     }
