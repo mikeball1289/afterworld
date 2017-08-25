@@ -1,5 +1,5 @@
 import NPCText, { INPCLike } from "../display/NPCText";
-import { controls, InputType, juggler } from "../root";
+import { controls, InputType, juggler, root } from "../root";
 import World from "../world/World";
 import InventoryUI from "./InventoryUI";
 import PlayerHUD from "./PlayerHUD";
@@ -19,6 +19,8 @@ export default class UIManager {
     public statUI: StatUI;
     public playerHud: PlayerHUD;
     private selectMenuContainer: PIXI.Container;
+    private selectMenuBatchTexture: PIXI.RenderTexture;
+    private selectMenuRenderTarget: PIXI.Sprite;
 
     constructor(private world: World) {
         this.worldLayer = new PIXI.Container();
@@ -38,8 +40,7 @@ export default class UIManager {
         this.overlayLayer.addChild(this.npcText);
 
         this.selectMenuContainer = new PIXI.Container();
-        this.selectMenuContainer.alpha = 0.95;
-        this.overlayLayer.addChild(this.selectMenuContainer);
+        // this.selectMenuContainer.alpha = 0.2;
 
         this.inventoryUI = new InventoryUI(world);
         this.inventoryUI.x = Math.round(world.screenWidth / 2 - this.inventoryUI.width / 2);
@@ -51,7 +52,12 @@ export default class UIManager {
 
         this.selectMenuContainer.addChild(this.statUI);
         this.selectMenuContainer.addChild(this.inventoryUI);
-        this.selectMenuContainer.visible = false;
+
+        this.selectMenuBatchTexture = PIXI.RenderTexture.create(root.app.view.width, root.app.view.height);
+        this.selectMenuRenderTarget = new PIXI.Sprite(this.selectMenuBatchTexture);
+        this.selectMenuRenderTarget.alpha = 0.95;
+        this.selectMenuRenderTarget.visible = false;
+        this.overlayLayer.addChild(this.selectMenuRenderTarget);
 
         juggler.add(this.onEnterFrame, this);
     }
@@ -66,15 +72,17 @@ export default class UIManager {
     }
 
     public selectMenuIsOpen() {
-        return this.selectMenuContainer.visible;
+        return this.selectMenuRenderTarget.visible;
     }
 
     public openSelectMenu() {
-        this.selectMenuContainer.visible = true;
+        this.selectMenuRenderTarget.visible = true;
+        this.inventoryUI.bringToFront();
     }
 
     public closeSelectMenu() {
-        this.selectMenuContainer.visible = true;
+        this.selectMenuRenderTarget.visible = false;
+        this.inventoryUI.cleanup();
     }
 
     public onEnterFrame() {
@@ -82,7 +90,11 @@ export default class UIManager {
             if (!this.world.uiManager.hasInteractiveUI() && controls.hasLeadingEdge(InputType.INVENTORY)) {
                 this.openSelectMenu();
             }
-            return;
+        } else {
+            root.app.renderer.render(this.selectMenuContainer, this.selectMenuBatchTexture);
+            if (controls.hasLeadingEdge(InputType.INVENTORY)) {
+                this.closeSelectMenu();
+            }
         }
     }
 

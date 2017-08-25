@@ -59,16 +59,21 @@ class Juggler {
 export let juggler = new Juggler(60);
 
 class Root {
-    private _stage: PIXI.Container;
+    private _app: PIXI.Application;
 
-    public setStage(stage: PIXI.Container) {
-        if (!this._stage) this._stage = stage;
-        else throw new Error("Stage is already set");
+    public setApp(app: PIXI.Application) {
+        if (!this._app) this._app = app;
+        else throw new Error("App is already set");
     }
 
     get stage(): PIXI.Container {
-        if (this._stage) return this._stage;
+        if (this._app) return this._app.stage;
         else throw new Error("Stage is not yet set");
+    }
+
+    get app() {
+        if (this._app) return this._app;
+        else throw new Error("App is not yet set");
     }
 }
 

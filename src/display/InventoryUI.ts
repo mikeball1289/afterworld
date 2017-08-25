@@ -41,7 +41,6 @@ export default class InventoryUI extends JuggledSprite {
         area: SelectionArea;
         index: number;
     } = { area: "items", index: 0 };
-    private isOnTop: boolean = false;
     private selectionHighlight: PIXI.Sprite;
     private moveHighlight: PIXI.Sprite;
     private itemTextures: PIXI.Container;
@@ -74,8 +73,6 @@ export default class InventoryUI extends JuggledSprite {
     constructor(private world: World) {
         super(fromTextureCache("/images/inventory_ui.png", 0, 0, 871, 496));
         this.optionBox = new OptionBox();
-        this.alpha = 0.95;
-        this.visible = false;
         this.moveHighlight = new PIXI.Sprite(fromTextureCache("/images/inventory_ui.png", 50, 496, 50, 50));
         this.moveHighlight.visible = false;
         this.socketTextures = [fromTextureCache("/images/inventory_ui.png", 300, 496, 50, 50), fromTextureCache("/images/inventory_ui.png", 350, 496, 50, 50)];
@@ -137,12 +134,6 @@ export default class InventoryUI extends JuggledSprite {
             return;
         }
 
-        // everything past this point has the inventory open and no optionbox
-        if (controls.hasLeadingEdge(InputType.INVENTORY) || (this.mode === "normal" && controls.hasLeadingEdge(InputType.CANCEL))) {
-            this.close();
-            return;
-        }
-
         if (controls.hasLeadingEdge(InputType.UP)) {
             this.moveSelection(MovementDirection.UP);
         } else if (controls.hasLeadingEdge(InputType.DOWN)) {
@@ -165,10 +156,22 @@ export default class InventoryUI extends JuggledSprite {
         }
     }
 
+    private get isOnTop() {
+        return this.parent.getChildIndex(this) === this.parent.children.length - 1;
+    }
+
     public bringToFront() {
-        this.isOnTop = true;
         this.showDescription();
-        this.parent.setChildIndex(this, this.parent.children.length);
+        this.parent.setChildIndex(this, this.parent.children.length - 1);
+    }
+
+    public cleanup() {
+        this.optionBox.close();
+        this.selectionHighlight.visible = true;
+        this.socketHighlight.visible = false;
+        this.moveHighlight.visible = false;
+        this.mode = "normal";
+        this.highlightSelection();
     }
 
     public close() {
