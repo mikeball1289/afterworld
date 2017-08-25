@@ -62,7 +62,7 @@ export default class Ghost extends PassiveGhost {
                 this.velocity.x = this.direction * ATTACK_DASH_SPEED;
             }
             if (this.attackTimer > 15 && !this.hasHitPlayer && player && this.hitTest(player)) {
-                player.applyDamage(Math.floor(Math.random() * 2 + 1), new PIXI.Point(3 * this.direction, -2));
+                player.applyDamage( { amount: Math.floor(Math.random() * 2 + 1), type: "magic" }, new PIXI.Point(3 * this.direction, -2));
                 this.hasHitPlayer = true;
             }
             this.velocity.y = 0;

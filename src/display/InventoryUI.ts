@@ -1,6 +1,8 @@
 import { IEquipmentSlots } from "../data/Inventory";
 import Inventory from "../data/Inventory";
 import EquipmentItem from "../data/items/EquipmentItem";
+import GemItem from "../data/items/GemItem";
+import InventoryItem from "../data/items/InventoryItem";
 import { NUM_SKILLS } from "../data/Skillbar";
 import JuggledSprite from "../display/JuggledSprite";
 import { fromTextureCache } from "../pixiTools";
@@ -30,6 +32,7 @@ const EQUIPMENT_INDEX_TYPES: (keyof IEquipmentSlots)[] = [
 
 const SKILLBAR_INDEX_MAPPING = [2, 3, 4, 5, 0, 1];
 
+type Mode = "normal" | "move" | "socket";
 type SelectionArea = "items" | "equipment" | "skills";
 
 export default class InventoryUI extends JuggledSprite {
@@ -38,15 +41,35 @@ export default class InventoryUI extends JuggledSprite {
         area: SelectionArea;
         index: number;
     } = { area: "items", index: 0 };
+    private isOnTop: boolean = false;
     private selectionHighlight: PIXI.Sprite;
     private moveHighlight: PIXI.Sprite;
     private itemTextures: PIXI.Container;
     private optionBox: OptionBox;
-    private moveMode = false;
+    private mode: Mode = "normal";
     private moveIndex = 0;
     private titleText: PIXI.Text;
     private descriptionText: PIXI.Text;
     private descriptionPanel: PIXI.Container;
+    private socketTextures: PIXI.Texture[];
+    private socketHighlight: PIXI.Sprite;
+    private selectedGem?: GemItem;
+
+    private get moveMode() {
+        return this.mode === "move";
+    }
+    private set moveMode(val) {
+        if (val) this.mode = "move";
+        else this.mode = "normal";
+    }
+
+    private get socketMode() {
+        return this.mode === "socket";
+    }
+    private set socketMode(val) {
+        if (val) this.mode = "socket";
+        else this.mode = "normal";
+    }
 
     constructor(private world: World) {
         super(fromTextureCache("/images/inventory_ui.png", 0, 0, 871, 496));
@@ -55,12 +78,11 @@ export default class InventoryUI extends JuggledSprite {
         this.visible = false;
         this.moveHighlight = new PIXI.Sprite(fromTextureCache("/images/inventory_ui.png", 50, 496, 50, 50));
         this.moveHighlight.visible = false;
+        this.socketTextures = [fromTextureCache("/images/inventory_ui.png", 300, 496, 50, 50), fromTextureCache("/images/inventory_ui.png", 350, 496, 50, 50)];
+        this.socketHighlight = new PIXI.Sprite(this.socketTextures[0]);
+        this.socketHighlight.visible = false;
         this.selectionHighlight = new PIXI.Sprite(fromTextureCache("/images/inventory_ui.png", 0, 496, 50, 50));
         this.itemTextures = new PIXI.Container();
-        this.addChild(this.itemTextures);
-        this.addChild(this.moveHighlight);
-        this.addChild(this.selectionHighlight);
-        this.addChild(this.optionBox);
         this.highlightSelection();
 
         this.descriptionPanel = new PIXI.Container();
@@ -94,25 +116,29 @@ export default class InventoryUI extends JuggledSprite {
                 fontFamily: DEFAULT_FONT,
                 fill: 0xFF9000,
             },
+            cyan: {
+                fontFamily: DEFAULT_FONT,
+                fill: 0x00FF8F,
+            },
         } );
         this.descriptionText.y = 6;
         this.descriptionPanel.addChild(this.descriptionText);
+
+        this.addChild(this.itemTextures);
+        this.addChild(this.moveHighlight);
+        this.addChild(this.selectionHighlight);
+        this.addChild(this.socketHighlight);
         this.addChild(this.descriptionPanel);
+        this.addChild(this.optionBox);
     }
 
     public onEnterFrame() {
-        if (!this.isOpen()) {
-            if (!this.world.uiManager.hasInteractiveUI() && controls.hasLeadingEdge(InputType.INVENTORY)) {
-                this.open();
-            }
-            return;
-        }
         if (this.optionBox.isOpen()) {
             return;
         }
 
         // everything past this point has the inventory open and no optionbox
-        if (controls.hasLeadingEdge(InputType.INVENTORY) || (!this.moveMode && controls.hasLeadingEdge(InputType.CANCEL))) {
+        if (controls.hasLeadingEdge(InputType.INVENTORY) || (this.mode === "normal" && controls.hasLeadingEdge(InputType.CANCEL))) {
             this.close();
             return;
         }
@@ -128,22 +154,29 @@ export default class InventoryUI extends JuggledSprite {
         } else if (controls.hasLeadingEdge(InputType.CANCEL) && this.moveMode) {
             this.moveMode = false;
             this.moveHighlight.visible = false;
+        } else if (controls.hasLeadingEdge(InputType.CANCEL) && this.socketMode) {
+            this.socketMode = false;
+            this.socketHighlight.visible = false;
+            this.moveHighlight.visible = false;
+            this.selectionHighlight.visible = true;
+            this.highlightSelection();
         } else if (controls.hasLeadingEdge(InputType.CONFIRM)) {
             this.select();
         }
     }
 
-    public isOpen() {
-        return this.visible;
-    }
-
-    public open() {
-        this.visible = true;
+    public bringToFront() {
+        this.isOnTop = true;
         this.showDescription();
+        this.parent.setChildIndex(this, this.parent.children.length);
     }
 
     public close() {
-        this.visible = false;
+        this.world.uiManager.closeSelectMenu();
+    }
+
+    public get isOpen() {
+        return this.isOnTop && this.world.uiManager.selectMenuIsOpen();
     }
 
     public setSelection(index: number, area?: SelectionArea) {
@@ -152,23 +185,41 @@ export default class InventoryUI extends JuggledSprite {
         this.highlightSelection();
     }
 
-    public refreshInventoryIcons() {
+    public refreshInventoryIcons(excludeInventory = false) {
         this.itemTextures.removeChildren();
         let inventory = this.world.actorManager.player.inventory;
-        for (let i = 0; i < Inventory.INVENTORY_SIZE; i ++) {
-            let item = inventory.inventoryItems[i];
-            if (!item) continue;
-            let sprite = new PIXI.Sprite(item.graphic);
-            let coords = this.getItemFrameCoords({ area: "items", index: i });
-            sprite.x = coords[0] + 5;
-            sprite.y = coords[1] + 5;
-            this.itemTextures.addChild(sprite);
+        if (!excludeInventory) {
+            for (let i = 0; i < Inventory.INVENTORY_SIZE; i ++) {
+                let item = inventory.inventoryItems[i];
+                if (!item) continue;
+                let sprite = new PIXI.Sprite(item.graphic);
+                if (EquipmentItem.isEquipmentItem(item)) {
+                    if (item.socket) {
+                        if (item.socket.gem) {
+                            sprite.addChild(new PIXI.Sprite(item.socket.gem.socketTexture()));
+                        } else {
+                            sprite.addChild(new PIXI.Sprite(fromTextureCache("/images/inventory_ui.png", 105, 501, 40, 40)));
+                        }
+                    }
+                }
+                let coords = this.getItemFrameCoords({ area: "items", index: i });
+                sprite.x = coords[0] + 5;
+                sprite.y = coords[1] + 5;
+                this.itemTextures.addChild(sprite);
+            }
         }
 
         for (let i = 0; i < EQUIPMENT_INDEX_TYPES.length; i ++) {
             let item = inventory.equipment[EQUIPMENT_INDEX_TYPES[i]];
             if (!item) continue;
             let sprite = new PIXI.Sprite(item.graphic);
+            if (item.socket) {
+                if (item.socket.gem) {
+                    sprite.addChild(new PIXI.Sprite(item.socket.gem.socketTexture()));
+                } else {
+                    sprite.addChild(new PIXI.Sprite(fromTextureCache("/images/inventory_ui.png", 105, 501, 40, 40)));
+                }
+            }
             let coords = this.getItemFrameCoords({ area: "equipment", index: i });
             sprite.x = coords[0] + 5;
             sprite.y = coords[1] + 5;
@@ -219,7 +270,7 @@ export default class InventoryUI extends JuggledSprite {
                 case MovementDirection.UP: {
                     if (Math.floor(this.selection.index / 6) > 0) {
                         this.setSelection(this.selection.index - 6);
-                    } else if (!this.moveMode) {
+                    } else if (!this.moveMode && !this.socketMode) {
                         this.setSelection(this.selection.index, "skills");
                     }
                     break;
@@ -250,7 +301,7 @@ export default class InventoryUI extends JuggledSprite {
             if (direction === MovementDirection.UP) {
                 if (this.selection.index !== 0 && this.selection.index !== 2 && this.selection.index !== 7) {
                     this.setSelection(this.selection.index - 1);
-                } else if (this.selection.index === 2) {
+                } else if (this.selection.index === 2 && !this.socketMode) {
                     this.setSelection(0, "skills");
                 }
             } else if (direction === MovementDirection.DOWN) {
@@ -285,24 +336,44 @@ export default class InventoryUI extends JuggledSprite {
     }
 
     private highlightSelection() {
-        [this.selectionHighlight.x, this.selectionHighlight.y] = this.getItemFrameCoords(this.selection);
+        if (!this.socketMode) {
+            [this.selectionHighlight.x, this.selectionHighlight.y] = this.getItemFrameCoords(this.selection);
+        } else {
+            [this.socketHighlight.x, this.socketHighlight.y] = this.getItemFrameCoords(this.selection);
+            let item = this.selectedItem();
+            if (item && EquipmentItem.isEquipmentItem(item) && item.canAddGem()) {
+                this.socketHighlight.texture = this.socketTextures[0];
+            } else {
+                this.socketHighlight.texture = this.socketTextures[1];
+            }
+        }
     }
 
     private getItemFrameCoords(selection: { area: SelectionArea, index: number }): [number, number] {
         if (selection.area === "items") {
-            return [244 + (selection.index % 6) * 52, 108 + Math.floor(selection.index / 6) * 52];
+            return [244 + (selection.index % 6) * 52, 148 + Math.floor(selection.index / 6) * 52];
         } else if (selection.area === "equipment") {
             if (selection.index < 2) {
-                return [44, 264 + selection.index * 52];
+                return [44, 304 + selection.index * 52];
             } else if (selection.index < 7) {
-                return [98, 149 + (selection.index - 2) * 52];
+                return [98, 189 + (selection.index - 2) * 52];
             } else {
-                return [151, 271 + (selection.index - 7) * 52];
+                return [151, 311 + (selection.index - 7) * 52];
             }
         } else if (selection.area === "skills") {
-            return [125 + 52 * selection.index + (selection.index >= 4 ? 30 : 0), 26];
+            return [125 + 52 * selection.index + (selection.index >= 4 ? 30 : 0), 66];
         }
         return [0, 0];
+    }
+
+    private selectedItem() {
+        let inventory = this.world.actorManager.player.inventory;
+        if (this.selection.area === "items") {
+            return inventory.inventoryItems[this.selection.index];
+        } else if (this.selection.area === "equipment") {
+            return inventory.equipment[EQUIPMENT_INDEX_TYPES[this.selection.index]];
+        }
+        return undefined;
     }
 
     private select() {
@@ -319,6 +390,29 @@ export default class InventoryUI extends JuggledSprite {
                 skillbar.swapSkills(SKILLBAR_INDEX_MAPPING[this.moveIndex], SKILLBAR_INDEX_MAPPING[this.selection.index]);
             }
             this.refreshInventoryIcons();
+            return;
+        } else if (this.socketMode) {
+            let item = this.selectedItem();
+            if (item && EquipmentItem.isEquipmentItem(item)) {
+                if (this.selectedGem && item.canAddGem()) {
+                    if (inventory.removeItem(this.selectedGem)) {
+                        item.addGem(this.selectedGem);
+                        if (this.selection.area === "equipment") {
+                            if (this.selectedGem.skill) {
+                                this.world.actorManager.player.skillBar.addSkill(this.selectedGem.skill);
+                            }
+                        }
+                    }
+                    this.socketMode = false;
+                    this.selectedGem = undefined;
+                    this.socketHighlight.visible = false;
+                    this.moveHighlight.visible = false;
+                    this.selectionHighlight.visible = true;
+                    this.refreshInventoryIcons();
+                    this.highlightSelection();
+                    this.showDescription();
+                }
+            }
             return;
         }
 
@@ -346,6 +440,32 @@ export default class InventoryUI extends JuggledSprite {
                     } else if (option === 1) {
                         this.beginMove(p);
                     } else if (option === 2) {
+                        this.dropItem();
+                    }
+                } );
+            } else if (GemItem.isGemItem(item)) {
+                this.optionBox.open(["Socket", "Move", "Drop", "Cancel"], (option) => {
+                    if (!(item && GemItem.isGemItem(item))) return;
+                    if (option === 0) {
+                        this.socketMode = true;
+                        this.selectedGem = item;
+                        this.socketHighlight.visible = true;
+                        this.moveHighlight.visible = true;
+                        this.selectionHighlight.visible = false;
+                        [this.moveHighlight.x, this.moveHighlight.y] = this.getItemFrameCoords(this.selection);
+                        this.highlightSelection();
+                    } else if (option === 1) {
+                        this.beginMove(p);
+                    } else if (option === 2) {
+                        this.dropItem();
+                    }
+                } );
+            } else {
+                this.optionBox.open(["Move", "Drop", "Cancel"], (option) => {
+                    if (!(item)) return;
+                    if (option === 0) {
+                        this.beginMove(p);
+                    } else if (option === 1) {
                         this.dropItem();
                     }
                 } );

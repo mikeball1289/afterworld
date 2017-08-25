@@ -144,7 +144,7 @@ export default class PassiveGhost extends Enemy {
                 this.destroy();
             },
             onProgress: (frame) => {
-                this.healthBar.alpha = 1 - (frame / 7);
+                this.healthBar.alpha = 1 - (frame / 3);
             },
         } );
         this.state = MovementStates.DEAD;

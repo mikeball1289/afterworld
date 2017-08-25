@@ -325,8 +325,7 @@ export default class Skelly extends Enemy {
                 onProgress: (frame) => {
                     if (frame === 3) {
                         soundManager.playSound("/sounds/skelly_scratch.ogg", 1, "scratch");
-                        // player.applyDamage(16, new PIXI.Point());
-                        player.applyDamage(Math.floor(Math.random() * 2 + 1), new PIXI.Point());
+                        player.applyDamage( { amount: Math.floor(Math.random() * 2 + 1), type: "physical" }, new PIXI.Point());
                     }
                 },
                 onComplete: () => {

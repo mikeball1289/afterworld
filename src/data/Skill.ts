@@ -51,7 +51,10 @@ export default class Skill {
         } else {
             des += ")\n";
         }
-        des += this.description;
+        if (this.weaponTypes !== "any") {
+            des += "requires " + this.weaponTypes.join(" OR ") + " weapon\n";
+        }
+        des += "\n" + this.description;
         return des;
     }
 }

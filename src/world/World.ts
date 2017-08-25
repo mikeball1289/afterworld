@@ -102,11 +102,15 @@ export default class World extends PIXI.Sprite {
             let data = new PNG.load("." + mapDataObject.map);
             data.decode( (pixels) => {
                 try {
-                    let foregroundTexture: PIXI.Texture | undefined;
+                    let foregroundTexture: PIXI.Texture | undefined = undefined;
                     if (loader.resources["foreground"]) {
                         foregroundTexture = loader.resources["foreground"].texture;
                     }
-                    this.map = new Map(data.width, data.height, pixels, loader.resources["background"].texture, foregroundTexture);
+                    let bgSprite = new PIXI.Sprite(loader.resources["background"].texture);
+                    if (mapDataObject.backgroundAccents) for (let child of mapDataObject.backgroundAccents(this)) bgSprite.addChild(child);
+                    let fgSprite = new PIXI.Sprite(foregroundTexture);
+                    if (mapDataObject.foregroundAccents) for (let child of mapDataObject.foregroundAccents(this)) fgSprite.addChild(child);
+                    this.map = new Map(data.width, data.height, pixels, bgSprite, fgSprite);
                 } catch (e) {
                     console.log(e);
                     throw e;

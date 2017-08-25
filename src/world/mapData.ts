@@ -2,6 +2,7 @@ import Enemy from "../actors/Enemy";
 import Ghost from "../actors/Ghost";
 import PassiveGhost from "../actors/PassiveGhost";
 import Skelly from "../actors/Skelly";
+import SideGlowAccent from "../display/accents/SideGlowAccent";
 import World from "../world/World";
 
 export interface INPCData {
@@ -25,6 +26,8 @@ export interface IMapDataObject {
     };
     exits: {[name: string]: [number, number]};
     bgTrack: string;
+    backgroundAccents?: (world: World) => PIXI.DisplayObject[];
+    foregroundAccents?: (world: World) => PIXI.DisplayObject[];
 }
 
 let p: <T>(x: T, y: T) => [T, T] = (x, y) => [x, y];
@@ -94,7 +97,9 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         entrances: {
             default: p(144, 956 - 85),
         },
-        exits: {},
+        exits: {
+            map1: p(2950, 873),
+        },
         npcs: [],
         enemies: (world) => {
             let ghostie1 = new PassiveGhost(world);
@@ -106,6 +111,12 @@ let mapData: { [mapname: string]: IMapDataObject } = {
             return [ghostie1, ghostie2];
         },
         bgTrack: "/sounds/CarrotWine_How_to_spend_winter.ogg",
+        foregroundAccents: (world) => {
+            let exitHighlight = new SideGlowAccent(world);
+            exitHighlight.x = 2903;
+            exitHighlight.y = 878 - 161;
+            return [exitHighlight];
+        },
     },
 };
 

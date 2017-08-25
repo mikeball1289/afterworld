@@ -1,8 +1,10 @@
 import Player from "../actors/Player";
+import { BuffStat } from "../buffs/Buff";
 import SoftTextParticle from "../particlesystem/SoftTextParticle";
 import { juggler } from "../root";
 import * as pc from "../world/physicalConstants";
 import World from "../world/World";
+import EquipmentItem, { IEquipmentStats } from "./items/EquipmentItem";
 
 export default class PlayerStats {
 
@@ -52,19 +54,32 @@ export default class PlayerStats {
         this.healthAcc += this.healthRegen;
         this.healthTickTimer ++;
         if (this.healthTickTimer >= 60 && this.healthAcc >= 1) {
+            let prevHealth = this.health;
             let healing = Math.floor(this.healthAcc);
             this.health += healing;
             this.healthAcc -= healing;
-            let particle = new SoftTextParticle(healing.toFixed(0), 0x08CC08);
-            particle.velocity.y = -0.75;
-            particle.x = this.player.horizontalCenter;
-            particle.y = this.player.top;
-            this.world.particleSystem.add(particle, false);
-            this.world.uiManager.worldLayers[1].addChild(particle);
+            if (this.health - prevHealth > 0) {
+                let particle = new SoftTextParticle((this.health - prevHealth).toFixed(0), 0x08CC08);
+                particle.velocity.y = -0.75;
+                particle.x = this.player.horizontalCenter;
+                particle.y = this.player.top;
+                this.world.particleSystem.add(particle, false);
+                this.world.uiManager.worldLayers[1].addChild(particle);
+            }
         }
         this.energyAcc += this.energyRegen;
         this.energy += Math.floor(this.energyAcc);
         this.energyAcc -= Math.floor(this.energyAcc);
+    }
+
+    public physicalDamageAmount() {
+        let range = this.physicalAttackDamageRange;
+        return Math.ceil(Math.random() * (range[1] - range[0]) + range[0]);
+    }
+
+    public magicDamageAmount() {
+        let range = this.magicAttackDamageRange;
+        return Math.ceil(Math.random() * (range[1] - range[0]) + range[0]);
     }
 
     public get jumpPower() {
@@ -132,67 +147,98 @@ export default class PlayerStats {
     }
 
     private calcMaxHealth() {
-        return 50;
+        return this.processBuffs("health", 50 + this.getEquipmentStats("health"));
     }
 
     private calcMaxEnergy() {
-        return 100;
+        return this.processBuffs("energy", 100 + this.getEquipmentStats("energy"));
     }
 
     private calcHaste() {
-        return 0;
+        return this.processBuffs("haste", this.getEquipmentStats("haste"));
     }
 
     private calcGlobalCooldown() {
-        return 60;
+        let miniHaste = this.haste / 100;
+        return 60 - 30 * (miniHaste / (miniHaste + 1));
     }
 
     private calcWalkSpeed() {
-        return this.player.buffs.process("getStats", { stat: "walkSpeed", amount: pc.WALK_IMPULSE });
+        let speed = pc.WALK_IMPULSE + this.getEquipmentStats("walkSpeed") / 20 + this.haste / 100;
+        speed = this.processBuffs("walkSpeed", speed);
+        return speed;
     }
 
+    // number between 0 and 1
     private calcCriticalHitChance() {
-        return 0;
+        let agi = this.agility / 100;
+        return this.processBuffs("criticalHitChance", agi / (agi + 1));
     }
 
+    // base 5 + equipment stats
     private calcAgility() {
-        return 5;
+        return this.processBuffs("agility", 5 + this.getEquipmentStats("agility"));
     }
 
+    // base 5 + equipment stats
     private calcStrength() {
-        return 5;
+        return this.processBuffs("strength", 5 + this.getEquipmentStats("strength"));
     }
 
+    // base 5 + equipment stats
     private calcIntelligence() {
-        return 5;
+        return this.processBuffs("intelligence", 5 + this.getEquipmentStats("intelligence"));
     }
 
     private calcCooldownReduction() {
         return 0;
     }
 
+    // base 1/1000 + equipment stats
     private calcHealthRegen() {
-        return 1 / 1000;
+        return this.processBuffs("healthRegen", 1 / 1000 + this.getEquipmentStats("healthRegen") / 60);
     }
 
+    // base 1/20 + equipment stats
     private calcEnergyRegen() {
-        return 1 / 20;
+        return this.processBuffs("energyRegen", 1 / 20 + this.getEquipmentStats("energyRegen") / 60);
     }
 
+    // stuff with strength and agility, agility is the main contributor to the minimum attack damage
     private calcPhysicalAttackDamageRange(): [number, number] {
-        return [1, 3];
+        let damage = this.strength * 0.6 + this.agility * 0.4 + this.getEquipmentStats("physicalDamage");
+        let min = (this.strength * 0.5 + this.agility) / 10;
+        return [Math.max(damage * min), Math.max(damage)];
     }
 
+    // mostly just intelligence, little bit of agility on the min
     private calcMagicAttackDamageRange(): [number, number] {
-        return [1, 3];
+        let damage = this.intelligence * 0.9 + this.getEquipmentStats("magicDamage");
+        let min = (this.agility * 0.2 + this.intelligence * 0.5) / 5;
+        return [Math.max(damage * min), Math.max(damage)];
     }
 
+    // literally just your armor
     private calcArmor() {
-        return 0;
+        return this.processBuffs("armor", this.getEquipmentStats("armor"));
     }
 
     private hitCache<T>(getter: () => T, cacheName: string): T {
         if (this.frameCache[cacheName]) return this.frameCache[getter.name];
         return this.frameCache[getter.name] = getter.call(this);
+    }
+
+    private getEquipmentStats(stat: keyof IEquipmentStats) {
+        let equips = this.player.inventory.equipment;
+        let statVal = 0;
+        for (let key of Keys(equips)) {
+            let equip = equips[key];
+            if (equip && equip.stats[stat]) statVal += equip.stats[stat]!;
+        }
+        return statVal;
+    }
+
+    private processBuffs(stat: BuffStat, baseAmount: number) {
+        return this.player.buffs.process("getStats", { stat, amount: baseAmount } );
     }
 }

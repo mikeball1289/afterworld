@@ -8,7 +8,7 @@ export default class EnvenomedBuff extends Buff {
 
     private charges = 3;
 
-    constructor(source = "World") {
+    constructor(public damage: number, source = "World") {
         super(2, "Envenomed", source, Infinity);
     }
 
@@ -18,9 +18,12 @@ export default class EnvenomedBuff extends Buff {
         }
     }
 
-    public refresh() {
+    public refresh(damage?: number) {
         this.charges = 3;
         this.duration = Infinity;
+        if (damage) {
+            this.damage = damage;
+        }
     }
 
     public onExpire(actor: Actor) {
@@ -33,7 +36,7 @@ export default class EnvenomedBuff extends Buff {
         if (name === "damageDealt") {
             if (this.charges > 0) {
                 let enemy: Actor = payload;
-                enemy.buffs.addBuff(new EnemyPoisonedDebuff(180, "Envenom", 1, 30));
+                enemy.buffs.addBuff(new EnemyPoisonedDebuff(180, "Envenom", Math.ceil(this.damage / 6), 30));
                 this.charges --;
                 if (this.charges <= 0) {
                     this.duration = 0;

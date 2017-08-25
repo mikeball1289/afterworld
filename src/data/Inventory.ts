@@ -1,9 +1,11 @@
 import { fromTextureCache } from "../pixiTools";
 import World from "../world/World";
 import EquipmentItem from "./items/EquipmentItem";
+import GemItem from "./items/GemItem";
 import InventoryItem from "./items/InventoryItem";
 import * as ItemFactory from "./items/ItemFactory";
 import WeaponItem from "./items/WeaponItem";
+import * as skillData from "./skillData";
 
 export interface IEquipmentSlots {
     head: EquipmentItem | undefined;
@@ -25,6 +27,14 @@ export default class Inventory {
         ItemFactory.constructItem("weapon", ItemFactory.itemData.woodchopping_axe),
         ItemFactory.constructItem("equip", ItemFactory.itemData.wooden_buckler),
         ItemFactory.constructItem("weapon", ItemFactory.itemData.iron_dagger),
+        ItemFactory.constructItem("equip", ItemFactory.itemData.cloth_shirt).addSocket(),
+        ItemFactory.constructItem("equip", ItemFactory.itemData.leather_pants).addSocket(ItemFactory.constructItem("gem", ItemFactory.itemData.leap_gem)),
+        ItemFactory.constructItem("equip", ItemFactory.itemData.leather_boots).addSocket(ItemFactory.constructItem("gem", ItemFactory.itemData.tremor_gem)),
+        ItemFactory.constructItem("equip", ItemFactory.itemData.wooden_buckler).addSocket(),
+        ItemFactory.constructItem("equip", ItemFactory.itemData.wooden_buckler).addSocket(),
+        ItemFactory.constructItem("gem", ItemFactory.itemData.envenom_gem),
+        ItemFactory.constructItem("gem", ItemFactory.itemData.buckle_down_gem),
+        ItemFactory.constructItem("gem", ItemFactory.itemData.explosion_gem),
     ];
     public equipment: IEquipmentSlots = {
         head: undefined,
@@ -99,8 +109,10 @@ export default class Inventory {
         item.addEquipmentGraphic(this.world.actorManager.player);
 
         let player = this.world.actorManager.player;
-        if (newSkill) player.skillBar.addSkill(newSkill);
-        if (oldSkill) player.skillBar.addSkill(oldSkill);
+        if (oldSkill !== newSkill) {
+            if (oldSkill) player.skillBar.removeSkill(oldSkill);
+            if (newSkill) player.skillBar.addSkill(newSkill);
+        }
         return true;
     }
 

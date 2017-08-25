@@ -1,6 +1,6 @@
 import Actor from "../actors/Actor";
 import World from "../world/World";
-import Buff, { BuffEvent, ConditionType } from "./Buff";
+import Buff, { BuffEvent, ConditionType, IStatBox } from "./Buff";
 
 export default class BuffSet {
 
@@ -47,18 +47,18 @@ export default class BuffSet {
         return undefined;
     }
 
-    public process(name: "dealDamage", payload: { damage: number, knockback: PIXI.Point }): { damage: number, knockback: PIXI.Point };
-    public process(name: "takeDamage", payload: { damage: number, knockback: PIXI.Point }): { damage: number, knockback: PIXI.Point };
-    public process(name: "die"): void;
-    public process(name: "attack"): void;
+    public process(name: "dealDamage", payload: { damage: IDamageBundle, knockback: PIXI.Point }): { damage: IDamageBundle, knockback: PIXI.Point };
+    public process(name: "takeDamage", payload: { damage: IDamageBundle, knockback: PIXI.Point }): { damage: IDamageBundle, knockback: PIXI.Point };
+    public process(name: "die", payload: never): void;
+    public process(name: "attack", payload: never): void;
     public process(name: "damageDealt", payload: Actor): void;
     public process(name: "killedEnemy", payload: Actor): void;
-    public process(name: "getStats", payload: { stat: string, amount: number }): number;
+    public process(name: "getStats", payload: IStatBox): number;
     public process(name: BuffEvent, payload?: any): any {
         switch (name) {
             case "dealDamage":
             case "takeDamage": {
-                let damage: { damage: number, knockback: PIXI.Point } = payload;
+                let damage: { damage: IDamageBundle, knockback: PIXI.Point } = payload;
                 for (let buff of this.buffs) {
                     damage = buff.onEvent(<any> name, damage);
                 }

@@ -19,18 +19,18 @@ abstract class Enemy extends NonPlayerActor implements ICombatObject {
     public abstract isDead(): boolean;
     public abstract die(damage: number, knockback: PIXI.Point): void;
 
-    public applyAttack(damage: number, knockback: PIXI.Point) {
+    public applyAttack(damage: IDamageBundle, knockback: PIXI.Point) {
         if (this.isDead()) return false;
 
         soundManager.playSound(smacks[Math.floor(Math.random() * smacks.length)], 1, "smack_hit");
 
-        let particle = new DamageParticle(damage, "enemyDamage", this);
+        let particle = new DamageParticle(damage.amount, "enemyDamage", this);
         this.world.particleSystem.add(particle, false);
         this.world.uiManager.worldLayers[1].addChild(particle);
 
-        this.health -= damage;
+        this.health -= damage.amount;
         if (this.health <= 0) {
-            this.die(damage, knockback);
+            this.die(damage.amount, knockback);
         } else {
             this.applyImpulse(knockback.x, knockback.y);
         }

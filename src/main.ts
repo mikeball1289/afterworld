@@ -26,6 +26,7 @@ export function preload(arg: boolean | string[]) {
 }
 
 function main(app: PIXI.Application) {
+    nw.Window.get().enterFullscreen();
     root.root.setStage(app.stage);
 
     let world = new World("dark_forest1", app.view.width, app.view.height);

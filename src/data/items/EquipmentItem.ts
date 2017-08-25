@@ -2,8 +2,24 @@ import Player from "../../actors/Player";
 import World from "../../world/World";
 import { IEquipmentSlots } from "../Inventory";
 import Skill from "../Skill";
+import { basicAttack } from "../skillData";
 import GemItem from "./GemItem";
 import InventoryItem from "./InventoryItem";
+
+export interface IEquipmentStats {
+    physicalDamage?: number;
+    magicDamage?: number;
+    armor?: number;
+    health?: number;
+    energy?: number;
+    healthRegen?: number;
+    energyRegen?: number;
+    strength?: number;
+    agility?: number;
+    intelligence?: number;
+    haste?: number;
+    walkSpeed?: number;
+}
 
 type EquipmentType = keyof IEquipmentSlots;
 
@@ -20,6 +36,7 @@ export default class EquipmentItem extends InventoryItem {
     public socket?: {
         gem?: GemItem;
     } = undefined;
+    public stats: IEquipmentStats = {};
 
     constructor(graphic: PIXI.Texture, public equipmentType: EquipmentType, name: string, public sheetName: string, description: string | ((world: World) => string)) {
         super(graphic, name, description);
@@ -36,13 +53,51 @@ export default class EquipmentItem extends InventoryItem {
         return undefined;
     }
 
+    public get prettyType(): string {
+        switch (this.equipmentType) {
+            case "head": return "Helmet";
+            case "neck": return "Necklace";
+            case "body": return "Chest";
+            case "legs": return "Pants";
+            case "feet": return "Boots";
+            case "trinket": return "Trinket";
+            case "weapon": return "Weapon";
+            case "offhand": return "Off-Hand";
+            case "gloves": return "Gloves";
+            default: return "Item";
+        }
+    }
+
     public getDescription(world: World) {
-        return "LV " + this.ilvl + "\n" + super.getDescription(world);
+        let des = "LV " + this.ilvl + " " + this.prettyType + "\n" + super.getDescription(world);
+        if (this.socket && !this.socket.gem) {
+            des += "\n\n(Socket)";
+        }
+        let skill = this.getSkill();
+        if (skill && skill !== basicAttack) {
+            des += "\n\n" + skill.getName() + " - " + skill.getDescription();
+        }
+        return des;
     }
 
     public getSkill(): Skill | undefined {
         if (this.gem) return this.gem.skill;
         return undefined;
+    }
+
+    public addSocket(gem?: GemItem): this {
+        this.socket = { gem };
+        return this;
+    }
+
+    public canAddGem() {
+        return this.socket && !this.socket.gem;
+    }
+
+    public addGem(gem: GemItem) {
+        if (!this.socket || this.socket.gem) return false;
+        this.socket.gem = gem;
+        return true;
     }
 
     public addEquipmentGraphic(player: Player) {

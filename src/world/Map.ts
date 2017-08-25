@@ -63,14 +63,14 @@ export default class Map {
         return (type & IS_DROPPABLE) !== 0;
     }
 
-    public backgroundSprite: PIXI.Sprite;
-    public foregroundSprite: PIXI.Sprite;
+    // public backgroundSprite: PIXI.Sprite;
+    // public foregroundSprite: PIXI.Sprite;
     private mapData: Uint8Array;
 
     get digitalWidth() { return this.mapWidth; }
     get digitalHeight() { return this.mapHeight; }
 
-    constructor(private mapWidth: number, private mapHeight: number, mapDataArray: Buffer, backgroundImage: PIXI.Texture, foregroundImage?: PIXI.Texture) {
+    constructor(private mapWidth: number, private mapHeight: number, mapDataArray: Buffer, public backgroundSprite: PIXI.Sprite, public foregroundSprite: PIXI.Sprite) {
         this.mapData = new Uint8Array(mapDataArray.length / 4);
         for (let i = 0; i < mapDataArray.length; i += 4) { // packed as RGBA, so bump by 4 each iteration
             if (mapDataArray[i] === 0x00 && mapDataArray[i + 1] === 0x00 && mapDataArray[i + 2] === 0x00) this.mapData[i / 4] = GroundType.SOLID;
@@ -84,8 +84,8 @@ export default class Map {
             else if (mapDataArray[i] === 0xFF && mapDataArray[i + 1] === 0x88 && mapDataArray[i + 2] === 0x99) this.mapData[i / 4] = GroundType.DROPPABLE_NO_FEAR;
             else throw new Error("Invalid map data at " + ((i / 4) % this.mapWidth) + ", " + Math.floor((i / 4) / this.mapWidth) + " " + mapDataArray[i] + " " + mapDataArray[i + 1] + " " + mapDataArray[i + 2]);
         }
-        this.backgroundSprite = new PIXI.Sprite(backgroundImage);
-        if (foregroundImage) this.foregroundSprite = new PIXI.Sprite(foregroundImage);
+        // this.backgroundSprite = new PIXI.Sprite(backgroundImage);
+        // if (foregroundImage) this.foregroundSprite = new PIXI.Sprite(foregroundImage);
     }
 
     public destroy(options?: boolean | PIXI.IDestroyOptions) {

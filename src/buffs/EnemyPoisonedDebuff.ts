@@ -28,7 +28,7 @@ export default class EnemyPoisonedDebuff extends Buff {
         if (name === "frame") {
             this.timer ++;
             if (this.timer >= this.tickTime) {
-                this.actor.applyAttack(this.damage, new PIXI.Point());
+                this.actor.applyAttack( { amount: this.damage, type: "physical", element: "poison" }, new PIXI.Point());
                 this.timer = 0;
             }
         } else {

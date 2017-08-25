@@ -81,11 +81,11 @@ export default class Player extends Actor {
 
     constructor(world: World) {
         super(world);
+        this.inventory = new Inventory(world);
         this.stats = new PlayerStats(this, world);
         this.skillBar = new SkillBar(this, world);
         this.sprite = new PIXI.Sprite();
         this.addChild(this.sprite);
-        this.inventory = new Inventory(world);
         let frameData: PlayerAnimations = {
             walk: [0, 4],
             idle: [1, 1],
@@ -122,12 +122,6 @@ export default class Player extends Actor {
         this.deathFrame.anchor.set(0.5, 1);
         this.deathFrame.x = this.size.x / 2;
         this.deathFrame.y = this.size.y;
-
-        // this.skillBar.addSkill(skillData.cleave);
-        // this.skillBar.addSkill(skillData.buckleDown);
-        // this.skillBar.addSkill(skillData.envenom);
-        // this.skillBar.addSkill(skillData.leap);
-        // this.skillBar.addSkill(skillData.tremor);
 
         this.loadEquipment();
     }
@@ -171,7 +165,10 @@ export default class Player extends Actor {
                 this.body.back_hand.loadTexturePackerFrames("/sprites/back_hand_base.png", "/sprites/back_hand_base.json");
                 break;
             }
-            case "offhand":
+            case "offhand": {
+                this.body.offhand_back.loadTexturePackerFrames("/sprites/offhand_back_base.png", "/sprites/offhand_back_base.json");
+                this.body.offhand_front.loadTexturePackerFrames("/sprites/offhand_front_base.png", "/sprites/offhand_front_base.json");
+            }
             default: break;
         }
     }
@@ -336,17 +333,17 @@ export default class Player extends Actor {
         return !this.isDead();
     }
 
-    public applyDamage(damage: number, knockback: PIXI.Point) {
+    public applyDamage(damage: IDamageBundle, knockback: PIXI.Point) {
         if (this.isDead()) return false;
 
         let { damage: d, knockback: k } = this.buffs.process("takeDamage", { damage, knockback } );
         damage = d;
         knockback = k;
-        let particle = new DamageParticle(damage, "playerDamage", this);
+        let particle = new DamageParticle(damage.amount, "playerDamage", this);
         this.world.particleSystem.add(particle, false);
         this.world.uiManager.worldLayers[1].addChild(particle);
 
-        this.stats.health -= damage;
+        this.stats.health -= damage.amount;
         if (this.stats.health <= 0) {
             this.die();
         } else {

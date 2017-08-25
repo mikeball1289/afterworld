@@ -54,20 +54,17 @@ export default class Skillbar extends PIXI.Container {
             this.cooldownSpinners.push(spinner);
             this.cooldownNumbers.push(num);
         }
-
-        // this.skills[0] = skillData.basic_attack;
-        // this.equippedSkills[0] = skillData.basic_attack;
-        // this.skillIcons[0].texture = skillData.basic_attack.icon;
     }
 
     public addSkill(skill: Skill) {
-        let alreadyHadSkill = this.skills.indexOf(skill) > 0;
+        let alreadyHadSkill = this.skills.indexOf(skill) >= 0;
         this.skills.push(skill);
         if (alreadyHadSkill) return; // if we already had a copy of the skill, don't add it to the bar
         for (let i = 0; i < NUM_SKILLS; i ++) {
             if (this.equippedSkills[i] === undefined) {
                 this.equippedSkills[i] = skill;
                 this.skillIcons[i].texture = skill.icon;
+                this.skillCooldowns[i] = skill.cooldown;
                 return;
             }
         }
@@ -77,23 +74,27 @@ export default class Skillbar extends PIXI.Container {
         let idx = this.skills.indexOf(skill);
         if (idx < 0) return; // if we don't even have the skill then that's it
         this.skills.splice(idx, 1);
-        if (this.skills.indexOf(skill) < 0) return; // if we still have a copy of the skill, don't remove it from the bar
+        if (this.skills.indexOf(skill) >= 0) return; // if we still have a copy of the skill, don't remove it from the bar
         let slotIdx = this.equippedSkills.indexOf(skill);
         if (slotIdx < 0) return; // it wasn't even slotted lol
         this.equippedSkills[slotIdx] = undefined;
+        this.skillCooldowns[slotIdx] = 0;
         this.skillIcons[slotIdx].texture = PIXI.Texture.EMPTY; // remove the image from the bar
     }
 
     public swapSkills(idx1: number, idx2: number) {
         let skill = this.equippedSkills[idx1];
+        let cooldown = this.skillCooldowns[idx1];
         this.equippedSkills[idx1] = this.equippedSkills[idx2];
+        this.skillCooldowns[idx1] = this.skillCooldowns[idx2];
         this.equippedSkills[idx2] = skill;
+        this.skillCooldowns[idx2] = cooldown;
         let skill1 = this.equippedSkills[idx1];
         if (skill1 === undefined) this.skillIcons[idx1].texture = PIXI.Texture.EMPTY;
         else this.skillIcons[idx1].texture = skill1.icon;
-        let skill2 = this.equippedSkills[idx1];
+        let skill2 = this.equippedSkills[idx2];
         if (skill2 === undefined) this.skillIcons[idx1].texture = PIXI.Texture.EMPTY;
-        else this.skillIcons[idx1].texture = skill2.icon;
+        else this.skillIcons[idx2].texture = skill2.icon;
     }
 
     public useSkill(index: number) {

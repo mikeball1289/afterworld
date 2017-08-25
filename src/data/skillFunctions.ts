@@ -24,9 +24,10 @@ function getAttackBox(player: Player) {
     return new PIXI.Rectangle(player.horizontalCenter, player.top + player.size.y * 0.4, player.inventory.equipment.weapon.range + 15, 25);
 }
 
-function applyAttack(player: Player, enemy: Enemy, damage: number, knockback: PIXI.Point) {
+function applyAttack(player: Player, enemy: Enemy, damage: IDamageBundle, knockback: PIXI.Point) {
     let {damage: d, knockback: k} = player.buffs.process("dealDamage", { damage, knockback} );
-    damage = Math.ceil(d);
+    d.amount = Math.ceil(d.amount);
+    damage = d;
     knockback = k;
     if (enemy.applyAttack(damage, knockback)) {
         player.buffs.process("damageDealt", enemy);
@@ -46,8 +47,8 @@ function meleeHit(player: Player, world: World, knockbackPower = 4) {
 
     let attackFn = (enemy: Enemy): boolean => {
         if (enemy.left < attackBox.right && enemy.right > attackBox.left && enemy.top < attackBox.bottom && enemy.bottom > attackBox.top) {
-            let damage = Math.floor(Math.random() * 3 + 2);
-            return applyAttack(player, enemy, damage, new PIXI.Point(knockbackPower * player.direction, 0));
+            let damage = player.stats.physicalDamageAmount();
+            return applyAttack(player, enemy, { amount: damage, type: "physical" }, new PIXI.Point(knockbackPower * player.direction, 0));
         }
         return false;
     };
@@ -104,8 +105,8 @@ export function explosion(player: Player, world: World) {
                     if (dy < 0) angle += Math.PI;
                     let xkb = (100 - dist) * Math.sin(angle) * 0.1;
                     let ykb = Math.min(Math.max(-5, -Math.abs(xkb)), (100 - dist) * Math.cos(angle) * 0.1);
-                    let damage = Math.ceil((100 - dist) / 10 * (Math.random() / 2 + 0.5));
-                    applyAttack(player, enemy, damage, new PIXI.Point(xkb, ykb));
+                    let damage = Math.ceil((100 - dist) / 100 * (player.stats.magicDamageAmount() * 1.8));
+                    applyAttack(player, enemy, { amount: damage, type: "magic", element: "fire" }, new PIXI.Point(xkb, ykb));
                 }
             }
         },
@@ -250,7 +251,7 @@ export function cleave(player: Player, world: World) {
                 } else {
                     knockback = new PIXI.Point(1 * player.direction);
                 }
-                if (applyAttack(player, enemy, damage, knockback)) {
+                if (applyAttack(player, enemy, { amount: damage, type: "physical" }, knockback)) {
                     enemiesHit ++;
                     return true;
                 }
@@ -307,8 +308,7 @@ export function envenom(player: Player, world: World) {
     if (existing) {
         (<EnvenomedBuff> existing).refresh();
     } else {
-        console.log("hi");
-        player.buffs.addBuff(new EnvenomedBuff("Envenomed"));
+        player.buffs.addBuff(new EnvenomedBuff(player.stats.physicalAttackDamageRange[1], "Envenomed"));
     }
     return true;
 }

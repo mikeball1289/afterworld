@@ -89,7 +89,7 @@ abstract class Actor extends PIXI.Sprite {
     }
 
     public hitTest(other: Actor | IBoxLike): boolean {
-        return this.left <= other.right && this.right >= other.left && this.top <= other.bottom && this.bottom >= other.bottom;
+        return this.left <= other.right && this.right >= other.left && this.top <= other.bottom && this.bottom >= other.top;
     }
 }
 

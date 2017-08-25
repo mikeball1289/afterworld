@@ -153,3 +153,9 @@ declare module "png-js" {
 }
 
 declare function Keys<T>(obj: T): (keyof T)[];
+
+declare interface IDamageBundle {
+    amount: number;
+    type: "physical" | "magic";
+    element?: "fire" | "electric" | "poison";
+}
