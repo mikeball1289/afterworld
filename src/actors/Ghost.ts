@@ -6,7 +6,7 @@ import Player from "./Player";
 const VIEW_RANGE_X = 150;
 const VIEW_RANGE_Y = 50;
 const ATTACK_DASH_SPEED = 5;
-const ATTACK_TOTAL_TIME = 75;
+const ATTACK_TOTAL_TIME = 55;
 const ATTACK_COOLDOWN_TIME = 75;
 
 export default class Ghost extends PassiveGhost {
@@ -81,6 +81,6 @@ export default class Ghost extends PassiveGhost {
     }
 
     public get collideable() {
-        return !this.attacking;
+        return !this.attacking && !this.isDead();
     }
 }

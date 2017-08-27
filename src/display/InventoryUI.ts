@@ -104,7 +104,7 @@ export default class InventoryUI extends JuggledSprite {
         this.descriptionPanel.y = 70;
         this.titleText = new PIXI.Text("", {
             fontFamily: DEFAULT_FONT,
-            fontSize: 26,
+            fontSize: 24,
             wordWrap: true,
             wordWrapWidth: 294,
         } );
@@ -114,28 +114,27 @@ export default class InventoryUI extends JuggledSprite {
         this.descriptionText = new MultiStyleText("", {
             default: {
                 fontFamily: DEFAULT_FONT,
-                fontSize: 16,
+                fontSize: 14,
                 wordWrap: true,
                 wordWrapWidth: 291,
             },
             red: {
-                fontFamily: DEFAULT_FONT,
                 fill: 0xFF0000,
             },
             green: {
-                fontFamily: DEFAULT_FONT,
                 fill: 0x00FF00,
             },
             or: {
-                fontFamily: DEFAULT_FONT,
                 fill: 0xFF9000,
             },
             cyan: {
-                fontFamily: DEFAULT_FONT,
                 fill: 0x00FF8F,
             },
+            darkGreen: {
+                fill: 0x00CC00,
+            },
         } );
-        this.descriptionText.y = 6;
+        this.descriptionText.y = 5;
         this.descriptionPanel.addChild(this.descriptionText);
 
         this.addChild(this.itemTextures);
@@ -147,6 +146,7 @@ export default class InventoryUI extends JuggledSprite {
     }
 
     public onEnterFrame() {
+        if (!this.isOpen) return;
         if (this.optionBox.isOpen()) {
             return;
         }
@@ -168,6 +168,8 @@ export default class InventoryUI extends JuggledSprite {
             this.moveHighlight.visible = false;
             this.selectionHighlight.visible = true;
             this.highlightSelection();
+        } else if (controls.hasLeadingEdge(InputType.CANCEL)) {
+            this.close();
         } else if (controls.hasLeadingEdge(InputType.CONFIRM)) {
             this.select();
         }
@@ -440,6 +442,7 @@ export default class InventoryUI extends JuggledSprite {
                     if (option === 0) {
                         inventory.equipItem(this.selection.index);
                         this.refreshInventoryIcons();
+                        this.showDescription();
                     } else if (option === 1) {
                         this.beginMove(p);
                     } else if (option === 2) {

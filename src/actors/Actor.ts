@@ -73,6 +73,12 @@ abstract class Actor extends PIXI.Sprite {
         }
     }
 
+    public setBottomCenter(x: number, y: number) {
+        this.x = x - this.size.x / 2;
+        this.y = y - this.size.y;
+        return this;
+    }
+
     public applyImpulse(x: number, y: number) {
         this.velocity.x += x;
         this.velocity.y += y;
@@ -83,7 +89,11 @@ abstract class Actor extends PIXI.Sprite {
     }
 
     public abstract updateImpulse(map: Map): void;
-    public abstract handleCollisions(collisions: [boolean, boolean]): void;
+    public handleCollisions(collisions: [boolean, boolean]): void {
+        if (collisions[0]) this.velocity.x = 0;
+        if (collisions[1]) this.velocity.y = 0;
+    }
+
     public frameUpdate(): void {
         this.buffs.tick();
     }

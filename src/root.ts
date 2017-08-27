@@ -223,8 +223,8 @@ class Controls {
 export let controls = new Controls();
 
 class SoundManager {
-    public static GLOBAL_VOLUME = 0.0;
-    private music: { [songName: string]: HTMLAudioElement } = {};
+    public static GLOBAL_VOLUME = 0.4;
+    private music: { [songName: string]: { song: HTMLAudioElement, fade: number } } = {};
     private tags: { [tag: string]: boolean } = {};
 
     constructor() {
@@ -242,23 +242,45 @@ class SoundManager {
         let audio = new Audio(name);
         audio.volume = volume * SoundManager.GLOBAL_VOLUME;
         audio.play();
+        audio.onended = () => audio.remove();
     }
 
     public playMusic(name: string, volume = 1) {
         if (this.music.hasOwnProperty(name)) {
-            this.music[name].volume = volume * SoundManager.GLOBAL_VOLUME;
+            if (!isNaN(this.music[name].fade)) window.clearInterval(this.music[name].fade);
+            this.music[name].song.volume = volume * SoundManager.GLOBAL_VOLUME;
             return;
         }
         let audio = new Audio(name);
         audio.volume = volume * SoundManager.GLOBAL_VOLUME;
         audio.loop = true;
         audio.play();
-        this.music[name] = audio;
+        this.music[name] = {
+            song: audio,
+            fade: NaN,
+        };
+    }
+
+    public fadeMusicOut(name: string) {
+        if (!this.music.hasOwnProperty(name) || !isNaN(this.music[name].fade)) return;
+        let fadeStart = this.music[name].song.volume;
+        let fadeTime = 30;
+        this.music[name].fade = window.setInterval(() => {
+            fadeTime --;
+            if (fadeTime <= 0) {
+                this.music[name].song.pause();
+                this.music[name].song.remove();
+                window.clearInterval(this.music[name].fade);
+                delete this.music[name];
+            } else {
+                this.music[name].song.volume = fadeTime / 30 * fadeStart;
+            }
+        }, 16);
     }
 
     public setMusicVolume(name: string, volume: number) {
         if (!this.music.hasOwnProperty(name)) return;
-        this.music[name].volume = volume * SoundManager.GLOBAL_VOLUME;
+        this.music[name].song.volume = volume * SoundManager.GLOBAL_VOLUME;
     }
 }
 

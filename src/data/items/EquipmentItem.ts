@@ -6,6 +6,41 @@ import { basicAttack } from "../skillData";
 import GemItem from "./GemItem";
 import InventoryItem from "./InventoryItem";
 
+function nID(num: number | undefined) {
+    if (num !== undefined) return num;
+    return 0;
+}
+
+export const STAT_TYPES: (keyof IEquipmentStats)[] = [
+    "physicalDamage",
+    "magicDamage",
+    "armor",
+    "strength",
+    "agility",
+    "intelligence",
+    "haste",
+    "health",
+    "energy",
+    "healthRegen",
+    "energyRegen",
+    "walkSpeed",
+];
+
+export const prettyStats = {
+    physicalDamage: "Physical Damage",
+    magicDamage: "Magic Damage",
+    armor: "Armor",
+    health: "Health",
+    energy: "Energy",
+    healthRegen: "HP/sec",
+    energyRegen: "EP/sec",
+    strength: "Strength",
+    agility: "Agility",
+    intelligence: "Intelligence",
+    haste: "Haste",
+    walkSpeed: "Speed",
+};
+
 export interface IEquipmentStats {
     physicalDamage?: number;
     magicDamage?: number;
@@ -43,11 +78,6 @@ export default class EquipmentItem extends InventoryItem {
         this.type = "equipment";
     }
 
-    public generate(level: number) {
-        this.ilvl = level;
-        return this;
-    }
-
     public get gem() {
         if (this.socket) return this.socket.gem;
         return undefined;
@@ -69,7 +99,31 @@ export default class EquipmentItem extends InventoryItem {
     }
 
     public getDescription(world: World) {
-        let des = "LV " + this.ilvl + " " + this.prettyType + "\n" + super.getDescription(world);
+        let des = "LV " + this.ilvl + " " + this.prettyType + "\n\n" + super.getDescription(world) + "\n";
+        let otherItem = world.actorManager.player.inventory.equipment[this.equipmentType];
+        let zeroes = "";
+        if (otherItem === this) otherItem = undefined;
+        for (let stat of STAT_TYPES) {
+            if (nID(this.stats[stat]) > 0 || (otherItem && nID(otherItem.stats[stat]) > 0)) {
+                let line = "\n" + nID(this.stats[stat]) + " " + prettyStats[stat];
+                if (otherItem) {
+                    let diff = nID(this.stats[stat]) - nID(otherItem.stats[stat]);
+                    if (diff > 0) {
+                        line += " <green>(+" + diff + ")</green>";
+                    } else if (diff < 0) {
+                        line += " <red>(" + diff + ")</red>";
+                    } else {
+                        line += " (0)";
+                    }
+                }
+                if (this.stats[stat] === undefined) {
+                    zeroes += line;
+                } else {
+                    des += line;
+                }
+            }
+        }
+        des += zeroes;
         if (this.socket && !this.socket.gem) {
             des += "\n\n(Socket)";
         }
@@ -101,6 +155,7 @@ export default class EquipmentItem extends InventoryItem {
     }
 
     public fillStats(level: number, stats: IEquipmentStats): this {
+        this.ilvl = level;
         this.stats = stats;
         return this;
     }

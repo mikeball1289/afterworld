@@ -74,12 +74,12 @@ export default class PlayerStats {
 
     public physicalDamageAmount() {
         let range = this.physicalAttackDamageRange;
-        return Math.ceil(Math.random() * (range[1] - range[0]) + range[0]);
+        return Math.round(Math.random() * (range[1] - range[0]) + range[0]);
     }
 
     public magicDamageAmount() {
         let range = this.magicAttackDamageRange;
-        return Math.ceil(Math.random() * (range[1] - range[0]) + range[0]);
+        return Math.round(Math.random() * (range[1] - range[0]) + range[0]);
     }
 
     public get jumpPower() {
@@ -147,11 +147,19 @@ export default class PlayerStats {
     }
 
     private calcMaxHealth() {
-        return this.processBuffs("health", 50 + this.getEquipmentStats("health"));
+        let max = this.processBuffs("health", 50 + this.getEquipmentStats("health"));
+        if (this._health > max) {
+            this._health = max;
+        }
+        return max;
     }
 
     private calcMaxEnergy() {
-        return this.processBuffs("energy", 100 + this.getEquipmentStats("energy"));
+        let max = this.processBuffs("energy", 100 + this.getEquipmentStats("energy"));
+        if (this._energy > max) {
+            this._energy = max;
+        }
+        return max;
     }
 
     private calcHaste() {
@@ -164,7 +172,7 @@ export default class PlayerStats {
     }
 
     private calcWalkSpeed() {
-        let speed = pc.WALK_IMPULSE + this.getEquipmentStats("walkSpeed") / 20 + this.haste / 100;
+        let speed = pc.WALK_IMPULSE + this.getEquipmentStats("walkSpeed") / 40 + this.haste / 400;
         speed = this.processBuffs("walkSpeed", speed);
         return speed;
     }

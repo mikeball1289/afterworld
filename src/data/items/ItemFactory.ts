@@ -30,7 +30,7 @@ export let itemData = {
         sheetName: "heros_sword",
         icon: p(2, 0),
         range: 60,
-        description: "A mighty <red>sword</red> <green>weilded</green> by a true hero.",
+        description: "A mighty sword weilded by a true hero.",
     },
 
     cloth_shirt: <I> {
@@ -71,7 +71,7 @@ export let itemData = {
         name: "Woodchopping Axe",
         sheetName: "woodchopping_axe",
         icon: p(8, 0),
-        range: 50,
+        range: 45,
         description: "A medium-sized axe, clearly intended for chopping wood.",
     },
 

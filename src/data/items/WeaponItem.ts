@@ -11,8 +11,6 @@ export default class WeaponItem extends EquipmentItem {
         return obj && obj.equipmentType === "weapon";
     }
 
-    public inscription?: Skill;
-
     constructor(graphic: PIXI.Texture,
                 name: string,
                 sheetName: string,

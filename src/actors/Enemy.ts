@@ -1,4 +1,5 @@
 import Animator from "../display/Animator";
+import HealthBar from "../display/HealthBar";
 import DamageParticle from "../particlesystem/DamageParticle";
 import { soundManager } from "../root";
 import { ICombatObject } from "./ActorInterfaces";
@@ -12,12 +13,44 @@ abstract class Enemy extends NonPlayerActor implements ICombatObject {
         return obj && obj.isAnEnemy;
     }
 
-    public health: number = 0;
     public animator: Animator<{ die: [number, number] }>;
+    public abstract maxHealth: number;
+    protected healthBar: HealthBar = new HealthBar();
     private isAnEnemy = true;
+    private _direction: -1 | 1 = 1;
+    private _health: number = this.maxHealth;
 
     public abstract isDead(): boolean;
     public abstract die(damage: number, knockback: PIXI.Point): void;
+
+    public get collideable() {
+        return !this.isDead();
+    }
+
+    set direction(val: -1 | 1) {
+        if (this._direction !== val) {
+            this._direction = val;
+            this.animator.scale.x = Math.abs(this.animator.scale.x) * val;
+        }
+    }
+
+    get direction() {
+        return this._direction;
+    }
+
+    set health(val: number) {
+        val = Math.max(val, 0);
+        this._health = val;
+        if (this.healthBar && this.world) {
+            this.healthBar.setAmount(this._health / this.maxHealth);
+            if (this._health < this.maxHealth) this.world.uiManager.worldLayers[0].addChild(this.healthBar);
+        }
+        if (this.parent) this.parent.addChild(this);
+    }
+
+    get health() {
+        return this._health;
+    }
 
     public applyAttack(damage: IDamageBundle, knockback: PIXI.Point) {
         if (this.isDead()) return false;
@@ -36,6 +69,19 @@ abstract class Enemy extends NonPlayerActor implements ICombatObject {
         }
         return true;
     }
+
+    public frameUpdate() {
+        this.healthBar.x = this.horizontalCenter;
+        this.healthBar.y = this.top - 40;
+    }
+
+    public destroy(options?: boolean | PIXI.IDestroyOptions) {
+        super.destroy(options);
+        if (this.healthBar.parent) this.healthBar.parent.removeChild(this.healthBar);
+        this.healthBar.destroy();
+        this.world = <any> undefined;
+    }
+
 }
 
 export default Enemy;

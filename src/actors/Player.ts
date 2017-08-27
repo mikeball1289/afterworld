@@ -62,6 +62,7 @@ export default class Player extends Actor {
 
     public stats: PlayerStats;
     public skillBar: SkillBar;
+    public spawnMap?: string = "";
 
     private jumpBuffer: boolean = true;
     private sprite: PIXI.Sprite;
@@ -336,6 +337,8 @@ export default class Player extends Actor {
     public applyDamage(damage: IDamageBundle, knockback: PIXI.Point) {
         if (this.isDead()) return false;
 
+        let armorRating = this.stats.armor / 100;
+        damage.amount = Math.ceil(damage.amount * (1 - armorRating / (armorRating + 1)));
         let { damage: d, knockback: k } = this.buffs.process("takeDamage", { damage, knockback } );
         damage = d;
         knockback = k;

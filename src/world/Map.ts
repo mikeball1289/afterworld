@@ -178,6 +178,8 @@ export default class Map {
                         actor.position.y --;
                     } else if (!this.actorIsOnWalkableGround(actor) && this.actorIsOnWalkableGround(actor, 1)) {
                         actor.position.y ++;
+                    } else if (!this.actorIsOnWalkableGround(actor) && this.actorIsOnWalkableGround(actor, 2)) {
+                        actor.position.y += 2;
                     }
                 }
             }

@@ -1,7 +1,5 @@
 import Animator from "../display/Animator";
-import HealthBar from "../display/HealthBar";
 import { fromTextureCache } from "../pixiTools";
-import { soundManager } from "../root";
 import Map from "../world/Map";
 import { EPSILON, GRAVITY } from "../world/physicalConstants";
 import World from "../world/World";
@@ -23,7 +21,7 @@ const MAX_HEALTH = 10;
 
 export default class PassiveGhost extends Enemy {
     public weight = 1;
-
+    public maxHealth = MAX_HEALTH;
     public animator: Animator<{
         idle: [number, number];
         beginAttack: [number, number];
@@ -33,8 +31,6 @@ export default class PassiveGhost extends Enemy {
     }>;
 
     private _state = MovementStates.IDLE;
-    private _direction: -1 | 1 = 1;
-    private healthBar: HealthBar;
 
     private goingUp: boolean = false;
 
@@ -46,34 +42,8 @@ export default class PassiveGhost extends Enemy {
         return this._state;
     }
 
-    set direction(val: -1 | 1) {
-        if (this._direction !== val) {
-            this._direction = val;
-            this.animator.scale.x = 1.5 * val;
-        }
-    }
-
-    get direction() {
-        return this._direction;
-    }
-
     get collideable() {
         return this.state !== MovementStates.DEAD;
-    }
-
-    private _health: number;
-    set health(val: number) {
-        val = Math.max(val, 0);
-        this._health = val;
-        if (this.healthBar && this.world) {
-            this.healthBar.setAmount(this._health / MAX_HEALTH);
-            if (this._health < MAX_HEALTH) this.world.uiManager.worldLayers[0].addChild(this.healthBar);
-        }
-        if (this.parent) this.parent.addChild(this);
-    }
-
-    get health() {
-        return this._health;
     }
 
     constructor(world: World, spriteSheetName: string = "/images/ghost_sheet.png") {
@@ -93,7 +63,6 @@ export default class PassiveGhost extends Enemy {
         this.animator.x = this.size.x / 2;
         this.animator.y = this.size.y;
         this.addChild(this.animator);
-        this.healthBar = new HealthBar();
 
         this.health = MAX_HEALTH;
     }
@@ -110,12 +79,6 @@ export default class PassiveGhost extends Enemy {
 
     public isFearless(map: Map) {
         return Map.isFearless(map.getPixelData(this.left, this.bottom + EPSILON)) || Map.isFearless(map.getPixelData(this.right, this.bottom + EPSILON));
-    }
-
-    public frameUpdate() {
-        super.frameUpdate();
-        this.healthBar.x = this.horizontalCenter;
-        this.healthBar.y = this.top - 40;
     }
 
     public handleCollisions(collisions: [boolean, boolean]) {
@@ -148,13 +111,6 @@ export default class PassiveGhost extends Enemy {
             },
         } );
         this.state = MovementStates.DEAD;
-    }
-
-    public destroy(options?: boolean | PIXI.IDestroyOptions) {
-        super.destroy(options);
-        if (this.healthBar.parent) this.healthBar.parent.removeChild(this.healthBar);
-        this.healthBar.destroy();
-        this.world = <any> undefined;
     }
 
     public updateImpulse(map: Map, player?: Player): void {

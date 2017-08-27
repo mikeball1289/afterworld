@@ -44,6 +44,7 @@ export default class World extends PIXI.Sprite {
     private worldObjectLayer: PIXI.Container;
 
     private foregroundLayer: PIXI.Container;
+    private currentMusicTrack: string = "";
 
     constructor(startingMap: MapName, public screenWidth: number, public screenHeight: number) {
         super();
@@ -90,7 +91,14 @@ export default class World extends PIXI.Sprite {
 
     // asyncronously load a map and all its extra data
     public loadMap(mapDataObject: IMapDataObject, done?: () => void) {
-        soundManager.playMusic(mapDataObject.bgTrack);
+        if (mapDataObject.isTown || !this.actorManager.player.spawnMap) {
+            this.actorManager.player.spawnMap = mapDataObject.mapName;
+        }
+        if (this.currentMusicTrack !== "" && this.currentMusicTrack !== mapDataObject.bgTrack) {
+            soundManager.fadeMusicOut(this.currentMusicTrack);
+        }
+        soundManager.playMusic(mapDataObject.bgTrack, mapDataObject.bgVolume);
+        this.currentMusicTrack = mapDataObject.bgTrack;
         this.map = undefined;
         let loader = new PIXI.loaders.Loader();
         loader.add("background", mapDataObject.background);
@@ -138,7 +146,7 @@ export default class World extends PIXI.Sprite {
             this.virtualPosition.x = this.screenWidth / 2 - this.map.digitalWidth / 2;
         }
         if (this.map.digitalHeight > this.screenHeight) {
-            this.virtualPosition.y = -this.actorManager.player.y + this.screenHeight / 2 - this.actorManager.player.size.y / 2;
+            this.virtualPosition.y = -this.actorManager.player.y + this.screenHeight * 0.55 - this.actorManager.player.size.y / 2;
         } else {
             this.virtualPosition.y = this.screenHeight / 2 - this.map.digitalHeight / 2;
         }
@@ -150,10 +158,20 @@ export default class World extends PIXI.Sprite {
         for (let exitName in this.currentMapData.exits) {
             if (!this.currentMapData.exits.hasOwnProperty(exitName)) continue;
             let exit = this.currentMapData.exits[exitName];
-            if (exit[0] > this.actorManager.player.left && exit[0] < this.actorManager.player.right &&
-                exit[1] > this.actorManager.player.top && exit[1] < this.actorManager.player.bottom)
-            {
-                this.queueMapTransition = <keyof typeof mapData> exitName;
+            if (exit[0].constructor === Array) {
+                for (let e of <[number, number][]> exit) {
+                    if (e[0] > this.actorManager.player.left && e[0] < this.actorManager.player.right &&
+                        e[1] > this.actorManager.player.top && e[1] < this.actorManager.player.bottom)
+                    {
+                        this.queueMapTransition = <keyof typeof mapData> exitName;
+                    }
+                }
+            } else {
+                if (exit[0] > this.actorManager.player.left && exit[0] < this.actorManager.player.right &&
+                    exit[1] > this.actorManager.player.top && exit[1] < this.actorManager.player.bottom)
+                {
+                    this.queueMapTransition = <keyof typeof mapData> exitName;
+                }
             }
         }
     }
@@ -224,18 +242,17 @@ export default class World extends PIXI.Sprite {
     }
 
     public revivePlayer(lastTown = true) {
-        if (lastTown) {
+        if (lastTown && this.actorManager.player.spawnMap) {
             let oef = () => {
                 this.transitionTimer += TRANSITION_SPEED;
                 if (this.transitionTimer >= 1) {
-                    this.mapTransition("map2", true);
+                    this.mapTransition(this.actorManager.player.spawnMap!, true);
                     juggler.remove(oef);
                 }
             };
             juggler.add(oef);
         } else {
             this.actorManager.player.setAlive(0.5);
-            // this.worldContainer.filters = [];
             this.removeFilter(this.grayFilter);
         }
     }

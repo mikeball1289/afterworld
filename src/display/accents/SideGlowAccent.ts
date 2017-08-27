@@ -6,12 +6,17 @@ export default class SideGlowAccent extends JuggledSprite {
 
     private image: PIXI.Sprite;
 
-    constructor(private world: World) {
+    constructor(private world: World, flip = false) {
         super();
         this.image = new PIXI.Sprite(fromTextureCache("/images/particles.png", 0, 25, 97, 161));
         this.image.tint = 0xFFF400;
         this.addChild(this.image);
         this.image.alpha = 0.6;
+        if (flip) {
+            // this.image.anchor.set(0.5, 0);
+            this.image.scale.x = -1;
+            this.image.x = this.image.width;
+        }
     }
 
     public get top() {

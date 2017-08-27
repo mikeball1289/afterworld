@@ -118,6 +118,7 @@ export default class Skillbar extends PIXI.Container {
             let skill = this.equippedSkills[i];
             if (!skill) {
                 this.cooldownSpinners[i].visible = false;
+                this.cooldownNumbers[i].text = "";
                 continue;
             }
 
