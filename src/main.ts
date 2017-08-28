@@ -29,7 +29,7 @@ function main(app: PIXI.Application) {
     nw.Window.get().enterFullscreen();
     root.root.setApp(app);
 
-    let world = new World("dark_forest1", app.view.width, app.view.height);
+    let world = new World("crossroads", app.view.width, app.view.height);
     // let world = new World("map1", app.view.width, app.view.height);
     app.stage.addChild(world);
     let fps = 60;

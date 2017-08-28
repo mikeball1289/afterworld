@@ -216,7 +216,7 @@ export default class PlayerStats {
     private calcPhysicalAttackDamageRange(): [number, number] {
         let damage = this.strength * 0.6 + this.agility * 0.4 + this.getEquipmentStats("physicalDamage");
         let min = (this.strength * 0.5 + this.agility) / 10;
-        min = min / (min + 1);
+        min = min / (min + 1) * 0.75 + 0.25;
         return [Math.ceil(damage * min), Math.ceil(damage)];
     }
 
@@ -224,7 +224,7 @@ export default class PlayerStats {
     private calcMagicAttackDamageRange(): [number, number] {
         let damage = this.intelligence * 0.9 + this.getEquipmentStats("magicDamage");
         let min = (this.agility * 0.2 + this.intelligence * 0.5) / 5;
-        min = min / (min + 1);
+        min = min / (min + 1) * 0.75 + 0.25; ;
         return [Math.ceil(damage * min), Math.ceil(damage)];
     }
 

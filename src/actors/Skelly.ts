@@ -122,7 +122,7 @@ export default class Skelly extends Enemy {
                         let particle = new DebrisParticle(PIXI.loader.resources["/images/bone_particle.png"].texture);
                         particle.x = this.horizontalCenter;
                         particle.y = this.top + this.size.y / 2;
-                        let overkill = Math.min(damage / MAX_HEALTH, 2);
+                        let overkill = Math.min(damage / MAX_HEALTH, 1);
                         particle.velocity.x = ((Math.random() - 0.5) * 5 + Math.min(10, Math.max(-10, knockback.x)) / 2) * (overkill / 2 + 1);
                         particle.velocity.y = (Math.random() * -4 - 1) - (overkill * 15) + knockback.y / 2 * (overkill / 2 + 1);
                         particle.rotationVelocity = Math.random() * 2 - 1;

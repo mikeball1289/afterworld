@@ -139,7 +139,7 @@ export default class Map {
             if (movingY) {
                 actor.position.y += actor.velocity.y / magnitude;
                 if (actor.velocity.y < 0) {
-                    if (Map.testLine({ x: actor.left, y: actor.top}, { x: actor.right, y: actor.top }, (x, y) => Map.isSolid(this.getPixelData(x, y)))) {
+                    if (Map.testLine({ x: actor.left, y: actor.top}, { x: actor.right - EPSILON, y: actor.top }, (x, y) => Map.isSolid(this.getPixelData(x, y)))) {
                         movingY = false;
                         collisions[1] = true;
                         actor.position.y = Math.ceil(actor.position.y);

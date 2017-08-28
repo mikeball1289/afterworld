@@ -59,7 +59,7 @@ export default class SnapTrap extends Enemy {
 
     public updateImpulse(map: Map, player?: Player | undefined): void {
         this.velocity.set(0);
-        if (this.attacking || this.isDead()) return;
+        if (this.attacking || this.isDead() || this.buffs.hasCondition("stunned")) return;
         if (Math.random() < 1 / 300) {
             this.direction *= -1;
         }

@@ -71,6 +71,7 @@ abstract class Enemy extends NonPlayerActor implements ICombatObject {
     }
 
     public frameUpdate() {
+        super.frameUpdate();
         this.healthBar.x = this.horizontalCenter;
         this.healthBar.y = this.top - 40;
     }

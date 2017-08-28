@@ -263,7 +263,7 @@ export default class Player extends Actor {
                     this.jumpBuffer = false;
                     soundManager.playSound("/sounds/jump_pop.ogg", 0.2);
                 }
-            } else if (this.hasUseableInput(InputType.UP, getControls)) {
+            } else if (controls.hasLeadingEdge(InputType.UP) && getControls) {
                 this.world.attemptMapTransition();
             }
 
