@@ -3,7 +3,7 @@ import Enemy from "../actors/Enemy";
 import Ghost from "../actors/Ghost";
 import PassiveGhost from "../actors/PassiveGhost";
 import Skelly from "../actors/Skelly";
-import SideGlowAccent from "../display/accents/SideGlowAccent";
+import GlowAccent from "../display/accents/GlowAccent";
 import World from "../world/World";
 
 interface IEnemyCtor {
@@ -57,8 +57,6 @@ export interface IMapDataObject {
     mapName?: string;
 }
 
-let p: <T>(x: T, y: T) => [T, T] = (x, y) => [x, y];
-
 let mapData: { [mapname: string]: IMapDataObject } = {
     map1: {
         map: "/maps/map.png",
@@ -81,8 +79,6 @@ let mapData: { [mapname: string]: IMapDataObject } = {
                 let skelly = new Skelly(world);
                 skelly.x = 500 + Math.random() * 400;
                 skelly.y = 1023 - skelly.size.y - 85;
-                // skelly.x = 200 + Math.random() * 2800;
-                // skelly.y = 200;
                 enemies.push(skelly);
             }
             let skelly = new Skelly(world);
@@ -136,7 +132,7 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         ],
         bgTrack: "/sounds/CarrotWine_How_to_spend_winter.ogg",
         foregroundAccents: (world) => {
-            let exitHighlight = new SideGlowAccent(world);
+            let exitHighlight = new GlowAccent(world);
             exitHighlight.x = 2903;
             exitHighlight.y = 878 - 161;
             return [exitHighlight];
@@ -164,10 +160,10 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         },
         bgTrack: "/sounds/CarrotWine_How_to_spend_winter.ogg",
         foregroundAccents: (world) => {
-            let exitHighlight1 = new SideGlowAccent(world);
+            let exitHighlight1 = new GlowAccent(world);
             exitHighlight1.x = 1403;
             exitHighlight1.y = 721 - 161;
-            let exitHighlight2 = new SideGlowAccent(world, true);
+            let exitHighlight2 = new GlowAccent(world, true);
             exitHighlight2.x = 0;
             exitHighlight2.y = 721 - 161;
             return [exitHighlight1, exitHighlight2];
@@ -213,10 +209,10 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         bgTrack: "/sounds/Foria - Break Away(eq).ogg",
         bgVolume: 1.5,
         foregroundAccents: (world) => {
-            let exitHighlight1 = new SideGlowAccent(world);
+            let exitHighlight1 = new GlowAccent(world);
             exitHighlight1.x = 4903;
             exitHighlight1.y = 873 - 161;
-            let exitHighlight2 = new SideGlowAccent(world, true);
+            let exitHighlight2 = new GlowAccent(world, true);
             exitHighlight2.x = 0;
             exitHighlight2.y = 873 - 161;
             return [exitHighlight1, exitHighlight2];

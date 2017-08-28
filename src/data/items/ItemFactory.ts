@@ -21,8 +21,6 @@ interface IItemData {
 
 type I = IItemData;
 
-let p: <T>(x: T, y: T) => [T, T] = (x, y) => [x, y];
-
 export let itemData = {
     heros_sword: <I> {
         type: "heavy",

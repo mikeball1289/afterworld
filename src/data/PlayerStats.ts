@@ -51,9 +51,14 @@ export default class PlayerStats {
     }
 
     public update() {
-        this.healthAcc += this.healthRegen;
+        if (!this.player.isInCombat) {
+            this.healthAcc += this.healthRegen * 100;
+        } else {
+            this.healthAcc += this.healthRegen;
+        }
         this.healthTickTimer ++;
         if (this.healthTickTimer >= 60 && this.healthAcc >= 1) {
+            this.healthTickTimer = 0;
             let prevHealth = this.health;
             let healing = Math.floor(this.healthAcc);
             this.health += healing;

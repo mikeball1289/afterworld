@@ -15,6 +15,8 @@ import World from "../world/World";
 import Actor from "./Actor";
 import Enemy from "./Enemy";
 
+const OUT_OF_COMBAT_DELAY = 600;
+
 type PlayerAnimations = {
     idle: [number, number];
     walk: [number, number];
@@ -64,6 +66,7 @@ export default class Player extends Actor {
     public skillBar: SkillBar;
     public spawnMap?: string = "";
 
+    private combatTimer = 0;
     private jumpBuffer: boolean = true;
     private sprite: PIXI.Sprite;
     private deathFrame: PIXI.Sprite;
@@ -76,6 +79,14 @@ export default class Player extends Actor {
     }
     get direction() {
         return this._direction;
+    }
+
+    get isInCombat() {
+        return this.combatTimer < OUT_OF_COMBAT_DELAY;
+    }
+    set isInCombat(val) {
+        if (val) this.combatTimer = 0;
+        else this.combatTimer = OUT_OF_COMBAT_DELAY;
     }
 
     private isPlayer = true;
@@ -336,6 +347,7 @@ export default class Player extends Actor {
 
     public applyDamage(damage: IDamageBundle, knockback: PIXI.Point) {
         if (this.isDead()) return false;
+        this.isInCombat = true;
 
         let armorRating = this.stats.armor / 100;
         damage.amount = Math.ceil(damage.amount * (1 - armorRating / (armorRating + 1)));
@@ -359,7 +371,7 @@ export default class Player extends Actor {
 
     public frameUpdate() {
         super.frameUpdate();
-
+        this.combatTimer ++;
         this.skillBar.update();
         this.stats.update();
 

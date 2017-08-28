@@ -7,7 +7,6 @@ import Enemy from "../Enemy";
 import Player from "../Player";
 
 const MAX_HEALTH = 15;
-type NN = [number, number];
 
 export default class SnapTrap extends Enemy {
 

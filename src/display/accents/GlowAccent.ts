@@ -2,18 +2,18 @@ import { fromTextureCache } from "../../pixiTools";
 import World from "../../world/World";
 import JuggledSprite from "../JuggledSprite";
 
-export default class SideGlowAccent extends JuggledSprite {
+export default class GlowAccent extends JuggledSprite {
 
     private image: PIXI.Sprite;
 
-    constructor(private world: World, flip = false) {
+    constructor(private world: World, flip = false, texture?: PIXI.Texture) {
         super();
+        if (!texture) texture = fromTextureCache("/images/particles.png", 0, 25, 97, 161);
         this.image = new PIXI.Sprite(fromTextureCache("/images/particles.png", 0, 25, 97, 161));
         this.image.tint = 0xFFF400;
         this.addChild(this.image);
         this.image.alpha = 0.6;
         if (flip) {
-            // this.image.anchor.set(0.5, 0);
             this.image.scale.x = -1;
             this.image.x = this.image.width;
         }
@@ -24,7 +24,7 @@ export default class SideGlowAccent extends JuggledSprite {
     }
 
     public get bottom() {
-        return this.y + 161;
+        return this.y + this.image.height;
     }
 
     public get left() {
@@ -32,7 +32,7 @@ export default class SideGlowAccent extends JuggledSprite {
     }
 
     public get right() {
-        return this.x + 97;
+        return this.x + this.image.width;
     }
 
     public onEnterFrame() {

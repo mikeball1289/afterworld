@@ -159,3 +159,6 @@ declare interface IDamageBundle {
     type: "physical" | "magic";
     element?: "fire" | "electric" | "poison";
 }
+
+declare type NN = [number, number];
+declare let p: <S, T>(x: S, y: T) => [S, T];

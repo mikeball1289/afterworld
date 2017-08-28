@@ -1,4 +1,5 @@
 import Actor from "../actors/Actor";
+import Player from "../actors/Player";
 import World from "../world/World";
 import Buff, { BuffEvent, ConditionType, IStatBox } from "./Buff";
 
@@ -55,6 +56,9 @@ export default class BuffSet {
     public process(name: "killedEnemy", payload: Actor): void;
     public process(name: "getStats", payload: IStatBox): number;
     public process(name: BuffEvent, payload?: any): any {
+        if (name === "dealDamage" && Player.isPlayer(this.actor)) {
+            this.actor.isInCombat = true;
+        }
         switch (name) {
             case "dealDamage":
             case "takeDamage": {
