@@ -65,6 +65,7 @@ export default class PassiveGhost extends Enemy {
         this.addChild(this.animator);
 
         this.health = MAX_HEALTH;
+        this.direction = Math.random() < 0.5 ? -1 : 1;
     }
 
     public walk() {

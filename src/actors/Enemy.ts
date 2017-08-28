@@ -2,12 +2,11 @@ import Animator from "../display/Animator";
 import HealthBar from "../display/HealthBar";
 import DamageParticle from "../particlesystem/DamageParticle";
 import { soundManager } from "../root";
-import { ICombatObject } from "./ActorInterfaces";
 import NonPlayerActor from "./NonPlayerActor";
 
 const smacks = ["/sounds/hit_smack1.ogg", "/sounds/hit_smack1.ogg"];
 
-abstract class Enemy extends NonPlayerActor implements ICombatObject {
+abstract class Enemy extends NonPlayerActor {
 
     public static isEnemy(obj: any): obj is Enemy {
         return obj && obj.isAnEnemy;

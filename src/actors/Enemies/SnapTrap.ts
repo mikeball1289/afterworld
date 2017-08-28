@@ -29,6 +29,7 @@ export default class SnapTrap extends Enemy {
         this.animator.y = this.size.y;
         this.addChild(this.animator);
         this.health = MAX_HEALTH;
+        this.direction = Math.random() < 0.5 ? -1 : 1;
     }
 
     public isDead(): boolean {

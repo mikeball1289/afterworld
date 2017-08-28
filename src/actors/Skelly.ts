@@ -58,11 +58,11 @@ export default class Skelly extends Enemy {
         this.size.y = 60;
 
         this.animator = new Animator(PIXI.loader.resources["/images/skelly_sheet.png"].texture, new PIXI.Point(64, 64), {
-                                    idle: [0, 4],
-                                    walk: [1, 4],
-                                    attack: [2, 4],
-                                    die: [3, 7],
-                                }, "idle", 4);
+            idle: [0, 4],
+            walk: [1, 4],
+            attack: [2, 4],
+            die: [3, 7],
+        }, "idle", 4);
         this.animator.scale.set(1.5);
         this.animator.anchor.set(0.5, 1);
         this.animator.x = this.size.x / 2;
@@ -70,6 +70,7 @@ export default class Skelly extends Enemy {
         this.addChild(this.animator);
 
         this.health = MAX_HEALTH;
+        this.direction = Math.random() < 0.5 ? -1 : 1;
     }
 
     public walk() {
