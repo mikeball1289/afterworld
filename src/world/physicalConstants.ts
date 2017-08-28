@@ -3,7 +3,7 @@ export const IDLE_GROUNDED_DECAY = 0.85;
 export const HORIZONTAL_THRESHOLD = 0.6;
 export const EPSILON = 0.05;
 export const FULL_HORIZONTAL_DECAY = 0.9;
-export const JUMP_POWER = 8;
+export const JUMP_POWER = 8.5;
 export const FALLTHROUGH_JUMP_POWER = 2;
 
 export const GRAVITY = 0.6;
