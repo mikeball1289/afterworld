@@ -33,7 +33,7 @@ export default class Inventory {
         } ).prefix("Virtuous"),
         ItemFactory.constructItem("weapon", ItemFactory.itemData.woodchopping_axe).fillStats(1, {
             physicalDamage: 3,
-        } ),
+        } ).addInscription(skillData.cleave).prefix("Heavy"),
         ItemFactory.constructItem("equip", ItemFactory.itemData.wooden_buckler).fillStats(2, {
             armor: 4,
             health: 5,
@@ -65,6 +65,10 @@ export default class Inventory {
         ItemFactory.constructItem("gem", ItemFactory.itemData.envenom_gem),
         ItemFactory.constructItem("gem", ItemFactory.itemData.buckle_down_gem),
         ItemFactory.constructItem("gem", ItemFactory.itemData.explosion_gem),
+        ItemFactory.constructItem("weapon", ItemFactory.itemData.gnarled_staff).fillStats(1, {
+            magicDamage: 3,
+            intelligence: 1,
+        } ).addInscription(skillData.staticBolts).prefix("Crackling"),
     ];
     public equipment: IEquipmentSlots = {
         head: undefined,

@@ -10,34 +10,33 @@ export default class FireParticle extends Particle {
     public rotationVelocity = 0;
     private sprite: PIXI.Sprite;
 
-    constructor(private startingLifetime: number, private tinter: ColorTweener) {
-        super();
+    constructor(private startingLifetime: number, private tinter: ColorTweener, world: World) {
+        super(startingLifetime, world);
         this.sprite = new PIXI.Sprite(fromTextureCache("/images/particles.png", 0, 0, 20, 20));
         this.sprite.anchor.set(0.5);
         this.addChild(this.sprite);
 
         this.sprite.tint = this.tinter.getInbetween(0);
-        this.lifetime = startingLifetime;
     }
 
-    public update(world: World) {
-        if (!world.map) return this.destroy();
+    public update() {
+        if (!this.world.map) return this.destroy();
         let magnitude = Math.ceil(Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y));
         for (let i = 0; i < magnitude; i ++) {
             if (this.velocity.x !== 0) {
                 this.x += this.velocity.x / magnitude;
-                if (Map.isWalled(world.map.getPixelData(this.x, this.y))) {
+                if (Map.isWalled(this.world.map.getPixelData(this.x, this.y))) {
                     this.x -= this.velocity.x / magnitude;
                     this.velocity.x = 0;
                 }
-                if (Map.isPassable(world.map.getPixelData(this.x, this.y))) {
+                if (Map.isPassable(this.world.map.getPixelData(this.x, this.y))) {
                     this.y --;
                 }
             }
             if (this.velocity.y !== 0) {
                 this.y += this.velocity.y / magnitude;
-                if ((this.velocity.y < 0) && Map.isSolid(world.map.getPixelData(this.x, this.y)) ||
-                    (this.velocity.y > 0) && Map.isWalkable(world.map.getPixelData(this.x, this.y)))
+                if ((this.velocity.y < 0) && Map.isSolid(this.world.map.getPixelData(this.x, this.y)) ||
+                    (this.velocity.y > 0) && Map.isWalkable(this.world.map.getPixelData(this.x, this.y)))
                 {
                     this.y -= this.velocity.y / magnitude;
                     this.velocity.y = 0;

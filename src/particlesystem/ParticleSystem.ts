@@ -1,4 +1,5 @@
 // tslint:disable forin
+import Projectile from "../projectiles/Projectile";
 import World from "../world/World";
 import Particle from "./Particle";
 
@@ -26,7 +27,7 @@ export default class ParticleSystem extends PIXI.Container {
 
     public update() {
         for (let id in this.particles) {
-            this.particles[id].update(this.world);
+            this.particles[id].update();
         }
     }
 

@@ -120,6 +120,15 @@ export let itemData = {
         description: "",
         skill: skillData.explosion,
     },
+
+    gnarled_staff: <I> {
+        type: "magic",
+        name: "Gnarled Wooden Staff",
+        icon: p(0, 1),
+        description: "A twisted magic staff made from old oak.",
+        range: 20,
+        sheetName: "gnarled_wooden_staff",
+    },
 };
 
 {

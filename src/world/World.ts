@@ -109,20 +109,20 @@ export default class World extends PIXI.Sprite {
         loader.load( () => {
             let data = new PNG.load("." + mapDataObject.map);
             data.decode( (pixels) => {
-                try {
-                    let foregroundTexture: PIXI.Texture | undefined = undefined;
-                    if (loader.resources["foreground"]) {
-                        foregroundTexture = loader.resources["foreground"].texture;
-                    }
-                    let bgSprite = new PIXI.Sprite(loader.resources["background"].texture);
-                    if (mapDataObject.backgroundAccents) for (let child of mapDataObject.backgroundAccents(this)) bgSprite.addChild(child);
-                    let fgSprite = new PIXI.Sprite(foregroundTexture);
-                    if (mapDataObject.foregroundAccents) for (let child of mapDataObject.foregroundAccents(this)) fgSprite.addChild(child);
-                    this.map = new Map(data.width, data.height, pixels, bgSprite, fgSprite);
-                } catch (e) {
-                    console.log(e);
-                    throw e;
+                // try {
+                let foregroundTexture: PIXI.Texture | undefined = undefined;
+                if (loader.resources["foreground"]) {
+                    foregroundTexture = loader.resources["foreground"].texture;
                 }
+                let bgSprite = new PIXI.Sprite(loader.resources["background"].texture);
+                if (mapDataObject.backgroundAccents) for (let child of mapDataObject.backgroundAccents(this)) bgSprite.addChild(child);
+                let fgSprite = new PIXI.Sprite(foregroundTexture);
+                if (mapDataObject.foregroundAccents) for (let child of mapDataObject.foregroundAccents(this)) fgSprite.addChild(child);
+                this.map = new Map(data.width, data.height, pixels, bgSprite, fgSprite);
+                // } catch (e) {
+                    // console.log(e);
+                    // throw e;
+                // }
                 if (!this.map) throw new Error("Map failed to create");
                 this.worldContainer.addChildAt(this.map.backgroundSprite, 0);
                 if (this.map.foregroundSprite) this.foregroundLayer.addChild(this.map.foregroundSprite);

@@ -4,8 +4,8 @@ import Particle from "./Particle";
 
 export default class TextParticle extends Particle {
 
-    constructor(value: string, color: number) {
-        super();
+    constructor(value: string, color: number, world: World) {
+        super(20, world);
         let text = new PIXI.Text(value, {
             fontFamily: DEFAULT_FONT,
             fontSize: 32,
@@ -16,10 +16,9 @@ export default class TextParticle extends Particle {
         } );
         text.anchor.set(0.5, 1);
         this.addChild(text);
-        this.lifetime = 20;
     }
 
-    public update(world: World) {
+    public update() {
         this.velocity.y += GRAVITY / 4;
 
         this.x += this.velocity.x;

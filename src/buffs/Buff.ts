@@ -29,7 +29,7 @@ export default class Buff {
     public onEvent(name: "takeDamage", payload: { damage: IDamageBundle, knockback: PIXI.Point }): { damage: IDamageBundle, knockback: PIXI.Point };
     public onEvent(name: "die", payload: never): void;
     public onEvent(name: "attack", payload: never): void;
-    public onEvent(name: "damageDealt", payload: Actor): void;
+    public onEvent(name: "damageDealt", payload: { damage: IDamageBundle, actor: Actor } ): void;
     public onEvent(name: "killedEnemy", payload: Actor): void;
     public onEvent(name: "getStats", payload: IStatBox): IStatBox;
     public onEvent(name: "frame"): void;

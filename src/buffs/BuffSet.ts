@@ -52,7 +52,7 @@ export default class BuffSet {
     public process(name: "takeDamage", payload: { damage: IDamageBundle, knockback: PIXI.Point }): { damage: IDamageBundle, knockback: PIXI.Point };
     public process(name: "die", payload: never): void;
     public process(name: "attack", payload: never): void;
-    public process(name: "damageDealt", payload: Actor): void;
+    public process(name: "damageDealt", payload: { damage: IDamageBundle, actor: Actor } ): void;
     public process(name: "killedEnemy", payload: Actor): void;
     public process(name: "getStats", payload: IStatBox): number;
     public process(name: BuffEvent, payload?: any): any {

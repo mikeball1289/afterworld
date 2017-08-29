@@ -4,6 +4,7 @@ import Ghost from "../actors/Ghost";
 import PassiveGhost from "../actors/PassiveGhost";
 import Skelly from "../actors/Skelly";
 import GlowAccent from "../display/accents/GlowAccent";
+import { fromTextureCache } from "../pixiTools";
 import World from "../world/World";
 
 interface IEnemyCtor {
@@ -57,8 +58,10 @@ export interface IMapDataObject {
     mapName?: string;
 }
 
+type MD = IMapDataObject;
+
 let mapData: { [mapname: string]: IMapDataObject } = {
-    map1: {
+    map1: <MD> {
         map: "/maps/map.png",
         background: "/maps/map_back.png",
         npcs: [
@@ -96,7 +99,7 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         },
         bgTrack: "/sounds/CarrotWine_How_to_spend_winter.ogg",
     },
-    map2: {
+    map2: <MD> {
         map: "/maps/map2.png",
         background: "/maps/map2_back.png",
         entrances: {
@@ -114,7 +117,7 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         bgTrack: "/sounds/CarrotWine_How_to_spend_winter.ogg",
     },
 
-    dark_forest1: {
+    dark_forest1: <MD> {
         map: "/maps/dark_forest1_geometry.png",
         background: "/maps/dark_forest1_back.png",
         foreground: "/maps/dark_forest1_foreground.png",
@@ -139,7 +142,7 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         },
     },
 
-    small_clearing: {
+    small_clearing: <MD> {
         map: "/maps/small_clearing_geometry.png",
         background: "/maps/small_clearing.png",
         entrances: {
@@ -171,7 +174,7 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         isTown: true,
     },
 
-    crossroads: {
+    crossroads: <MD> {
         map: "/maps/crossroads_geometry.png",
         background: "/maps/crossroads_back.png",
         entrances: {
@@ -180,6 +183,7 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         },
         exits: {
             small_clearing: [p(20, 870), p(50, 870)],
+            path_to_heart_of_the_forest: [p(2805, 440), p(2775, 440), p(2835, 440)],
         },
         npcs: [
             {
@@ -208,16 +212,35 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         ),
         bgTrack: "/sounds/Foria - Break Away(eq).ogg",
         bgVolume: 1.5,
-        foregroundAccents: (world) => {
-            let exitHighlight1 = new GlowAccent(world);
-            exitHighlight1.x = 4903;
-            exitHighlight1.y = 873 - 161;
-            let exitHighlight2 = new GlowAccent(world, true);
-            exitHighlight2.x = 0;
-            exitHighlight2.y = 873 - 161;
-            return [exitHighlight1, exitHighlight2];
-        },
+        foregroundAccents: (world) => [
+            new GlowAccent(world).setBottomLeft(4903, 873),
+            new GlowAccent(world, true).setBottomLeft(0, 873),
+            new GlowAccent(world, false, fromTextureCache("/images/particles.png", 0, 25, 194, 161)).setBottomCenter(2805, 441),
+        ],
     },
+
+    path_to_heart_of_the_forest: <MD> {
+        map: "/maps/heart_path_geometry.png",
+        background: "/maps/heart_path_background.png",
+        foreground: "/maps/heart_path_foreground.png",
+        entrances: {
+            default: p(540, 2868),
+            crossroads: p(1650, 2868),
+        },
+        exits: {
+            crossroads: [p(1650, 2868), p(2868, 1680)],
+        },
+        npcs: [],
+        enemies: (world) => all(
+            enemyPack(enemies(10, Ghost, world), new PIXI.Point(775, 2468), 500),
+            enemyPack(enemies(5, Ghost, world), new PIXI.Point(775, 2147), 500),
+            enemyPack(enemies(5, Skelly, world), new PIXI.Point(775, 2147), 500),
+            enemyPack(enemies(10, Skelly, world), new PIXI.Point(775, 1802), 500),
+        ),
+        bgTrack: "/sounds/Foria - Break Away(eq).ogg",
+        bgVolume: 1.5,
+    },
+
 };
 
 for (let name of Keys(mapData)) {

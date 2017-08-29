@@ -5,6 +5,8 @@ import { fromTextureCache } from "./pixiTools";
 import * as root from "./root";
 import World from "./world/World";
 
+import StaticBolt from "./projectiles/StaticBolt";
+
 export function preload(images: string[]): void;
 export function preload(all: boolean): void;
 export function preload(arg: boolean | string[]) {
@@ -40,6 +42,11 @@ function main(app: PIXI.Application) {
     fpsDisplay.y = app.view.height;
     app.stage.addChild(fpsDisplay);
 
+    // let a = new StaticBolt(world);
+    // a.x = 500;
+    // a.y = 300;
+    // app.stage.addChild(a);
+
     root.juggler.add( () => {
         world.update();
 
@@ -57,6 +64,8 @@ function main(app: PIXI.Application) {
 
         fpsDisplay.text = fps.toFixed(1);
 
-        if (root.keyboard.isKeyDown(Key.ESCAPE) || root.controller.getButton(root.ControllerButton.START)) window.close();
+        if (root.keyboard.isKeyDown(Key.ESCAPE)
+            || root.controller.getButton(root.ControllerButton.START)
+        ) window.close();
     } );
 }

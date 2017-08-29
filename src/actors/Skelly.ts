@@ -120,7 +120,7 @@ export default class Skelly extends Enemy {
                 if (frame === 6) {
                     soundManager.playSound("/sounds/skelly_rattle.ogg");
                     for (let i = 0; i < 6; i ++) {
-                        let particle = new DebrisParticle(PIXI.loader.resources["/images/bone_particle.png"].texture);
+                        let particle = new DebrisParticle(PIXI.loader.resources["/images/bone_particle.png"].texture, this.world);
                         particle.x = this.horizontalCenter;
                         particle.y = this.top + this.size.y / 2;
                         let overkill = Math.min(damage / MAX_HEALTH, 1);

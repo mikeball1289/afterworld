@@ -3,8 +3,8 @@ import Particle from "./Particle";
 
 export default class SoftTextParticle extends Particle {
 
-    constructor(value: string, color: number) {
-        super();
+    constructor(value: string, color: number, world: World) {
+        super(40, world);
         let text = new PIXI.Text(value, {
             fontFamily: DEFAULT_FONT,
             fontSize: 18,
@@ -18,7 +18,7 @@ export default class SoftTextParticle extends Particle {
         this.lifetime = 40;
     }
 
-    public update(world: World) {
+    public update() {
         this.x += this.velocity.x;
         this.y += this.velocity.y;
         this.lifetime --;

@@ -8,6 +8,7 @@ import FireParticle from "../particlesystem/FireParticle";
 import GenericEffectParticle from "../particleSystem/GenericEffectParticle";
 import VacuumParticle from "../particlesystem/VacuumParticle";
 import { fromTextureCache } from "../pixiTools";
+import StaticBolt from "../projectiles/StaticBolt";
 import { juggler, soundManager } from "../root";
 import World from "../world/World";
 
@@ -30,7 +31,7 @@ function applyAttack(player: Player, enemy: Enemy, damage: IDamageBundle, knockb
     damage = d;
     knockback = k;
     if (enemy.applyAttack(damage, knockback)) {
-        player.buffs.process("damageDealt", enemy);
+        player.buffs.process("damageDealt", { damage, actor: enemy });
         if (enemy.health <= 0) {
             player.buffs.process("killedEnemy", enemy);
         }
@@ -74,7 +75,7 @@ function drawExplosionParticles(player: Player, world: World) {
         let speed = (Math.random() + Math.floor(i / 100)) * 0.4 + 0.1;
         speed *= Math.abs(speed);
         let particle = new FireParticle((100 - (speed * speed * 6) - Math.random() * (40 - speed * 20)) / 2,
-                                        new ColorTweener(startTweener.getInbetween(speed / 2.89), endTweener.getInbetween(speed / 2.89)));
+                                        new ColorTweener(startTweener.getInbetween(speed / 2.89), endTweener.getInbetween(speed / 2.89)), world);
         let radialX = speed * Math.sin(randomDirection);
         let radialY = speed * Math.cos(randomDirection);
         particle.velocity.x = radialX * 2 + player.velocity.x * 0.3;
@@ -243,7 +244,7 @@ export function cleave(player: Player, world: World) {
             let enemiesHit = 0;
             splashHit(player, world, (enemy) => {
                 if (enemiesHit >= 3) return false;
-                let damage = Math.random() * 3 + 2;
+                let damage = player.stats.physicalDamageAmount();
                 let knockback: PIXI.Point;
                 if (enemiesHit === 0) {
                     damage *= 1.5;
@@ -258,7 +259,7 @@ export function cleave(player: Player, world: World) {
                 return false;
             });
 
-            let particle = new GenericEffectParticle(20, fromTextureCache("/images/particles.png", 21, 0, 48, 17));
+            let particle = new GenericEffectParticle(20, fromTextureCache("/images/particles.png", 21, 0, 48, 17), world);
             particle.x = player.horizontalCenter + (player.inventory.equipment.weapon!.range / 2 + 10) * player.direction;
             particle.y = player.verticalCenter + 10;
             particle.scale.x = player.direction;
@@ -280,7 +281,7 @@ export function buckleDown(player: Player, world: World) {
         let angle = Math.random() * Math.PI * 2;
         let particle = new VacuumParticle(new PIXI.Point(Math.sin(angle) * 50, -Math.cos(angle) * 50),
                                             player,
-                                            20 + Math.random() * 10, 10, tinter);
+                                            20 + Math.random() * 10, 10, tinter, world);
         particle.rotation = angle;
         world.particleSystem.add(particle);
     }
@@ -310,5 +311,33 @@ export function envenom(player: Player, world: World) {
     } else {
         player.buffs.addBuff(new EnvenomedBuff(player.stats.physicalAttackDamageRange[1], "Envenomed"));
     }
+    return true;
+}
+
+export function staticBolt(player: Player, world: World) {
+    if (!world.map || !world.map.isGrounded(player)) return false;
+    player.play("cast", {
+        onProgress: (frame) => {
+            if (frame !== 2) return;
+            let bolt: StaticBolt;
+            bolt = new StaticBolt(world, player.stats.magicDamageAmount() * 1.2);
+            bolt.x = player.horizontalCenter + player.direction * player.size.x / 2;
+            bolt.y = player.verticalCenter - 10;
+            bolt.velocity.x = 2 * player.direction;
+            bolt.velocity.y = -2;
+            world.particleSystem.add(bolt);
+
+            bolt = new StaticBolt(world, player.stats.magicDamageAmount() * 1.2);
+            bolt.x = player.horizontalCenter + player.direction * player.size.x / 2;
+            bolt.y = player.verticalCenter + 10;
+            bolt.velocity.x = 2 * player.direction;
+            bolt.velocity.y = 2;
+            world.particleSystem.add(bolt);
+        },
+        onComplete: () => {
+            player.attacking = false;
+        },
+    } );
+    player.attacking = true;
     return true;
 }

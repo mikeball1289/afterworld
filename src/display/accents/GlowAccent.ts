@@ -9,7 +9,7 @@ export default class GlowAccent extends JuggledSprite {
     constructor(private world: World, flip = false, texture?: PIXI.Texture) {
         super();
         if (!texture) texture = fromTextureCache("/images/particles.png", 0, 25, 97, 161);
-        this.image = new PIXI.Sprite(fromTextureCache("/images/particles.png", 0, 25, 97, 161));
+        this.image = new PIXI.Sprite(texture);
         this.image.tint = 0xFFF400;
         this.addChild(this.image);
         this.image.alpha = 0.6;
@@ -43,5 +43,29 @@ export default class GlowAccent extends JuggledSprite {
         if (this.alpha > 0.6 && !hit) {
             this.alpha -= 0.01;
         }
+    }
+
+    public setBottomLeft(x: number, y: number) {
+        this.x = x;
+        this.y = y - this.image.height;
+        return this;
+    }
+
+    public setBottomRight(x: number, y: number) {
+        this.x = x - this.image.width;
+        this.y = y - this.image.height;
+        return this;
+    }
+
+    public setTopLeft(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+        return this;
+    }
+
+    public setBottomCenter(x: number, y: number) {
+        this.x = x - this.image.width / 2;
+        this.y = y - this.image.height;
+        return this;
     }
 }
