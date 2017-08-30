@@ -23,52 +23,55 @@ export default class Inventory {
     public static INVENTORY_SIZE = 36;
 
     public inventoryItems: (InventoryItem | undefined)[] = [
-        ItemFactory.constructItem("weapon", ItemFactory.itemData.heros_sword).fillStats(10, {
-            physicalDamage: 25,
-            magicDamage: 15,
-            strength: 5,
-            intelligence: 5,
-            agility: 5,
-            health: 15,
-        } ).prefix("Virtuous"),
-        ItemFactory.constructItem("weapon", ItemFactory.itemData.woodchopping_axe).fillStats(1, {
-            physicalDamage: 3,
-        } ).addInscription(skillData.cleave).prefix("Heavy"),
-        ItemFactory.constructItem("equip", ItemFactory.itemData.wooden_buckler).fillStats(2, {
-            armor: 4,
-            health: 5,
-        } ),
-        ItemFactory.constructItem("weapon", ItemFactory.itemData.iron_dagger).fillStats(3, {
-            physicalDamage: 5,
-            agility: 2,
-            walkSpeed: 1,
-        } ).postfix("of the Wind"),
-        ItemFactory.constructItem("equip", ItemFactory.itemData.cloth_shirt).addSocket().fillStats(1, {
-            armor: 3,
-        } ),
-        ItemFactory.constructItem("equip", ItemFactory.itemData.leather_pants).addSocket(ItemFactory.constructItem("gem", ItemFactory.itemData.leap_gem)).fillStats(1, {
-            armor: 2,
-        } ),
-        ItemFactory.constructItem("equip", ItemFactory.itemData.leather_boots).addSocket(ItemFactory.constructItem("gem", ItemFactory.itemData.tremor_gem)).fillStats(1, {
-            armor: 1,
-        } ),
-        ItemFactory.constructItem("equip", ItemFactory.itemData.wooden_buckler).addSocket().fillStats(3, {
-            armor: 7,
-            health: 6,
-            strength: 2,
-        } ).prefix("Hardy"),
-        ItemFactory.constructItem("equip", ItemFactory.itemData.wooden_buckler).addSocket().fillStats(3, {
-            armor: 7,
-            health: 7,
-            healthRegen: 0.1,
-        } ).postfix("of the Bear"),
-        ItemFactory.constructItem("gem", ItemFactory.itemData.envenom_gem),
-        ItemFactory.constructItem("gem", ItemFactory.itemData.buckle_down_gem),
-        ItemFactory.constructItem("gem", ItemFactory.itemData.explosion_gem),
-        ItemFactory.constructItem("weapon", ItemFactory.itemData.gnarled_staff).fillStats(1, {
-            magicDamage: 3,
-            intelligence: 1,
-        } ).addInscription(skillData.staticBolts).prefix("Crackling"),
+        // ItemFactory.constructItem("weapon", ItemFactory.itemData.woodchopping_axe).fillStats(1, {
+        //     physicalDamage: 3,
+        // } ),
+        // ItemFactory.constructItem("weapon", ItemFactory.itemData.heros_sword).fillStats(10, {
+        //     physicalDamage: 25,
+        //     magicDamage: 15,
+        //     strength: 5,
+        //     intelligence: 5,
+        //     agility: 5,
+        //     health: 15,
+        // } ).prefix("Virtuous"),
+        // ItemFactory.constructItem("weapon", ItemFactory.itemData.woodchopping_axe).fillStats(1, {
+        //     physicalDamage: 3,
+        // } ).addInscription(skillData.cleave).prefix("Heavy"),
+        // ItemFactory.constructItem("equip", ItemFactory.itemData.wooden_buckler).fillStats(2, {
+        //     armor: 4,
+        //     health: 5,
+        // } ),
+        // ItemFactory.constructItem("weapon", ItemFactory.itemData.iron_dagger).fillStats(3, {
+        //     physicalDamage: 5,
+        //     agility: 2,
+        //     walkSpeed: 1,
+        // } ).postfix("of the Wind"),
+        // ItemFactory.constructItem("equip", ItemFactory.itemData.cloth_shirt).addSocket().fillStats(1, {
+        //     armor: 3,
+        // } ),
+        // ItemFactory.constructItem("equip", ItemFactory.itemData.leather_pants).addSocket(ItemFactory.constructItem("gem", ItemFactory.itemData.leap_gem)).fillStats(1, {
+        //     armor: 2,
+        // } ),
+        // ItemFactory.constructItem("equip", ItemFactory.itemData.leather_boots).addSocket(ItemFactory.constructItem("gem", ItemFactory.itemData.tremor_gem)).fillStats(1, {
+        //     armor: 1,
+        // } ),
+        // ItemFactory.constructItem("equip", ItemFactory.itemData.wooden_buckler).addSocket().fillStats(3, {
+        //     armor: 7,
+        //     health: 6,
+        //     strength: 2,
+        // } ).prefix("Hardy"),
+        // ItemFactory.constructItem("equip", ItemFactory.itemData.wooden_buckler).addSocket().fillStats(3, {
+        //     armor: 7,
+        //     health: 7,
+        //     healthRegen: 0.1,
+        // } ).postfix("of the Bear"),
+        // ItemFactory.constructItem("gem", ItemFactory.itemData.envenom_gem),
+        // ItemFactory.constructItem("gem", ItemFactory.itemData.buckle_down_gem),
+        // ItemFactory.constructItem("gem", ItemFactory.itemData.explosion_gem),
+        // ItemFactory.constructItem("weapon", ItemFactory.itemData.gnarled_staff).fillStats(1, {
+        //     magicDamage: 3,
+        //     intelligence: 1,
+        // } ).addInscription(skillData.staticBolts).prefix("Crackling"),
     ];
     public equipment: IEquipmentSlots = {
         head: undefined,

@@ -9,9 +9,11 @@ export default class StatUI extends JuggledSprite {
     private itemTextures: PIXI.Container;
     private statHeaders1: PIXI.Text;
     private statHeaders2: PIXI.Text;
+    private statHeaders3: PIXI.Text;
     private statBox1: PIXI.Text;
     private statBox2: PIXI.Text;
     private statBox3: PIXI.Text;
+    private statBox4: PIXI.Text;
 
     constructor(private world: World) {
         super(fromTextureCache("/images/stats_ui.png"));
@@ -49,6 +51,12 @@ Energy Regen`, {
         this.statHeaders2.x = 760;
         this.statHeaders2.y = 165;
         this.addChild(this.statHeaders2);
+        this.statHeaders3 = new PIXI.Text("Total item level:", {
+            fontFamily: DEFAULT_FONT,
+        } );
+        this.statHeaders3.x = 478;
+        this.statHeaders3.y = 83;
+        this.addChild(this.statHeaders3);
 
         this.statBox1 = new PIXI.Text("", { fontFamily: DEFAULT_FONT });
         this.statBox1.x = 430;
@@ -59,9 +67,13 @@ Energy Regen`, {
         this.statBox3 = new PIXI.Text("", { fontFamily: DEFAULT_FONT });
         this.statBox3.x = 775;
         this.statBox3.y = 165;
+        this.statBox4 = new PIXI.Text("", { fontFamily: DEFAULT_FONT });
+        this.statBox4.x = 746;
+        this.statBox4.y = 83;
         this.addChild(this.statBox1);
         this.addChild(this.statBox2);
         this.addChild(this.statBox3);
+        this.addChild(this.statBox4);
     }
 
     public refreshStats() {
@@ -86,6 +98,8 @@ ${(stats.criticalHitChance * 100).toFixed(1)}%
 
 ${(stats.healthRegen * 60).toFixed(2)}
 ${(stats.energyRegen * 60).toFixed(2)}`;
+
+        this.statBox4.text = stats.ilvl.toFixed(0);
     }
 
     public refreshInventoryIcons() {

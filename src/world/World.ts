@@ -217,7 +217,6 @@ export default class World extends PIXI.Sprite {
             this.grayFilter.gray = grayscale;
         };
         this.grayFilter.gray = grayscale;
-        // this.worldContainer.filters = [filter];
         this.useFilter(this.grayFilter);
         juggler.add(fade);
         this.transitionTimer = 0;

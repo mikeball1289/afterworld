@@ -42,11 +42,6 @@ function main(app: PIXI.Application) {
     fpsDisplay.y = app.view.height;
     app.stage.addChild(fpsDisplay);
 
-    // let a = new StaticBolt(world);
-    // a.x = 500;
-    // a.y = 300;
-    // app.stage.addChild(a);
-
     root.juggler.add( () => {
         world.update();
 

@@ -223,7 +223,7 @@ class Controls {
 export let controls = new Controls();
 
 class SoundManager {
-    public static GLOBAL_VOLUME = 0.0;
+    public static GLOBAL_VOLUME = 0.4;
     private music: { [songName: string]: { song: HTMLAudioElement, fade: number } } = {};
     private tags: { [tag: string]: boolean } = {};
 

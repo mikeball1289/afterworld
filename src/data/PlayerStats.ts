@@ -151,6 +151,10 @@ export default class PlayerStats {
         return this.hitCache(this.calcArmor, "Armor");
     }
 
+    public get ilvl() {
+        return this.hitCache(this.calcILVL, "ilvl");
+    }
+
     private calcMaxHealth() {
         let max = this.processBuffs("health", 50 + this.getEquipmentStats("health"));
         if (this._health > max) {
@@ -236,6 +240,16 @@ export default class PlayerStats {
     // literally just your armor
     private calcArmor() {
         return this.processBuffs("armor", this.getEquipmentStats("armor"));
+    }
+
+    private calcILVL() {
+        let equips = this.player.inventory.equipment;
+        let ilvl = 0;
+        for (let key of Keys(equips)) {
+            let equip = equips[key];
+            if (equip && equip.ilvl) ilvl += equip.ilvl;
+        }
+        return ilvl;
     }
 
     private hitCache<T>(getter: () => T, cacheName: string): T {
