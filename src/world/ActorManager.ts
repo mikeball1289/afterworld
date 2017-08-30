@@ -1,6 +1,7 @@
 import Actor from "../Actors/Actor";
 import Enemy from "../Actors/Enemy";
 import Player from "../Actors/Player";
+import NPC from "../display/NPC";
 import mergeSort from "../mergeSort";
 import Map from "./Map";
 import { IMapDataObject } from "./mapData";
@@ -8,12 +9,17 @@ import World from "./World";
 
 export default class ActorManager extends PIXI.Container {
     public player: Player;
+    // NPC data
+    public npcs: NPC[] = [];
+    public npcLayer: PIXI.Container;
 
     public enemies: Enemy[] = [];
     private actorLayer: PIXI.Container;
 
     constructor(private world: World) {
         super();
+        this.npcLayer = new PIXI.Container();
+        this.addChild(this.npcLayer);
         this.actorLayer = new PIXI.Container();
         this.addChild(this.actorLayer);
 
@@ -41,12 +47,17 @@ export default class ActorManager extends PIXI.Container {
         this.enemies.splice(idx, 1);
     }
 
-    public unloadEnemies() {
+    public unloadNPAs() {
         for (let enemy of this.enemies) {
             this.actorLayer.removeChild(enemy);
             enemy.destroy({ children: true, texture: false, baseTexture: false });
         }
         this.enemies = [];
+        for (let npc of this.npcs) {
+            this.npcLayer.removeChild(npc);
+            npc.destroy(true);
+        }
+        this.npcs = [];
     }
 
     public update(map: Map, getControls: boolean = true) {
@@ -83,5 +94,29 @@ export default class ActorManager extends PIXI.Container {
         for (let enemy of this.enemies) {
             enemy.frameUpdate();
         }
+
+        let foundInteractable = false;
+        for (let npc of this.npcs) {
+            if (npc.withinTalkingRange(this.player) && !foundInteractable) {
+                npc.setInteractablePrompt(true);
+                foundInteractable = true;
+            } else {
+                npc.setInteractablePrompt(false);
+            }
+        }
+    }
+
+    public interact() {
+        for (let npc of this.npcs) {
+            if (npc.withinTalkingRange(this.player)) {
+                this.world.uiManager.displayNPCText(npc);
+                return;
+            }
+        }
+    }
+
+    public addNPC(npc: NPC) {
+        this.npcs.push(npc);
+        this.npcLayer.addChild(npc);
     }
 }

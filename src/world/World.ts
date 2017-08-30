@@ -35,9 +35,6 @@ export default class World extends PIXI.Sprite {
     private worldContainer: PIXI.Container;
     private fadeBlocker: PIXI.Graphics;
 
-    // NPC data
-    private npcs: NPC[] = [];
-    private npcLayer: PIXI.Container;
     private filterList: PIXI.Filter[] = [];
 
     private worldItems: WorldItem[] = [];
@@ -52,14 +49,12 @@ export default class World extends PIXI.Sprite {
         this.worldContainer = new PIXI.Container();
         this.foregroundLayer = new PIXI.Container();
         this.worldObjectLayer = new PIXI.Container();
-        this.npcLayer = new PIXI.Container();
         this.uiManager = new UIManager(this);
         this.particleSystem = new ParticleSystem(this);
         this.actorManager = new ActorManager(this);
 
         this.addChild(this.worldContainer);
 
-        this.worldContainer.addChild(this.npcLayer);
         this.worldContainer.addChild(this.actorManager);
         this.worldContainer.addChild(this.particleSystem);
         this.worldContainer.addChild(this.worldObjectLayer);
@@ -127,9 +122,7 @@ export default class World extends PIXI.Sprite {
                 this.worldContainer.addChildAt(this.map.backgroundSprite, 0);
                 if (this.map.foregroundSprite) this.foregroundLayer.addChild(this.map.foregroundSprite);
                 for (let npc of mapDataObject.npcs) {
-                    let npcSprite = new NPC(loader.resources[npc.name].texture, npc);
-                    this.npcs.push(npcSprite);
-                    this.npcLayer.addChild(npcSprite);
+                    this.actorManager.addNPC(new NPC(loader.resources[npc.name].texture, npc));
                 }
                 this.actorManager.loadEnemies(mapDataObject);
                 if (done) done();
@@ -195,12 +188,7 @@ export default class World extends PIXI.Sprite {
                 }
             }
         }
-        for (let npc of this.npcs) {
-            if (npc.withinTalkingRange(this.actorManager.player)) {
-                this.uiManager.displayNPCText(npc);
-                return;
-            }
-        }
+        this.actorManager.interact();
     }
 
     public unloadMap() {
@@ -210,16 +198,11 @@ export default class World extends PIXI.Sprite {
         if (this.map.foregroundSprite) this.foregroundLayer.removeChild(this.map.foregroundSprite);
         this.map.destroy(true);
         this.map = undefined;
-        for (let npc of this.npcs) {
-            this.npcLayer.removeChild(npc);
-            npc.destroy(true);
-        }
-        this.npcs = [];
         this.particleSystem.removeAll();
         this.worldObjectLayer.removeChildren();
         this.worldItems = [];
 
-        this.actorManager.unloadEnemies();
+        this.actorManager.unloadNPAs();
     }
 
     public dieDialogue() {
@@ -278,16 +261,6 @@ export default class World extends PIXI.Sprite {
             item.update(this);
         }
         this.particleSystem.update();
-
-        let foundInteractable = false;
-        for (let npc of this.npcs) {
-            if (npc.withinTalkingRange(this.actorManager.player) && !foundInteractable) {
-                npc.setInteractablePrompt(true);
-                foundInteractable = true;
-            } else {
-                npc.setInteractablePrompt(false);
-            }
-        }
 
         // camera control
         if (this.map.digitalWidth > this.screenWidth) {
