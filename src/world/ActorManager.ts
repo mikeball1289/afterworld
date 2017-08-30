@@ -15,6 +15,7 @@ export default class ActorManager extends PIXI.Container {
 
     public enemies: Enemy[] = [];
     private actorLayer: PIXI.Container;
+    private enemyDeletions: number[] = [];
 
     constructor(private world: World) {
         super();
@@ -62,7 +63,7 @@ export default class ActorManager extends PIXI.Container {
 
     public update(map: Map, getControls: boolean = true) {
         this.player.updateImpulse(map, getControls);
-        for (let npa of this.enemies) {
+        for (let npa of this.enemies.slice()) {
             if (!this.player.isDead()) {
                 npa.updateImpulse(map, this.player);
             } else {
@@ -91,7 +92,7 @@ export default class ActorManager extends PIXI.Container {
         }
 
         this.player.frameUpdate();
-        for (let enemy of this.enemies) {
+        for (let enemy of this.enemies.slice()) {
             enemy.frameUpdate();
         }
 

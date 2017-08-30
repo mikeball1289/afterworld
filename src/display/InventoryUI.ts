@@ -133,6 +133,9 @@ export default class InventoryUI extends JuggledSprite {
             darkGreen: {
                 fill: 0x00CC00,
             },
+            blue: {
+                fill: 0x0000FF,
+            },
         } );
         this.descriptionText.y = 5;
         this.descriptionPanel.addChild(this.descriptionText);

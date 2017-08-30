@@ -51,12 +51,12 @@ abstract class Enemy extends NonPlayerActor {
         return this._health;
     }
 
-    public applyAttack(damage: IDamageBundle, knockback: PIXI.Point) {
+    public applyAttack(damage: IDamageBundle, knockback: PIXI.Point = new PIXI.Point()) {
         if (this.isDead()) return false;
 
         soundManager.playSound(smacks[Math.floor(Math.random() * smacks.length)], 1, "smack_hit");
 
-        let particle = new DamageParticle(damage.amount, "enemyDamage", this);
+        let particle = new DamageParticle(damage.amount, "enemyDamage", this, this.world);
         this.world.particleSystem.add(particle, false);
         this.world.uiManager.worldLayers[1].addChild(particle);
 

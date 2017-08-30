@@ -5,16 +5,14 @@ export default class GenericEffectParticle extends Particle {
 
     private sprite: PIXI.Sprite;
 
-    constructor(private startingLifetime: number, texture: PIXI.Texture) {
-        super();
+    constructor(private startingLifetime: number, texture: PIXI.Texture, world: World) {
+        super(startingLifetime, world);
         this.sprite = new PIXI.Sprite(texture);
         this.sprite.anchor.set(0.5);
         this.addChild(this.sprite);
-
-        this.lifetime = startingLifetime;
     }
 
-    public update(world: World) {
+    public update() {
         this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
         this.velocity.x *= 0.99;

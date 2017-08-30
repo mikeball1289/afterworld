@@ -34,8 +34,8 @@ export default class EnvenomedBuff extends Buff {
 
     public onEvent(name: BuffEvent, payload?: any): any {
         if (name === "damageDealt") {
-            if (this.charges > 0) {
-                let enemy: Actor = payload;
+            if ((<IDamageBundle> payload.damage).type === "physical" && this.charges > 0) {
+                let enemy: Actor = payload.actor;
                 enemy.buffs.addBuff(new EnemyPoisonedDebuff(180, "Envenom", Math.ceil(this.damage / 6), 30));
                 this.charges --;
                 if (this.charges <= 0) {

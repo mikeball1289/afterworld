@@ -62,6 +62,15 @@ declare module PIXI {
 
         }
 
+        export class GlowFilter extends PIXI.Filter {
+            distance: number;
+            outerStrength: number;
+            innerStrength: number;
+            color: number;
+            quality: number
+            constructor(distance?: number, outerStrength?: number, innerStrength?: number, color?: number, quality?: number);
+        }
+
         // export class TiltShiftAxisFilter extends PIXI.Filter {
 
         //     blur:number;

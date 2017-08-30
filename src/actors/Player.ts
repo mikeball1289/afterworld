@@ -354,7 +354,7 @@ export default class Player extends Actor {
         let { damage: d, knockback: k } = this.buffs.process("takeDamage", { damage, knockback } );
         damage = d;
         knockback = k;
-        let particle = new DamageParticle(damage.amount, "playerDamage", this);
+        let particle = new DamageParticle(damage.amount, "playerDamage", this, this.world);
         this.world.particleSystem.add(particle, false);
         this.world.uiManager.worldLayers[1].addChild(particle);
 

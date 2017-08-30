@@ -81,6 +81,6 @@ export default class Ghost extends PassiveGhost {
     }
 
     public get collideable() {
-        return !this.attacking && !this.isDead();
+        return !this.attacking && super.collideable;
     }
 }

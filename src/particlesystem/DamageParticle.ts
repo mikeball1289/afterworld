@@ -1,4 +1,5 @@
 import Actor from "../actors/Actor";
+import World from "../world/World";
 import TextParticle from "./TextParticle";
 
 type SourceType = "enemyDamage" |
@@ -14,8 +15,8 @@ export default class DamageParticle extends TextParticle {
         }
     }
 
-    constructor(amount: number, sourceType: SourceType, source: Actor) {
-        super(amount.toFixed(), DamageParticle.colorOf(sourceType));
+    constructor(amount: number, sourceType: SourceType, source: Actor, world: World) {
+        super(amount.toFixed(), DamageParticle.colorOf(sourceType), world);
         this.x = source.horizontalCenter;
         this.y = source.top;
         this.velocity.x = (Math.random() - 0.5) * 2;

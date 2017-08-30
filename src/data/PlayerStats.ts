@@ -51,7 +51,7 @@ export default class PlayerStats {
     }
 
     public update() {
-        if (!this.player.isInCombat) {
+        if (!this.player.isInCombat && this._health < this.maxHealth) {
             this.healthAcc += this.healthRegen * 100;
         } else {
             this.healthAcc += this.healthRegen;
@@ -64,7 +64,7 @@ export default class PlayerStats {
             this.health += healing;
             this.healthAcc -= healing;
             if (this.health - prevHealth > 0) {
-                let particle = new SoftTextParticle((this.health - prevHealth).toFixed(0), 0x08CC08);
+                let particle = new SoftTextParticle((this.health - prevHealth).toFixed(0), 0x08CC08, this.world);
                 particle.velocity.y = -0.75;
                 particle.x = this.player.horizontalCenter;
                 particle.y = this.player.top;
