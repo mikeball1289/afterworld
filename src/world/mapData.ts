@@ -239,6 +239,10 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         ),
         bgTrack: "/sounds/Foria - Break Away(eq).ogg",
         bgVolume: 1.5,
+        foregroundAccents: (world) => [
+            new GlowAccent(world).setBottomRight(1700, 2873),
+            new GlowAccent(world).setBottomRight(1700, 1802),
+        ],
     },
 
 };
