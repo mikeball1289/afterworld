@@ -76,6 +76,7 @@ export default class UIManager {
 
     public openSelectMenu() {
         this.selectMenuRenderTarget.visible = true;
+        this.inventoryUI.bringToFront();
         // this.statUI.bringToFront();
     }
 

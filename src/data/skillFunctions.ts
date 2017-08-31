@@ -11,36 +11,11 @@ import { fromTextureCache } from "../pixiTools";
 import StaticBolt from "../projectiles/StaticBolt";
 import { juggler, soundManager } from "../root";
 import World from "../world/World";
+import { applyAttack, BASIC_ATTACKS, getAttackBox, swishes } from "./skillHelpers";
 
-export interface ISkillFunction {
-    (player: Player, world: World): boolean;
-}
-
-const swishes = ["/sounds/swish1.ogg", "/sounds/swish2.ogg", "/sounds/swish3.ogg"];
-const BASIC_ATTACKS: ["attack1", "attack2"] = ["attack1", "attack2"];
 let castIdx = 0;
 
-function getAttackBox(player: Player) {
-    if (!player.inventory.equipment.weapon) return new PIXI.Rectangle(player.horizontalCenter, player.top + player.size.y * 0.4, 1, 1);
-    return new PIXI.Rectangle(player.horizontalCenter, player.top + player.size.y * 0.4, player.inventory.equipment.weapon.range + 15, 25);
-}
-
-function applyAttack(player: Player, enemy: Enemy, damage: IDamageBundle, knockback: PIXI.Point) {
-    let {damage: d, knockback: k} = player.buffs.process("dealDamage", { damage, knockback} );
-    d.amount = Math.ceil(d.amount);
-    damage = d;
-    knockback = k;
-    if (enemy.applyAttack(damage, knockback)) {
-        player.buffs.process("damageDealt", { damage, actor: enemy });
-        if (enemy.health <= 0) {
-            player.buffs.process("killedEnemy", enemy);
-        }
-        return true;
-    }
-    return false;
-}
-
-function meleeHit(player: Player, world: World, knockbackPower = 4) {
+function meleeHit(player: Player, world: World, damageMultiplier = 1, knockbackPower = 4) {
     let attackBox: PIXI.Rectangle = getAttackBox(player);
     let enemies = world.actorManager.enemies;
 
@@ -180,7 +155,7 @@ export function tremor(player: Player, world: World) {
 export function ambush(player: Player, world: World) {
     let hitFn = (frame: number) => {
         if (frame !== 2) return;
-        meleeHit(player, world, 1);
+        meleeHit(player, world, 0.8, 1);
     };
     let hits = 0;
     let tempFPS = player.fps;

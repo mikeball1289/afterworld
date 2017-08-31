@@ -183,8 +183,8 @@ export default class InventoryUI extends JuggledSprite {
     }
 
     public bringToFront() {
-        this.showDescription();
         this.parent.setChildIndex(this, this.parent.children.length - 1);
+        this.showDescription();
     }
 
     public cleanup() {

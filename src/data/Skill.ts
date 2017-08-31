@@ -2,7 +2,7 @@ import Player from "../actors/Player";
 import World from "../world/World";
 import Cost from "./costs/Cost";
 import { WeaponType } from "./items/WeaponItem";
-import { ISkillFunction } from "./skillFunctions";
+import { ISkillFunction } from "./skillHelpers";
 
 export default class Skill {
 
@@ -14,7 +14,9 @@ export default class Skill {
                 public cooldown: number,
                 public name: string,
                 public description: string,
-                public gcd = true) { }
+                public gcd = true) {
+        this.cooldown *= 60;
+    }
 
     public playerCanCast(player: Player, world: World) {
         if (!player.inventory.equipment.weapon || (this.weaponTypes !== "any" && this.weaponTypes.indexOf(player.inventory.equipment.weapon.weaponType) < 0)) return false;
