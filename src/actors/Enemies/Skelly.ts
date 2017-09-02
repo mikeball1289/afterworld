@@ -1,11 +1,11 @@
-import Animator from "../display/Animator";
-import DebrisParticle from "../particlesystem/DebrisParticle";
-import { soundManager } from "../root";
-import Map from "../world/Map";
-import { EPSILON, GRAVITY } from "../world/physicalConstants";
-import World from "../world/World";
-import Enemy from "./Enemy";
-import Player from "./Player";
+import Animator from "../../display/Animator";
+import DebrisParticle from "../../particlesystem/DebrisParticle";
+import { soundManager } from "../../root";
+import Map from "../../world/Map";
+import { EPSILON, GRAVITY } from "../../world/physicalConstants";
+import World from "../../world/World";
+import Enemy from "../Enemy";
+import Player from "../Player";
 
 enum MovementStates {
     IDLE,

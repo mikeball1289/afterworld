@@ -2,6 +2,7 @@ import Player from "../actors/Player";
 import ClockSpindown from "../display/widgets/ClockSpindown";
 import World from "../world/World";
 import Skill from "./Skill";
+import { basicAttack } from "./skillData";
 
 export const NUM_SKILLS = 6;
 const iconPositions: [number, number][] = [[613, 539], [665, 539], [375, 539], [427, 539], [479, 539], [531, 539]];
@@ -10,6 +11,7 @@ export default class Skillbar extends PIXI.Container {
     public equippedSkills: (Skill | undefined)[] = [];
     private skills: Skill[] = [];
     private skillIcons: (PIXI.Sprite)[] = [];
+    private skillCosts: (PIXI.Text)[] = [];
     private cooldownSpinners: ClockSpindown[] = [];
     private cooldownNumbers: PIXI.Text[] = [];
     private skillLayer: PIXI.Container;
@@ -31,6 +33,20 @@ export default class Skillbar extends PIXI.Container {
             icon.y = position[1];
             this.skillLayer.addChild(icon);
             this.skillIcons.push(icon);
+
+            let costText = new PIXI.Text("", {
+                align: "right",
+                fontSize: 12,
+                fontFamily: DEFAULT_FONT,
+                fill: 0xD1D1D1,
+                stroke: 0,
+                strokeThickness: 2,
+            } );
+            costText.anchor.set(1, 0);
+            costText.x = position[0] + 47;
+            costText.y = position[1] + 2.5;
+            this.skillLayer.addChild(costText);
+            this.skillCosts.push(costText);
 
             let spinner = new ClockSpindown(23);
             spinner.x = position[0] + 25;
@@ -54,6 +70,7 @@ export default class Skillbar extends PIXI.Container {
             this.cooldownSpinners.push(spinner);
             this.cooldownNumbers.push(num);
         }
+        this.addSkill(basicAttack);
     }
 
     public addSkill(skill: Skill) {
@@ -64,6 +81,7 @@ export default class Skillbar extends PIXI.Container {
             if (this.equippedSkills[i] === undefined) {
                 this.equippedSkills[i] = skill;
                 this.skillIcons[i].texture = skill.icon;
+                this.skillCosts[i].text = (skill.costs[0] || { costAmount: "" }).costAmount.toString();
                 this.skillCooldowns[i] = skill.cooldown;
                 return;
             }
@@ -90,11 +108,21 @@ export default class Skillbar extends PIXI.Container {
         this.equippedSkills[idx2] = skill;
         this.skillCooldowns[idx2] = cooldown;
         let skill1 = this.equippedSkills[idx1];
-        if (skill1 === undefined) this.skillIcons[idx1].texture = PIXI.Texture.EMPTY;
-        else this.skillIcons[idx1].texture = skill1.icon;
+        if (skill1 === undefined) {
+            this.skillIcons[idx1].texture = PIXI.Texture.EMPTY;
+            this.skillCosts[idx1].text = "";
+        } else {
+            this.skillIcons[idx1].texture = skill1.icon;
+            this.skillCosts[idx1].text = (skill1.costs[0] || { costAmount: "" }).costAmount.toString();
+        }
         let skill2 = this.equippedSkills[idx2];
-        if (skill2 === undefined) this.skillIcons[idx1].texture = PIXI.Texture.EMPTY;
-        else this.skillIcons[idx2].texture = skill2.icon;
+        if (skill2 === undefined) {
+            this.skillIcons[idx2].texture = PIXI.Texture.EMPTY;
+            this.skillCosts[idx2].text = "";
+        } else {
+            this.skillIcons[idx2].texture = skill2.icon;
+            this.skillCosts[idx2].text = (skill2.costs[0] || { costAmount: "" }).costAmount.toString();
+        }
     }
 
     public useSkill(index: number) {

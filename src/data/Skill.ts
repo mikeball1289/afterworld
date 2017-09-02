@@ -49,7 +49,7 @@ export default class Skill {
         let des = includeName ? (this.name + " ") : "";
         des += "(" + Math.round(this.cooldown / 60) + " sec";
         if (this.costs.length > 0) {
-            des += ", " + this.costs.map( (cost) => cost.costAmout + " " + cost.costType ).join(", ") + ")\n";
+            des += ", " + this.costs.map( (cost) => cost.costAmount + " " + cost.costType ).join(", ") + ")\n";
         } else {
             des += ")\n";
         }

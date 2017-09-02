@@ -106,6 +106,10 @@ ${(stats.energyRegen * 60).toFixed(2)}`;
         InventoryUI.prototype.refreshInventoryIcons.call(this, true);
     }
 
+    public showDescription() {
+        // empty shim
+    }
+
     public bringToFront() {
         this.refreshInventoryIcons();
         this.refreshStats();

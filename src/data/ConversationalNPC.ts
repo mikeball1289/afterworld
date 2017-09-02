@@ -7,7 +7,7 @@ export interface IOption {
 }
 
 export interface ITextPack {
-    text: ((world: World) => string)[];
+    text: ((world: World) => (string | ITextPack))[];
     options?: IOption[];
 }
 
@@ -15,7 +15,7 @@ export interface IConversationPiece {
     (world: World): ITextPack;
 }
 
-export class ConversationalNPC implements INPCData {
+export default class ConversationalNPC implements INPCData {
 
     private text: ITextPack;
     private textIdx: number = 0;
@@ -30,8 +30,13 @@ export class ConversationalNPC implements INPCData {
         this.textIdx = 0;
     }
 
-    public getText(world: World) {
+    public getText(world: World): { text: string, options?: string[] } {
         let text = this.text.text[this.textIdx](world);
+        if (typeof text === "object") {
+            this.text = text;
+            this.textIdx = 0;
+            return this.getText(world);
+        }
         this.textIdx ++;
         let options: string[] | undefined;
         if (this.textIdx === this.text.text.length && this.text.options !== undefined) {

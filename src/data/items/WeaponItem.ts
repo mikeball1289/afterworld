@@ -41,7 +41,7 @@ export default class WeaponItem extends EquipmentItem {
     }
 
     public getSkill() {
-        return this.inscription || skillData.basicAttack;
+        return this.inscription;
     }
 
     public addInscription(skill: Skill): this {

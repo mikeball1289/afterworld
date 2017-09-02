@@ -121,6 +121,14 @@ export let itemData = {
         skill: skillData.explosion,
     },
 
+    sentinel_flame_gem: <I> {
+        type: "blue",
+        name: "Sapphire of Guarding Fire",
+        icon: p(6, 0),
+        description: "",
+        skill: skillData.sentinelFlames,
+    },
+
     gnarled_staff: <I> {
         type: "magic",
         name: "Gnarled Wooden Staff",
@@ -128,6 +136,13 @@ export let itemData = {
         description: "A twisted magic staff made from old oak.",
         range: 20,
         sheetName: "gnarled_wooden_staff",
+    },
+
+    bead_bracelet: <I> {
+        type: "trinket",
+        name: "Bead Bracelet",
+        icon: p(1, 1),
+        description: "A small bracelet made of wooden beads.",
     },
 };
 
@@ -143,19 +158,22 @@ export function constructItem(type: "equip", data: IItemData): EquipmentItem;
 export function constructItem(type: "item", data: IItemData): InventoryItem;
 export function constructItem(type: "gem", data: IItemData): GemItem;
 export function constructItem(type: "weapon" | "equip" | "item" | "gem", data: IItemData): InventoryItem {
+    let item: InventoryItem;
     if (data.type === "light" || data.type === "heavy" || data.type === "magic") {
         if (type !== "weapon") throw new Error("wrong factory type");
-        return new WeaponItem(fromTextureCache("/images/item_sheet.png", data.icon[0] * 40, data.icon[1] * 40, 40, 40),
+        item = new WeaponItem(fromTextureCache("/images/item_sheet.png", data.icon[0] * 40, data.icon[1] * 40, 40, 40),
                                 data.name, data.sheetName || "", data.description, data.range || 1, data.type);
     } else if (data.type === "item") {
         if (type !== "item") throw new Error("wrong factory type");
         throw new Error("Not implemented yet");
     } else if (data.type === "red" || data.type === "blue" || data.type === "black") {
-        return new GemItem(fromTextureCache("/images/item_sheet.png", data.icon[0] * 40, data.icon[1] * 40, 40, 40),
+        item = new GemItem(fromTextureCache("/images/item_sheet.png", data.icon[0] * 40, data.icon[1] * 40, 40, 40),
                             data.name, data.type, data.skill);
     } else {
         if (type !== "equip") throw new Error("wrong factory type");
-        return new EquipmentItem(fromTextureCache("/images/item_sheet.png", data.icon[0] * 40, data.icon[1] * 40, 40, 40),
+        item = new EquipmentItem(fromTextureCache("/images/item_sheet.png", data.icon[0] * 40, data.icon[1] * 40, 40, 40),
                                 data.type, data.name, data.sheetName || "", data.description);
     }
+    item.id = data.id!;
+    return item;
 }

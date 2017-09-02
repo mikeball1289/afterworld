@@ -1,10 +1,10 @@
-import Animator from "../display/Animator";
-import { fromTextureCache } from "../pixiTools";
-import Map from "../world/Map";
-import { EPSILON, GRAVITY } from "../world/physicalConstants";
-import World from "../world/World";
-import Enemy from "./Enemy";
-import Player from "./Player";
+import Animator from "../../display/Animator";
+import { fromTextureCache } from "../../pixiTools";
+import Map from "../../world/Map";
+import { EPSILON, GRAVITY } from "../../world/physicalConstants";
+import World from "../../world/World";
+import Enemy from "../Enemy";
+import Player from "../Player";
 
 export enum MovementStates {
     IDLE,

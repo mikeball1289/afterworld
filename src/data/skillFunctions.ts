@@ -308,6 +308,8 @@ export function staticBolt(player: Player, world: World) {
             bolt.velocity.x = 2 * player.direction;
             bolt.velocity.y = 2;
             world.particleSystem.add(bolt);
+
+            soundManager.playSound("/sounds/crackle.ogg");
         },
         onComplete: () => {
             player.attacking = false;

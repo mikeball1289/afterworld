@@ -17,6 +17,7 @@ abstract class Actor extends PIXI.Sprite {
     public size: PIXI.Point = new PIXI.Point();
     public velocity = new PIXI.Point();
     public fallthrough?: number;
+    public tangible = true;
     public weight = 1;
     public id: number;
     public buffs: BuffSet;
@@ -49,6 +50,10 @@ abstract class Actor extends PIXI.Sprite {
 
     get verticalCenter() {
         return this.y + this.size.y / 2;
+    }
+
+    get center() {
+        return new PIXI.Point(this.horizontalCenter, this.verticalCenter);
     }
 
     public repel(other: Actor, damper = 8.5): boolean {
@@ -100,6 +105,16 @@ abstract class Actor extends PIXI.Sprite {
 
     public hitTest(other: Actor | IBoxLike): boolean {
         return this.left <= other.right && this.right >= other.left && this.top <= other.bottom && this.bottom >= other.top;
+    }
+
+    public containsPoint(point: PIXI.Point) {
+        return this.left <= point.x && this.right >= point.x && this.top <= point.y && this.bottom >= point.y;
+    }
+
+    public distanceTo(point: PIXI.Point) {
+        let dx = this.horizontalCenter - point.x;
+        let dy = this.verticalCenter - point.y;
+        return Math.sqrt(dx * dx + dy * dy);
     }
 }
 

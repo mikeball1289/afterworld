@@ -261,6 +261,7 @@ export default class InventoryUI extends JuggledSprite {
             sprite.y = coords[1];
             this.itemTextures.addChild(sprite);
         }
+        this.showDescription();
     }
 
     public showDescription() {
@@ -418,7 +419,6 @@ export default class InventoryUI extends JuggledSprite {
                     this.selectionHighlight.visible = true;
                     this.refreshInventoryIcons();
                     this.highlightSelection();
-                    this.showDescription();
                 }
             }
             return;
@@ -433,7 +433,6 @@ export default class InventoryUI extends JuggledSprite {
             this.optionBox.open(["Unequip", "Cancel"], (option) => {
                 if (option === 0 && equip) {
                     inventory.unequip(EQUIPMENT_INDEX_TYPES[this.selection.index]);
-                    this.refreshInventoryIcons();
                 }
             } );
         } else if (this.selection.area === "items") {
@@ -444,7 +443,6 @@ export default class InventoryUI extends JuggledSprite {
                     if (!(item && EquipmentItem.isEquipmentItem(item))) return;
                     if (option === 0) {
                         inventory.equipItem(this.selection.index);
-                        this.refreshInventoryIcons();
                         this.showDescription();
                     } else if (option === 1) {
                         this.beginMove(p);
@@ -500,13 +498,6 @@ export default class InventoryUI extends JuggledSprite {
     }
 
     private dropItem() {
-        let item = this.world.actorManager.player.inventory.removeItem(this.selection.index);
-        if (!item) return;
-        let worldItem = new WorldItem(item);
-        worldItem.x = this.world.actorManager.player.horizontalCenter;
-        worldItem.y = this.world.actorManager.player.verticalCenter;
-        worldItem.velocity.y = -8;
-        this.world.addWorldItem(worldItem);
-        this.refreshInventoryIcons();
+        this.world.actorManager.player.inventory.dropItem(this.selection.index);
     }
 }

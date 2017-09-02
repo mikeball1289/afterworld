@@ -122,6 +122,7 @@ export default class Map {
     }
 
     public actorIsInPassable(actor: Actor, offset: number = 0) {
+        if (!actor.tangible) return true;
         if (actor.fallthrough !== undefined && Math.abs(actor.y - actor.fallthrough) < 5) return true;
         return Map.isPointWalkable(this.getPixelData(actor.horizontalCenter, actor.bottom - 2 + offset)) ||
                 Map.testLine({ x: actor.left, y: actor.bottom - 2 + offset }, { x: actor.right - EPSILON, y: actor.bottom - 2 + offset },

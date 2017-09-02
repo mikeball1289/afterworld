@@ -345,7 +345,7 @@ export default class Player extends Actor {
         return !this.isDead();
     }
 
-    public applyDamage(damage: IDamageBundle, knockback: PIXI.Point) {
+    public applyDamage(damage: IDamageBundle, knockback: PIXI.Point = new PIXI.Point()) {
         if (this.isDead()) return false;
         this.isInCombat = true;
 

@@ -1,8 +1,8 @@
+import * as e from "../actors/enemies/enemies";
 import SnapTrap from "../actors/enemies/SnapTrap";
 import Enemy from "../actors/Enemy";
-import Ghost from "../actors/Ghost";
-import PassiveGhost from "../actors/PassiveGhost";
-import Skelly from "../actors/Skelly";
+import ConversationalNPC from "../data/ConversationalNPC";
+import * as Woodsman from "../data/conversations/WoodsmanConversation";
 import GlowAccent from "../display/accents/GlowAccent";
 import { fromTextureCache } from "../pixiTools";
 import World from "../world/World";
@@ -79,12 +79,12 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         enemies: (world: World) => {
             let enemies: Enemy[] = [];
             for (let i = 0; i < 10; i ++) {
-                let skelly = new Skelly(world);
+                let skelly = new e.Skelly(world);
                 skelly.x = 500 + Math.random() * 400;
                 skelly.y = 1023 - skelly.size.y - 85;
                 enemies.push(skelly);
             }
-            let skelly = new Skelly(world);
+            let skelly = new e.Skelly(world);
             skelly.x = 2750;
             skelly.y = 1030 - 85;
             enemies.push(skelly);
@@ -130,8 +130,9 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         },
         npcs: [],
         enemies: (world) => [
-            new PassiveGhost(world).setBottomCenter(2100, 820),
-            new PassiveGhost(world).setBottomCenter(180, 820),
+            new e.PassiveGhost(world).setBottomCenter(2100, 820),
+            new e.PassiveGhost(world).setBottomCenter(486, 872),
+            new e.WilloSpirit(world).setBottomCenter(1050, 625),
         ],
         bgTrack: "/sounds/CarrotWine_How_to_spend_winter.ogg",
         foregroundAccents: (world) => {
@@ -154,13 +155,10 @@ let mapData: { [mapname: string]: IMapDataObject } = {
             dark_forest1: [p(20, 700), p(50, 700)],
             crossroads: [p(1450, 700), p(1480, 700)],
         },
-        npcs: [],
-        enemies: (world) => {
-            let ghostie = new PassiveGhost(world);
-            ghostie.x = 1020;
-            ghostie.y = 790;
-            return [ghostie];
-        },
+        npcs: [new ConversationalNPC("Woodsman", "/npcs/spriteBase.png", new PIXI.Point(437, 721), Woodsman.talk)],
+        enemies: (world) => [
+            new e.PassiveGhost(world).setBottomCenter(1020, 790),
+        ],
         bgTrack: "/sounds/CarrotWine_How_to_spend_winter.ogg",
         foregroundAccents: (world) => {
             let exitHighlight1 = new GlowAccent(world);
@@ -205,10 +203,10 @@ let mapData: { [mapname: string]: IMapDataObject } = {
                 new SnapTrap(world).setBottomCenter(3522, 742),
                 new SnapTrap(world).setBottomCenter(4657, 874),
             ],
-            enemyPack(enemies(2, Ghost, world), new PIXI.Point(1300, 873), 200),
-            enemyPack(enemies(4, Ghost, world), new PIXI.Point(704, 591), 200),
-            enemyPack(enemies(4, Ghost, world), new PIXI.Point(2886, 441), 200),
-            enemyPack(enemies(5, Ghost, world), new PIXI.Point(4300, 591), 200),
+            enemyPack(enemies(2, e.Ghost, world), new PIXI.Point(1300, 873), 200),
+            enemyPack(enemies(4, e.Ghost, world), new PIXI.Point(704, 591), 200),
+            enemyPack(enemies(4, e.Ghost, world), new PIXI.Point(2886, 441), 200),
+            enemyPack(enemies(5, e.Ghost, world), new PIXI.Point(4300, 591), 200),
         ),
         bgTrack: "/sounds/Foria - Break Away(eq).ogg",
         bgVolume: 1.5,
@@ -231,11 +229,15 @@ let mapData: { [mapname: string]: IMapDataObject } = {
             crossroads: [p(1650, 2868), p(2868, 1680)],
         },
         npcs: [],
-        enemies: (world) => all(
-            enemyPack(enemies(10, Ghost, world), new PIXI.Point(775, 2468), 500),
-            enemyPack(enemies(5, Ghost, world), new PIXI.Point(775, 2147), 500),
-            enemyPack(enemies(5, Skelly, world), new PIXI.Point(775, 2147), 500),
-            enemyPack(enemies(10, Skelly, world), new PIXI.Point(775, 1802), 500),
+        enemies: (world) => all([
+                new e.WilloSpirit(world).setBottomCenter(900, 2050),
+                new e.WilloSpirit(world).setBottomCenter(650, 2350),
+                new e.WilloSpirit(world).setBottomCenter(1280, 1600),
+            ],
+            enemyPack(enemies(8, e.Ghost, world), new PIXI.Point(775, 2468), 500),
+            enemyPack(enemies(4, e.Ghost, world), new PIXI.Point(775, 2147), 500),
+            enemyPack(enemies(4, e.Skelly, world), new PIXI.Point(775, 2147), 500),
+            enemyPack(enemies(8, e.Skelly, world), new PIXI.Point(775, 1802), 500),
         ),
         bgTrack: "/sounds/Foria - Break Away(eq).ogg",
         bgVolume: 1.5,
