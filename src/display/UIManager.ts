@@ -1,4 +1,5 @@
 import NPCText, { INPCLike } from "../display/NPCText";
+import QuestHUD from "../display/QuestHUD";
 import { controls, InputType, juggler, root } from "../root";
 import World from "../world/World";
 import InventoryUI from "./InventoryUI";
@@ -18,6 +19,7 @@ export default class UIManager {
     public inventoryUI: InventoryUI;
     public statUI: StatUI;
     public playerHud: PlayerHUD;
+    public questHUD: QuestHUD;
     private selectMenuContainer: PIXI.Container;
     private selectMenuBatchTexture: PIXI.RenderTexture;
     private selectMenuRenderTarget: PIXI.Sprite;
@@ -38,6 +40,10 @@ export default class UIManager {
         this.npcText.pivot.set(this.npcText.width / 2, this.npcText.height / 2);
         this.npcText.position.set(world.screenWidth / 2, world.screenHeight / 2);
         this.overlayLayer.addChild(this.npcText);
+
+        this.questHUD = new QuestHUD(world);
+        this.questHUD.x = world.screenWidth;
+        this.overlayLayer.addChild(this.questHUD);
 
         this.selectMenuContainer = new PIXI.Container();
 

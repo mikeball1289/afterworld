@@ -21,9 +21,6 @@ export function applyAttack(player: Player, enemy: Enemy, damage: IDamageBundle,
     knockback = k;
     if (enemy.applyAttack(damage, knockback)) {
         player.buffs.process("damageDealt", { damage, actor: enemy });
-        if (enemy.health <= 0) {
-            player.buffs.process("killedEnemy", enemy);
-        }
         return true;
     }
     return false;

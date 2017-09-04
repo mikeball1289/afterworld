@@ -16,6 +16,7 @@ abstract class Enemy extends NonPlayerActor {
 
     public animator: Animator<{ die: [number, number] }>;
     public abstract maxHealth: number;
+    public abstract enemyName: string;
     protected healthBar: HealthBar = new HealthBar();
     private isAnEnemy = true;
     private _direction: -1 | 1 = 1;
@@ -65,6 +66,8 @@ abstract class Enemy extends NonPlayerActor {
         this.health -= damage.amount;
         if (this.health <= 0) {
             this.die(damage.amount, knockback);
+            this.world.actorManager.player.buffs.process("killedEnemy", this);
+            this.world.emit("enemyDied", this);
         } else {
             this.applyImpulse(knockback.x, knockback.y);
         }

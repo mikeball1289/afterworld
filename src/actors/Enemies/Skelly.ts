@@ -24,6 +24,9 @@ const MAX_HEALTH = 10;
 const VIEW_DISTANCE = 400;
 
 export default class Skelly extends Enemy {
+    public static PRETTY_NAME = "Skelly";
+
+    public enemyName = Skelly.PRETTY_NAME;
     public weight = 1.8;
     public maxHealth = MAX_HEALTH;
     public animator: Animator<{

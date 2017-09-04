@@ -20,6 +20,9 @@ const FULL_HORIZONTAL_DECAY = 0.88;
 const MAX_HEALTH = 10;
 
 export default class PassiveGhost extends Enemy {
+    public static PRETTY_NAME = "Forest Spirit";
+
+    public enemyName = PassiveGhost.PRETTY_NAME;
     public weight = 1;
     public maxHealth = MAX_HEALTH;
     public animator: Animator<{

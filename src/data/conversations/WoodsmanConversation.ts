@@ -4,7 +4,7 @@ import * as ItemFactory from "../items/ItemFactory";
 import WeaponItem from "../items/WeaponItem";
 import * as skillData from "../skillData";
 
-let chatMode = 0;
+let gotDev = false;
 
 let devOptions: IOption[] = [
     {
@@ -73,7 +73,7 @@ let devOptions: IOption[] = [
                             intelligence: 1,
                         } ).addInscription(skillData.sentinelFlames).prefix("Blazing")]);
 
-                        chatMode ++;
+                        gotDev = true;
                         return "There you go, those are all of the dev items, have fun!";
                     },
                 ],
@@ -93,9 +93,9 @@ let devOptions: IOption[] = [
     },
 ];
 
-export let talk: IConversationPiece = ((world) => {
-    if (chatMode === 0) {
-        chatMode ++;
+export let talk: IConversationPiece = (world) => {
+    let quest = world.questManager.getQuestByName("The Woodsman's Request", true);
+    if (quest.progress === 0) {
         return {
             text: [
                 () => "Hey what are you doing all the way out here? It's not safe to be travelling the woods alone. The forest spirits have been restless lately.",
@@ -104,55 +104,75 @@ export let talk: IConversationPiece = ((world) => {
                     world.actorManager.player.inventory.addItem(ItemFactory.constructItem("weapon", ItemFactory.itemData.woodchopping_axe).fillStats(1, {
                         physicalDamage: 3,
                     } ));
+                    quest.questStep.complete();
                     return "There you go. Press SELECT to open your inventory and equip it. Usually the spirits will leave you alone if you give them a good smack. There's a spirit just over there, go hit it with that axe until it goes away.";
                 },
             ],
         };
-    } else if (chatMode === 1) {
-        if (world.actorManager.enemies.length > 0) {
-            return {
-                text: [
-                    () => "That spirit just to the right of us. Go smack it up until it goes back to the spirit world. Press SELECT to open your inventory and use the axe I gave you.",
-                ],
-            };
-        } else {
-            return {
-                text: [
-                    () => "Hey that was pretty good! I just remembered I know a rune I can inscribe on that axe, it will make the axe heavier and sharper, letting you hit more things at once and for more damage.",
-                    () => {
-                        // let item = world.actorManager.player.inventory.findItem(ItemFactory.itemData.woodchopping_axe.id);
-                        let inventory = world.actorManager.player.inventory;
-                        let reequip = false;
-                        let newAxe = false;
-                        if (inventory.equipment.weapon && inventory.equipment.weapon.id === ItemFactory.itemData.woodchopping_axe.id) {
-                            inventory.unequip("weapon");
-                            reequip = true;
-                        }
-                        let item = inventory.findItem(ItemFactory.itemData.woodchopping_axe.id!);
-                        if (!item) {
-                            item = ItemFactory.constructItem("weapon", ItemFactory.itemData.woodchopping_axe).fillStats(1, {
-                                physicalDamage: 3,
-                            } );
-                            inventory.addItem(item);
-                            newAxe = true;
-                        }
-                        if (item && WeaponItem.isWeaponItem(item)) {
-                            item.addInscription(skillData.cleave);
-                            if (reequip) inventory.equipItem(item);
-                        }
-                        chatMode ++;
-                        if (newAxe) {
-                            return "You seem to have lost your axe so I gave you a new one with the inscription. Try not to lose this one, it would be disasterous to get caught out here without a weapon.";
-                        } else {
-                            return "There you go, now you can cleave with your axe.";
-                        }
-                    },
-                    () => "Would you like more items to play with? I can fill up your inventory with a bunch of dev items.",
-                ],
-                options: devOptions,
-            };
-        }
-    } else if (chatMode === 2) {
+    } else if (quest.progress === 1) {
+        // if (world.actorManager.enemies.length > 0) {
+        return {
+            text: [
+                () => "That spirit just to the right of us. Go smack it up until it goes back to the spirit world. Press SELECT to open your inventory and use the axe I gave you.",
+            ],
+        };
+        // }
+    } else if (quest.progress === 2) {
+        return {
+            text: [
+                () => "Hey that was pretty good! I just remembered I know a rune I can inscribe on that axe, it will make the axe heavier and sharper, letting you hit more things at once and for more damage.",
+                () => {
+                    // let item = world.actorManager.player.inventory.findItem(ItemFactory.itemData.woodchopping_axe.id);
+                    let inventory = world.actorManager.player.inventory;
+                    let reequip = false;
+                    let newAxe = false;
+                    if (inventory.equipment.weapon && inventory.equipment.weapon.id === ItemFactory.itemData.woodchopping_axe.id) {
+                        inventory.unequip("weapon");
+                        reequip = true;
+                    }
+                    let item = inventory.findItem(ItemFactory.itemData.woodchopping_axe.id!);
+                    if (!item) {
+                        item = ItemFactory.constructItem("weapon", ItemFactory.itemData.woodchopping_axe).fillStats(1, {
+                            physicalDamage: 3,
+                        } );
+                        inventory.addItem(item);
+                        newAxe = true;
+                    }
+                    if (item && WeaponItem.isWeaponItem(item)) {
+                        item.addInscription(skillData.cleave);
+                        if (reequip) inventory.equipItem(item);
+                    }
+                    quest.questStep.complete();
+                    if (newAxe) {
+                        return "You seem to have lost your axe so I gave you a new one with the inscription. Try not to lose this one, it would be disasterous to get caught out here without a weapon.";
+                    } else {
+                        return "There you go, now you can cleave with your axe.";
+                    }
+                },
+                () => "On my way into the forest today I passed some spirits that tried to attack me, just east of here. This is the first time I've ever seen the spirits so restless.",
+                () => "Could you head east to the crossroads and send a handful of those vengeful spirits back to the spirit world? Come back here once you're done with that.",
+            ],
+            // options: devOptions,
+        };
+    } else if (quest.progress === 3) {
+        return {
+            text: [
+                () => "On my way into the forest today I passed some spirits that tried to attack me, just east of here. This is the first time I've ever seen the spirits so restless.",
+                () => "Could you head east to the crossroads and send a handful of those vengeful spirits back to the spirit world? Come back here once you're done with that.",
+            ],
+        };
+    } else if (quest.progress === 4) {
+        return {
+            text: [
+                () => {
+                    quest.questStep.complete();
+                    return "Hey kid, you're a natural! There's been a bunch of paranormal activity around here lately, I bet if you kept on fighing whatever dark forces have been stirring it up you could really make a difference.";
+                },
+                () => "I have a bunch of dev items I've found in my days of wandering these woods. If you want you can have them, there are some things that should make fighting in these woods a breeze. What do you say?",
+            ],
+            options: devOptions,
+        };
+    } else if (quest.isComplete && !gotDev) {
         return {
             text: [
                 () => "Oh, you're back. Did you change your mind about those dev items?",
@@ -166,4 +186,4 @@ export let talk: IConversationPiece = ((world) => {
             ],
         };
     }
-} );
+};

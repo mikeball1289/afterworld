@@ -11,6 +11,10 @@ const ATTACK_COOLDOWN_TIME = 75;
 
 export default class Ghost extends PassiveGhost {
 
+    public static PRETTY_NAME = "Vengeful Spirit";
+
+    public enemyName = Ghost.PRETTY_NAME;
+
     private attackTimer = 0;
     private attackCooldown = 0;
     private hasHitPlayer = false;

@@ -54,9 +54,11 @@ export default class WilloFlame extends Projectile {
         }
 
         let player = this.world.actorManager.player;
-        if (player.containsPoint(this.position)) {
-            if (player.applyDamage(this.damage)) {
-                return this.destroy();
+        if (this.ignite && !player.isDead()) {
+            if (player.containsPoint(this.position)) {
+                if (player.applyDamage(this.damage)) {
+                    return this.destroy();
+                }
             }
         }
 

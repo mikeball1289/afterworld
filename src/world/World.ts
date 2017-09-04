@@ -1,10 +1,12 @@
 // tslint:disable:no-string-literal
-
 import * as PNG from "png-js";
+import Enemy from "../actors/Enemy";
 import ArchangelNPCData from "../display/ArchangelNPCData";
 import NPC from "../display/NPC";
 import UIManager from "../display/UIManager";
 import ParticleSystem from "../particlesystem/ParticleSystem";
+import QuestManager from "../quests/QuestManager";
+import { InitializeQuests } from "../quests/quests";
 import { juggler, soundManager } from "../root";
 import ActorManager from "./ActorManager";
 import Map from "./Map";
@@ -23,6 +25,7 @@ export default class World extends PIXI.Sprite {
     public actorManager: ActorManager;
     public particleSystem: ParticleSystem;
     public uiManager: UIManager;
+    public questManager: QuestManager;
 
     private currentMapData: IMapDataObject;
     private currentMapName: MapName;
@@ -45,6 +48,11 @@ export default class World extends PIXI.Sprite {
 
     constructor(startingMap: MapName, public screenWidth: number, public screenHeight: number) {
         super();
+        this.questManager = new QuestManager();
+        for (let quest of InitializeQuests(this)) {
+            this.questManager.add(quest);
+        }
+        this.questManager.activate(this.questManager.getQuestByName("The Woodsman's Request")!);
 
         this.worldContainer = new PIXI.Container();
         this.foregroundLayer = new PIXI.Container();

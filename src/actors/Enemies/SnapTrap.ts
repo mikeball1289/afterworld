@@ -9,6 +9,9 @@ import Player from "../Player";
 const MAX_HEALTH = 15;
 
 export default class SnapTrap extends Enemy {
+    public static PRETTY_NAME = "Snap Trap";
+
+    public enemyName = SnapTrap.PRETTY_NAME;
 
     public animator: Animator<{idle: NN, attack: NN, die: NN}>;
     public maxHealth = MAX_HEALTH;

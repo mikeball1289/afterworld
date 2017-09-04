@@ -96,6 +96,7 @@ export default class Skillbar extends PIXI.Container {
         let slotIdx = this.equippedSkills.indexOf(skill);
         if (slotIdx < 0) return; // it wasn't even slotted lol
         this.equippedSkills[slotIdx] = undefined;
+        this.skillCosts[slotIdx].text = "";
         this.skillCooldowns[slotIdx] = 0;
         this.skillIcons[slotIdx].texture = PIXI.Texture.EMPTY; // remove the image from the bar
     }
