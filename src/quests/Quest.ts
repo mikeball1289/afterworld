@@ -9,7 +9,7 @@ export default class Quest {
     }
 
     public get questStep() {
-        return this.steps[Math.max(this.currentStep, this.steps.length - 1)];
+        return this.steps[Math.min(this.currentStep, this.steps.length - 1)];
     }
 
     public get progress() {
