@@ -1,10 +1,14 @@
 import World from "../world/World";
 import JuggledSprite from "./JuggledSprite";
 
+let filter = new PIXI.filters.GlowFilter(0, 0.1, 0.9, 0xFFFF00);
+const FLASH_TIME = 60;
+
 export default class QuestHUD extends JuggledSprite {
 
     private background: PIXI.Graphics;
     private field: PIXI.Text;
+    private flashTimer: number = FLASH_TIME;
 
     constructor(public world: World) {
         super();
@@ -45,5 +49,18 @@ export default class QuestHUD extends JuggledSprite {
             this.field.text = "";
             this.visible = false;
         }
+        if (this.flashTimer < FLASH_TIME) {
+            this.flashTimer ++;
+            let x = this.flashTimer / 30 - 1;
+            filter.distance = (1 - x * x) * 30;
+            if (this.flashTimer >= FLASH_TIME) {
+                this.filters = [];
+            }
+        }
+    }
+
+    public flash() {
+        this.flashTimer = 0;
+        this.filters = [filter];
     }
 }
