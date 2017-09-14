@@ -1,6 +1,6 @@
 // from https://stackoverflow.com/questions/1427608/fast-stable-sorting-algorithm-implementation-in-javascript
 
-export default function mergeSort<T>(arr: T[], compare: (a: T, b: T) => number): T[] {
+export function mergeSort<T>(arr: T[], compare: (a: T, b: T) => number): T[] {
     if (arr.length < 2) {
         return arr;
     }

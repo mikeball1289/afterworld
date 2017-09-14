@@ -1,9 +1,9 @@
-import Ghost from "../actors/enemies/Ghost";
-import PassiveGhost from "../actors/enemies/PassiveGhost";
-import GenericQuestStep from "../quests/GenericQuestStep";
-import KillQuestStep from "../quests/KillQuestStep";
-import Quest from "../quests/Quest";
-import World from "../world/World";
+import {Ghost} from "../actors/enemies/Ghost";
+import {PassiveGhost} from "../actors/enemies/PassiveGhost";
+import {GenericQuestStep} from "../quests/GenericQuestStep";
+import {KillQuestStep} from "../quests/KillQuestStep";
+import {Quest} from "../quests/Quest";
+import {World} from "../world/World";
 
 export function InitializeQuests(world: World) {
     let quests: Quest[] = [];

@@ -1,6 +1,6 @@
-import Enemy from "../actors/Enemy";
-import Player from "../actors/Player";
-import World from "../world/World";
+import {Enemy} from "../actors/Enemy";
+import {Player} from "../actors/Player";
+import {World} from "../world/World";
 
 export interface ISkillFunction {
     (player: Player, world: World): boolean;

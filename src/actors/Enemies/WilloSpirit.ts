@@ -1,10 +1,10 @@
-import Animator from "../../display/Animator";
-import { fromTextureCache } from "../../pixiTools";
-import WilloFlame from "../../projectiles/WilloFlame";
-import Map from "../../world/Map";
-import World from "../../world/World";
-import Enemy from "../Enemy";
-import Player from "../Player";
+import {Animator} from "../../display/Animator";
+import {fromTextureCache} from "../../pixiTools";
+import {WilloFlame} from "../../projectiles/WilloFlame";
+import {Map} from "../../world/Map";
+import {World} from "../../world/World";
+import {Enemy} from "../Enemy";
+import {Player} from "../Player";
 
 export enum MovementStates {
     FLOATING,
@@ -18,7 +18,7 @@ const ATTACK_TIME = 240;
 
 const MAX_HEALTH = 10;
 
-export default class WilloSpirit extends Enemy {
+export class WilloSpirit extends Enemy {
     public static PRETTY_NAME = "Willo Spirit";
 
     public enemyName = WilloSpirit.PRETTY_NAME;
@@ -145,8 +145,8 @@ export default class WilloSpirit extends Enemy {
 
     private attack() {
         this.state = MovementStates.ATTACKING;
-        // this.animator.fps = 1.5;
-        this.animator.fps = 1;
+        this.animator.fps = 1.5;
+        // this.animator.fps = 1;
         this.animator.play("curious", {
             onComplete: () => {
                 this.animator.fps = 4;
@@ -154,13 +154,13 @@ export default class WilloSpirit extends Enemy {
             },
         } );
 
-        for (let i = 0; i < 5; i ++) {
-            let flame = new WilloFlame(480, this.world, 5, 120, new PIXI.Point(this.horizontalCenter, this.verticalCenter - 10), 5, Math.PI * 2 / 5 * i, 30 * i, 150);
-            this.world.particleSystem.add(flame);
-        }
+        // for (let i of range(0, 5)) {
+        //     let flame = new WilloFlame(480, this.world, 5, 120, new PIXI.Point(this.horizontalCenter, this.verticalCenter - 10), 5, Math.PI * 2 / 5 * i, 30 * i, 150);
+        //     this.world.particleSystem.add(flame);
+        // }
 
-        // let flame = new WilloFlame(480, this.world, Math.floor(Math.random() * 4 + 3), 40, new PIXI.Point(this.horizontalCenter, this.verticalCenter - 10), 5);
-        // this.world.particleSystem.add(flame);
+        let flame = new WilloFlame(480, this.world, Math.floor(Math.random() * 4 + 3), 40, new PIXI.Point(this.horizontalCenter, this.verticalCenter - 10), 5);
+        this.world.particleSystem.add(flame);
     }
 
 }

@@ -1,10 +1,10 @@
-import Actor from "../actors/Actor";
-import Enemy from "../actors/Enemy";
-import Player from "../actors/Player";
-import World from "../world/World";
-import Buff, { BuffEvent, IStatBox } from "./Buff";
+import {Actor} from "../actors/Actor";
+import {Enemy} from "../actors/Enemy";
+import {Player} from "../actors/Player";
+import {World} from "../world/World";
+import {Buff, BuffEvent, IStatBox} from "./Buff";
 
-export default class EnemyPoisonedDebuff extends Buff {
+export class EnemyPoisonedDebuff extends Buff {
 
     private timer = 0;
     private actor: Enemy;

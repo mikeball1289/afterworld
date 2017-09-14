@@ -1,11 +1,11 @@
-import Player from "../../actors/Player";
-import InventoryItem from "../../data/items/InventoryItem";
-import { juggler } from "../../root";
-import Map from "../Map";
-import { GRAVITY } from "../physicalConstants";
-import World from "../World";
+import {Player} from "../../actors/Player";
+import {InventoryItem} from "../../data/items/InventoryItem";
+import {juggler} from "../../root";
+import {Map} from "../Map";
+import {GRAVITY} from "../physicalConstants";
+import {World} from "../World";
 
-export default class WorldItem extends PIXI.Container {
+export class WorldItem extends PIXI.Container {
 
     public velocity: PIXI.Point;
     private pickupDuration: number = 0;
@@ -24,7 +24,7 @@ export default class WorldItem extends PIXI.Container {
         if (!world.map) return;
         this.velocity.y += GRAVITY;
         let magnitude = Math.ceil(Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y));
-        for (let i = 0; i < magnitude; i ++) {
+        for (let i of range(0, magnitude)) {
             if (this.velocity.x !== 0) {
                 this.x += this.velocity.x / magnitude;
                 if (Map.isWalled(world.map.getPixelData(this.x, this.y))) {

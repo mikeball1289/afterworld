@@ -1,8 +1,8 @@
-import { GRAVITY } from "../world/physicalConstants";
-import World from "../world/World";
-import Particle from "./Particle";
+import {GRAVITY} from "../world/physicalConstants";
+import {World} from "../world/World";
+import {Particle} from "./Particle";
 
-export default class TextParticle extends Particle {
+export class TextParticle extends Particle {
 
     constructor(value: string, color: number, world: World) {
         super(20, world);

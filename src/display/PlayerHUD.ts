@@ -1,4 +1,4 @@
-export default class PlayerHUD extends PIXI.Container {
+export class PlayerHUD extends PIXI.Container {
     private hpBar: PIXI.Sprite;
     private epBar: PIXI.Sprite;
 

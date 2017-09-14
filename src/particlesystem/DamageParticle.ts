@@ -1,11 +1,11 @@
-import Actor from "../actors/Actor";
-import World from "../world/World";
-import TextParticle from "./TextParticle";
+import {Actor} from "../actors/Actor";
+import {World} from "../world/World";
+import {TextParticle} from "./TextParticle";
 
 type SourceType = "enemyDamage" |
                   "playerDamage";
 
-export default class DamageParticle extends TextParticle {
+export class DamageParticle extends TextParticle {
 
     public static colorOf(sourceType: SourceType) {
         switch (sourceType) {

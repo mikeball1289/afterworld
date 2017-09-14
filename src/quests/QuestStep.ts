@@ -1,6 +1,6 @@
-import World from "../world/World";
+import {World} from "../world/World";
 
-abstract class QuestStep {
+export abstract class QuestStep {
     private completed = false;
     private onComplete?: () => void;
     public abstract get description(): string;
@@ -23,5 +23,3 @@ abstract class QuestStep {
         // pass
     }
 }
-
-export default QuestStep;

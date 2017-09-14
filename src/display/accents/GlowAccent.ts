@@ -1,8 +1,8 @@
-import { fromTextureCache } from "../../pixiTools";
-import World from "../../world/World";
-import JuggledSprite from "../JuggledSprite";
+import {fromTextureCache} from "../../pixiTools";
+import {World} from "../../world/World";
+import {JuggledSprite} from "../JuggledSprite";
 
-export default class GlowAccent extends JuggledSprite {
+export class GlowAccent extends JuggledSprite {
 
     private image: PIXI.Sprite;
 

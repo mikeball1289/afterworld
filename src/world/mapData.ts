@@ -1,11 +1,11 @@
 import * as e from "../actors/enemies/enemies";
-import SnapTrap from "../actors/enemies/SnapTrap";
-import Enemy from "../actors/Enemy";
-import ConversationalNPC from "../data/ConversationalNPC";
+import {SnapTrap} from "../actors/enemies/SnapTrap";
+import {Enemy} from "../actors/Enemy";
+import {ConversationalNPC} from "../data/ConversationalNPC";
 import * as Woodsman from "../data/conversations/WoodsmanConversation";
-import GlowAccent from "../display/accents/GlowAccent";
-import { fromTextureCache } from "../pixiTools";
-import World from "../world/World";
+import {GlowAccent} from "../display/accents/GlowAccent";
+import {fromTextureCache} from "../pixiTools";
+import {World} from "../world/World";
 
 interface IEnemyCtor {
     new(world: World): Enemy;
@@ -60,7 +60,7 @@ export interface IMapDataObject {
 
 type MD = IMapDataObject;
 
-let mapData: { [mapname: string]: IMapDataObject } = {
+export let mapData: { [mapname: string]: IMapDataObject } = {
     map1: <MD> {
         map: "/maps/map.png",
         background: "/maps/map_back.png",
@@ -78,7 +78,7 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         ],
         enemies: (world: World) => {
             let enemies: Enemy[] = [];
-            for (let i = 0; i < 10; i ++) {
+            for (let i of range(0, 10)) {
                 let skelly = new e.Skelly(world);
                 skelly.x = 500 + Math.random() * 400;
                 skelly.y = 1023 - skelly.size.y - 85;
@@ -132,7 +132,7 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         enemies: (world) => [
             new e.PassiveGhost(world).setBottomCenter(2100, 820),
             new e.PassiveGhost(world).setBottomCenter(486, 872),
-            new e.WilloSpirit(world).setBottomCenter(1050, 625),
+            // new e.WilloSpirit(world).setBottomCenter(1050, 625),
         ],
         bgTrack: "/sounds/CarrotWine_How_to_spend_winter.ogg",
         foregroundAccents: (world) => {
@@ -178,6 +178,7 @@ let mapData: { [mapname: string]: IMapDataObject } = {
         entrances: {
             default: p(2665, 735),
             small_clearing: p(25, 870),
+            path_to_heart_of_the_forest: p(2775, 440),
         },
         exits: {
             small_clearing: [p(20, 870), p(50, 870)],
@@ -226,7 +227,7 @@ let mapData: { [mapname: string]: IMapDataObject } = {
             crossroads: p(1650, 2868),
         },
         exits: {
-            crossroads: [p(1650, 2868), p(2868, 1680)],
+            crossroads: [p(1650, 2868), p(1680, 2868)],
         },
         npcs: [],
         enemies: (world) => all([
@@ -252,5 +253,3 @@ let mapData: { [mapname: string]: IMapDataObject } = {
 for (let name of Keys(mapData)) {
     mapData[name].mapName = name;
 }
-
-export default mapData;

@@ -1,15 +1,15 @@
-import { IEquipmentSlots } from "../data/Inventory";
-import Inventory from "../data/Inventory";
-import EquipmentItem from "../data/items/EquipmentItem";
-import GemItem from "../data/items/GemItem";
-import InventoryItem from "../data/items/InventoryItem";
-import { NUM_SKILLS } from "../data/Skillbar";
-import JuggledSprite from "../display/JuggledSprite";
-import { fromTextureCache } from "../pixiTools";
-import { controls, InputType } from "../root";
-import World from "../world/World";
-import WorldItem from "../world/worldobjects/WorldItem";
-import OptionBox from "./widgets/OptionBox";
+import {IEquipmentSlots} from "../data/Inventory";
+import {Inventory} from "../data/Inventory";
+import {EquipmentItem} from "../data/items/EquipmentItem";
+import {GemItem} from "../data/items/GemItem";
+import {InventoryItem} from "../data/items/InventoryItem";
+import {NUM_SKILLS} from "../data/Skillbar";
+import {JuggledSprite} from "../display/JuggledSprite";
+import {fromTextureCache} from "../pixiTools";
+import {controls, InputType} from "../root";
+import {World} from "../world/World";
+import {WorldItem} from "../world/worldobjects/WorldItem";
+import {OptionBox} from "./widgets/OptionBox";
 
 enum MovementDirection {
     UP,
@@ -35,7 +35,7 @@ const SKILLBAR_INDEX_MAPPING = [2, 3, 4, 5, 0, 1];
 type Mode = "normal" | "move" | "socket";
 type SelectionArea = "items" | "equipment" | "skills";
 
-export default class InventoryUI extends JuggledSprite {
+export class InventoryUI extends JuggledSprite {
 
     public static getItemFrameCoords(selection: { area: SelectionArea, index: number }): [number, number] {
         if (selection.area === "items") {
@@ -214,7 +214,7 @@ export default class InventoryUI extends JuggledSprite {
         this.itemTextures.removeChildren();
         let inventory = this.world.actorManager.player.inventory;
         if (!excludeInventory) {
-            for (let i = 0; i < Inventory.INVENTORY_SIZE; i ++) {
+            for (let i of range(0, Inventory.INVENTORY_SIZE)) {
                 let item = inventory.inventoryItems[i];
                 if (!item) continue;
                 let sprite = new PIXI.Sprite(item.graphic);
@@ -234,8 +234,8 @@ export default class InventoryUI extends JuggledSprite {
             }
         }
 
-        for (let i = 0; i < EQUIPMENT_INDEX_TYPES.length; i ++) {
-            let item = inventory.equipment[EQUIPMENT_INDEX_TYPES[i]];
+        for (let [i, equipType] of enumerate(EQUIPMENT_INDEX_TYPES)) {
+            let item = inventory.equipment[equipType];
             if (!item) continue;
             let sprite = new PIXI.Sprite(item.graphic);
             if (item.socket) {
@@ -251,8 +251,8 @@ export default class InventoryUI extends JuggledSprite {
             this.itemTextures.addChild(sprite);
         }
 
-        let skills = this.world.actorManager.player.skillBar.equippedSkills;
-        for (let i = 0; i < NUM_SKILLS; i ++) {
+        let skills = this.world.actorManager.player.skillbar.equippedSkills;
+        for (let i of range(0, NUM_SKILLS)) {
             let skill = skills[SKILLBAR_INDEX_MAPPING[i]];
             if (skill === undefined) continue;
             let sprite = new PIXI.Sprite(skill.icon);
@@ -281,7 +281,7 @@ export default class InventoryUI extends JuggledSprite {
                 this.descriptionText.text = equipment.getDescription(this.world);
             }
         } else if (this.selection.area === "skills") {
-            let skill = player.skillBar.equippedSkills[SKILLBAR_INDEX_MAPPING[this.selection.index]];
+            let skill = player.skillbar.equippedSkills[SKILLBAR_INDEX_MAPPING[this.selection.index]];
             if (skill) {
                 this.titleText.text = skill.getName();
                 this.descriptionText.text = skill.getDescription();
@@ -395,7 +395,7 @@ export default class InventoryUI extends JuggledSprite {
                 inventory.inventoryItems[this.moveIndex] = inventory.inventoryItems[this.selection.index];
                 inventory.inventoryItems[this.selection.index] = item;
             } else if (this.selection.area === "skills") {
-                let skillbar = this.world.actorManager.player.skillBar;
+                let skillbar = this.world.actorManager.player.skillbar;
                 skillbar.swapSkills(SKILLBAR_INDEX_MAPPING[this.moveIndex], SKILLBAR_INDEX_MAPPING[this.selection.index]);
             }
             this.refreshInventoryIcons();
@@ -408,7 +408,7 @@ export default class InventoryUI extends JuggledSprite {
                         item.addGem(this.selectedGem);
                         if (this.selection.area === "equipment") {
                             if (this.selectedGem.skill) {
-                                this.world.actorManager.player.skillBar.addSkill(this.selectedGem.skill);
+                                this.world.actorManager.player.skillbar.addSkill(this.selectedGem.skill);
                             }
                         }
                     }
@@ -478,7 +478,7 @@ export default class InventoryUI extends JuggledSprite {
                 } );
             }
         } else if (this.selection.area === "skills") {
-            let skill = this.world.actorManager.player.skillBar.equippedSkills[SKILLBAR_INDEX_MAPPING[this.selection.index]];
+            let skill = this.world.actorManager.player.skillbar.equippedSkills[SKILLBAR_INDEX_MAPPING[this.selection.index]];
             if (!skill) return;
             this.optionBox.open(["Move", "Cancel"], (option) => {
                 if (!skill) return;

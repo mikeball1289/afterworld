@@ -1,8 +1,8 @@
-import Player from "../../actors/Player";
+import {Player} from "../../actors/Player";
 
 export type CostType = "health" | "energy";
 
-export default class Cost {
+export class Cost {
 
     constructor(public costType: CostType, public costAmount: number) { }
 

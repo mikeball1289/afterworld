@@ -1,13 +1,13 @@
-import Player from "../actors/Player";
-import ClockSpindown from "../display/widgets/ClockSpindown";
-import World from "../world/World";
-import Skill from "./Skill";
-import { basicAttack } from "./skillData";
+import {Player} from "../actors/Player";
+import {ClockSpindown} from "../display/widgets/ClockSpindown";
+import {World} from "../world/World";
+import {Skill} from "./Skill";
+import {basicAttack} from "./skillData";
 
 export const NUM_SKILLS = 6;
 const iconPositions: [number, number][] = [[613, 539], [665, 539], [375, 539], [427, 539], [479, 539], [531, 539]];
 
-export default class Skillbar extends PIXI.Container {
+export class Skillbar extends PIXI.Container {
     public equippedSkills: (Skill | undefined)[] = [];
     private skills: Skill[] = [];
     private skillIcons: (PIXI.Sprite)[] = [];
@@ -16,7 +16,7 @@ export default class Skillbar extends PIXI.Container {
     private cooldownNumbers: PIXI.Text[] = [];
     private skillLayer: PIXI.Container;
     private spindownLayer: PIXI.Container;
-    private skillCooldowns: number[] = new Array(NUM_SKILLS).fill(0);
+    // private skillCooldowns: number[] = new Array(NUM_SKILLS).fill(0);
     private globalCooldown: number = 0;
 
     constructor(private player: Player, private world: World) {
@@ -77,12 +77,13 @@ export default class Skillbar extends PIXI.Container {
         let alreadyHadSkill = this.skills.indexOf(skill) >= 0;
         this.skills.push(skill);
         if (alreadyHadSkill) return; // if we already had a copy of the skill, don't add it to the bar
-        for (let i = 0; i < NUM_SKILLS; i ++) {
+        for (let i of range(0, NUM_SKILLS)) {
             if (this.equippedSkills[i] === undefined) {
                 this.equippedSkills[i] = skill;
                 this.skillIcons[i].texture = skill.icon;
                 this.skillCosts[i].text = (skill.costs[0] || { costAmount: "" }).costAmount.toString();
-                this.skillCooldowns[i] = skill.cooldown;
+                // this.skillCooldowns[i] = skill.cooldown;
+                skill.putOnCooldown(this.player.stats.cooldownReduction);
                 return;
             }
         }
@@ -97,17 +98,17 @@ export default class Skillbar extends PIXI.Container {
         if (slotIdx < 0) return; // it wasn't even slotted lol
         this.equippedSkills[slotIdx] = undefined;
         this.skillCosts[slotIdx].text = "";
-        this.skillCooldowns[slotIdx] = 0;
+        // this.skillCooldowns[slotIdx] = 0;
         this.skillIcons[slotIdx].texture = PIXI.Texture.EMPTY; // remove the image from the bar
     }
 
     public swapSkills(idx1: number, idx2: number) {
         let skill = this.equippedSkills[idx1];
-        let cooldown = this.skillCooldowns[idx1];
+        // let cooldown = this.skillCooldowns[idx1];
         this.equippedSkills[idx1] = this.equippedSkills[idx2];
-        this.skillCooldowns[idx1] = this.skillCooldowns[idx2];
+        // this.skillCooldowns[idx1] = this.skillCooldowns[idx2];
         this.equippedSkills[idx2] = skill;
-        this.skillCooldowns[idx2] = cooldown;
+        // this.skillCooldowns[idx2] = cooldown;
         let skill1 = this.equippedSkills[idx1];
         if (skill1 === undefined) {
             this.skillIcons[idx1].texture = PIXI.Texture.EMPTY;
@@ -129,11 +130,10 @@ export default class Skillbar extends PIXI.Container {
     public useSkill(index: number) {
         let skill = this.equippedSkills[index];
         if (!skill) return false;
-        if (this.skillCooldowns[index] > 0) return false;
+        if (skill.cooldownTimer > 0) return false;
         if (skill.gcd && this.globalCooldown > 0) return false;
         if (!skill.playerCanCast(this.player, this.world)) return false;
         if (skill.cast(this.player, this.world)) {
-            this.skillCooldowns[index] = skill.cooldown;
             if (skill.gcd) this.globalCooldown = this.player.stats.globalCooldown;
             return true;
         } else {
@@ -143,7 +143,7 @@ export default class Skillbar extends PIXI.Container {
 
     public update() {
         this.globalCooldown --;
-        for (let i = 0; i < NUM_SKILLS; i ++) {
+        for (let i of range(0, NUM_SKILLS)) {
             let skill = this.equippedSkills[i];
             if (!skill) {
                 this.cooldownSpinners[i].visible = false;
@@ -157,18 +157,19 @@ export default class Skillbar extends PIXI.Container {
                 this.skillIcons[i].tint = 0x888888;
             }
 
-            if (this.skillCooldowns[i] > 0) {
-                this.skillCooldowns[i] --;
-            }
-            if (skill.gcd && this.globalCooldown > 0 && this.globalCooldown > this.skillCooldowns[i]) {
+            // if (this.skillCooldowns[i] > 0) {
+                // this.skillCooldowns[i] --;
+            // }
+            skill.tickCooldown();
+            if (skill.gcd && this.globalCooldown > 0 && this.globalCooldown > skill.cooldownTimer) {
                 this.cooldownSpinners[i].visible = true;
                 this.cooldownSpinners[i].setProgress(this.globalCooldown / this.player.stats.globalCooldown);
                 this.cooldownNumbers[i].visible = false;
-            } else if (this.skillCooldowns[i] > 0) {
+            } else if (skill.cooldownTimer > 0) {
                 this.cooldownSpinners[i].visible = true;
-                this.cooldownSpinners[i].setProgress(this.skillCooldowns[i] / skill.cooldown);
+                this.cooldownSpinners[i].setProgress(skill.cooldownTimer / skill.cooldown);
                 this.cooldownNumbers[i].visible = true;
-                let cdSeconds = Math.round(this.skillCooldowns[i] / 6) / 10;
+                let cdSeconds = Math.round(skill.cooldownTimer / 6) / 10;
                 this.cooldownNumbers[i].text = cdSeconds >= 10 ? cdSeconds.toFixed(0) : cdSeconds.toFixed(1);
             } else {
                 this.cooldownSpinners[i].visible = false;

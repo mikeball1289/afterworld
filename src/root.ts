@@ -38,8 +38,8 @@ class Juggler {
     }
 
     public has(fn: () => void, context?: any) {
-        for (let i = 0; i < this.enterFrameFunctions.length; i ++) {
-            if (this.enterFrameFunctions[i][0] === fn && this.enterFrameFunctions[i][1] === context) return i;
+        for (let [i, oef] of enumerate(this.enterFrameFunctions)) {
+            if (oef[0] === fn && oef[1] === context) return i;
         }
         return -1;
     }
@@ -182,7 +182,7 @@ class Controls {
         juggler.add( () => {
             this.previousControls = this.controls;
             this.controls = [];
-            for (let i = 0; i < InputType.TOTAL; i ++) {
+            for (let i of range(0, InputType.TOTAL)) {
                 this.controls[i] = this.updateInput(i);
             }
         } );

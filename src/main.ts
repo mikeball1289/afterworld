@@ -1,11 +1,9 @@
 import * as fs from "fs";
-import Animator from "./display/Animator";
+import {Animator} from "./display/Animator";
 import * as Key from "./Key";
-import { fromTextureCache } from "./pixiTools";
+import {fromTextureCache} from "./pixiTools";
 import * as root from "./root";
-import World from "./world/World";
-
-import StaticBolt from "./projectiles/StaticBolt";
+import {World} from "./world/World";
 
 export function preload(images: string[]): void;
 export function preload(all: boolean): void;

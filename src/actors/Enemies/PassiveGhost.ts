@@ -1,10 +1,10 @@
-import Animator from "../../display/Animator";
-import { fromTextureCache } from "../../pixiTools";
-import Map from "../../world/Map";
-import { EPSILON, GRAVITY } from "../../world/physicalConstants";
-import World from "../../world/World";
-import Enemy from "../Enemy";
-import Player from "../Player";
+import {Animator} from "../../display/Animator";
+import {fromTextureCache} from "../../pixiTools";
+import {Map} from "../../world/Map";
+import {EPSILON, GRAVITY} from "../../world/physicalConstants";
+import {World} from "../../world/World";
+import {Enemy} from "../Enemy";
+import {Player} from "../Player";
 
 export enum MovementStates {
     IDLE,
@@ -19,7 +19,7 @@ const FULL_HORIZONTAL_DECAY = 0.88;
 
 const MAX_HEALTH = 10;
 
-export default class PassiveGhost extends Enemy {
+export class PassiveGhost extends Enemy {
     public static PRETTY_NAME = "Forest Spirit";
 
     public enemyName = PassiveGhost.PRETTY_NAME;

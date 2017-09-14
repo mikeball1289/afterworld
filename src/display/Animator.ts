@@ -1,5 +1,5 @@
-import TintBatch from "../display/TintBatch";
-import { juggler } from "../root";
+import {TintBatch} from "../display/TintBatch";
+import {juggler} from "../root";
 
 // ActionMap is a map of animation names -> [animation index, animation length]
 // animation index is the number of rows down the animation starts, animation length
@@ -17,9 +17,10 @@ export interface IAnimatorOptions {
     override?: boolean;
 }
 
-export default class Animator<T extends IActionMap> extends PIXI.Sprite {
+export class Animator<T extends IActionMap> extends PIXI.Sprite {
 
     public tints: TintBatch;
+    private paused = false;
 
     private currentFrame = 0;
     private currentAnimation: keyof T;
@@ -47,7 +48,7 @@ export default class Animator<T extends IActionMap> extends PIXI.Sprite {
             if (!animations.hasOwnProperty(ani)) continue;
             let frames = [];
             let row = animations[ani][0];
-            for (let i = 0; i < animations[ani][1]; i ++) {
+            for (let i of range(0, animations[ani][1])) {
                 if (frameSize instanceof PIXI.Point) {
                     frames.push(new PIXI.Texture(spriteSheet.baseTexture, new PIXI.Rectangle(i * frameSize.x, row * frameSize.y, frameSize.x, frameSize.y)));
                 } else {
@@ -92,7 +93,7 @@ export default class Animator<T extends IActionMap> extends PIXI.Sprite {
                 if (!this.animations.hasOwnProperty(ani)) continue;
                 let frames = [];
                 let row = this.animations[ani][0];
-                for (let i = 0; i < this.animations[ani][1]; i ++) {
+                for (let i of range(0, this.animations[ani][1])) {
                     let frameDataObject = frameData.frames[row + "-" + i];
                     frames.push(new PIXI.Texture(sheet.baseTexture, new PIXI.Rectangle(frameDataObject.frame.x, frameDataObject.frame.y, frameDataObject.frame.w, frameDataObject.frame.h),
                                                                     new PIXI.Rectangle(0, 0, frameDataObject.sourceSize.w, frameDataObject.sourceSize.h),
@@ -112,7 +113,21 @@ export default class Animator<T extends IActionMap> extends PIXI.Sprite {
         } );
     }
 
-    public play(animation: keyof T, options: IAnimatorOptions = {}) {
+    public pause() {
+        this.paused = true;
+    }
+
+    public goto(frame: number) {
+        this.currentFrame = frame;
+    }
+
+    public play(): void;
+    public play(animation: keyof T, options?: IAnimatorOptions): void;
+    public play(animation?: keyof T, options: IAnimatorOptions = {}) {
+        this.paused = false;
+        if (!animation) {
+            return;
+        }
         let override = options.override || false;
         let loop = options.loop || false;
         if (this.currentAnimation === animation && !override) return;
@@ -123,6 +138,7 @@ export default class Animator<T extends IActionMap> extends PIXI.Sprite {
         this.onCompleteContext = options.onCompleteContext;
         this.onProgress = options.onProgress;
         this.onProgressContext = options.onProgressContext;
+        this.update(0);
     }
 
     public set progress(amount: number) {
@@ -131,6 +147,10 @@ export default class Animator<T extends IActionMap> extends PIXI.Sprite {
 
     public get progress() {
         return this.currentFrame / this.animations[this.currentAnimation][1];
+    }
+
+    public get frameProgress() {
+        return this.currentFrame;
     }
 
     public destroy(options?: boolean | PIXI.IDestroyOptions, source = false) {
@@ -152,6 +172,7 @@ export default class Animator<T extends IActionMap> extends PIXI.Sprite {
 
     private update(dt: number = 1) {
         this.tint = this.tints.getTint();
+        if (this.paused) return;
         let previousFrame = this.currentFrame;
         this.currentFrame += dt;
         if (Math.floor(this.currentFrame) >= this.animations[this.currentAnimation][1]) {

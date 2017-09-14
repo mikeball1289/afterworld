@@ -9,7 +9,7 @@ function RGB(val: number): RGBO {
     return [R, G, B, val];
 }
 
-export default class TintBatch {
+export class TintBatch {
     private tints: RGBO[] = [];
     private tintCache = 0xFFFFFF;
 
@@ -20,8 +20,8 @@ export default class TintBatch {
     }
 
     public removeTint(tint: number) {
-        for (let i = 0; i < this.tints.length; i ++) {
-            if (this.tints[i][3] === tint) {
+        for (let [i, t] of enumerate(this.tints)) {
+            if (t[3] === tint) {
                 this.tints.splice(i, 1);
                 this.invalidate();
                 return true;

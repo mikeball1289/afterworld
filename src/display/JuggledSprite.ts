@@ -1,6 +1,6 @@
-import { juggler } from "../root";
+import {juggler} from "../root";
 
-export default class JuggledSprite extends PIXI.Sprite {
+export class JuggledSprite extends PIXI.Sprite {
 
     private _oef: () => void;
 

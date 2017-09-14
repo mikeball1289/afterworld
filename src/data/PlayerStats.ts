@@ -1,12 +1,12 @@
-import Player from "../actors/Player";
-import { BuffStat } from "../buffs/Buff";
-import SoftTextParticle from "../particlesystem/SoftTextParticle";
-import { juggler } from "../root";
+import {Player} from "../actors/Player";
+import {BuffStat} from "../buffs/Buff";
+import {SoftTextParticle} from "../particlesystem/SoftTextParticle";
+import {juggler} from "../root";
 import * as pc from "../world/physicalConstants";
-import World from "../world/World";
-import EquipmentItem, { IEquipmentStats } from "./items/EquipmentItem";
+import {World} from "../world/World";
+import {EquipmentItem, IEquipmentStats} from "./items/EquipmentItem";
 
-export default class PlayerStats {
+export class PlayerStats {
 
     private healthTickTimer = 0;
 
@@ -64,7 +64,7 @@ export default class PlayerStats {
             this.health += healing;
             this.healthAcc -= healing;
             if (this.health - prevHealth > 0) {
-                let particle = new SoftTextParticle((this.health - prevHealth).toFixed(0), 0x08CC08, this.world);
+                let particle = new SoftTextParticle("+" + (this.health - prevHealth).toFixed(0), 0x08CC08, this.world);
                 particle.velocity.y = -0.75;
                 particle.x = this.player.horizontalCenter;
                 particle.y = this.player.top;
@@ -155,6 +155,14 @@ export default class PlayerStats {
         return this.hitCache(this.calcILVL, "ilvl");
     }
 
+    public get attackSpeed() {
+        return this.hitCache(this.calcAttackSpeed, "attackSpeed");
+    }
+
+    private calcAttackSpeed() {
+        return this.processBuffs("attackSpeed", this.getEquipmentStats("attackSpeed"));
+    }
+
     private calcMaxHealth() {
         let max = this.processBuffs("health", 50 + this.getEquipmentStats("health"));
         if (this._health > max) {
@@ -177,11 +185,11 @@ export default class PlayerStats {
 
     private calcGlobalCooldown() {
         let miniHaste = this.haste / 100;
-        return 60 - 30 * (miniHaste / (miniHaste + 1));
+        return 60 - 50 * (miniHaste / (miniHaste + 1));
     }
 
     private calcWalkSpeed() {
-        let speed = pc.WALK_IMPULSE + this.getEquipmentStats("walkSpeed") / 40 + this.haste / 400;
+        let speed = pc.WALK_IMPULSE + this.getEquipmentStats("walkSpeed") / 40 + this.haste / 1000;
         speed = this.processBuffs("walkSpeed", speed);
         return speed;
     }
@@ -208,7 +216,13 @@ export default class PlayerStats {
     }
 
     private calcCooldownReduction() {
-        return 0;
+        let equips = this.player.inventory.equipment;
+        let statVal = 0;
+        for (let key of Keys(equips)) {
+            let equip = equips[key];
+            if (equip && equip.stats.cooldownReduction) statVal = 1 - (1 - statVal) * (1 - equip.stats.cooldownReduction);
+        }
+        return this.processBuffs("cooldownReduction", statVal);
     }
 
     // base 1/1000 + equipment stats

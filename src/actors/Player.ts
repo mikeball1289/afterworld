@@ -1,19 +1,19 @@
-import ColorTweener from "../ColorTweener";
-import Inventory, { IEquipmentSlots } from "../data/Inventory";
-import PlayerStats from "../data/PlayerStats";
-import SkillBar from "../data/Skillbar";
+import {ColorTweener} from "../ColorTweener";
+import {IEquipmentSlots, Inventory} from "../data/Inventory";
+import {PlayerStats} from "../data/PlayerStats";
+import {Skillbar} from "../data/Skillbar";
 import * as skillData from "../data/skillData";
 import * as skillFunctions from "../data/skillFunctions";
-import Animator, { IAnimatorOptions } from "../display/Animator";
-import HealthBar from "../display/HealthBar";
-import DamageParticle from "../particlesystem/DamageParticle";
-import FireParticle from "../particlesystem/FireParticle";
+import {Animator, IAnimatorOptions} from "../display/Animator";
+import {HealthBar} from "../display/HealthBar";
+import {DamageParticle} from "../particlesystem/DamageParticle";
+import {FireParticle} from "../particlesystem/FireParticle";
 import { controls, InputType, juggler, soundManager } from "../root";
-import Map from "../world/Map";
+import {Map} from "../world/Map";
 import * as PC from "../world/physicalConstants";
-import World from "../world/World";
-import Actor from "./Actor";
-import Enemy from "./Enemy";
+import {World} from "../world/World";
+import {Actor} from "./Actor";
+import {Enemy} from "./Enemy";
 
 const OUT_OF_COMBAT_DELAY = 600;
 
@@ -52,19 +52,28 @@ controlLockInputs[ControlLocks.SECONDARY_ATTACK] = InputType.SECONDARY_ATTACK;
 
 const BODY_ANIMATION_KEYS: (keyof IBodyAnimations)[] = ["offhand_back", "back_hand", "offhand_front", "feet", "legs", "body", "head", "weapon", "front_hand", "front_arm"];
 
-export default class Player extends Actor {
+export class Player extends Actor {
     public static isPlayer(obj: any): obj is Player {
         return obj && obj.isPlayer;
     }
 
     public healthBar: HealthBar;
-    public attacking: boolean = false;
     public inventory: Inventory;
     public body: IBodyAnimations;
 
     public stats: PlayerStats;
-    public skillBar: SkillBar;
+    public skillbar: Skillbar;
     public spawnMap?: string = "";
+    private _attacking: boolean = false;
+    public get attacking() {
+        return this._attacking;
+    }
+    public set attacking(val) {
+        this._attacking = val;
+        if (!val) {
+            this.resetFPS();
+        }
+    }
 
     private combatTimer = 0;
     private jumpBuffer: boolean = true;
@@ -95,7 +104,7 @@ export default class Player extends Actor {
         super(world);
         this.inventory = new Inventory(world);
         this.stats = new PlayerStats(this, world);
-        this.skillBar = new SkillBar(this, world);
+        this.skillbar = new Skillbar(this, world);
         this.sprite = new PIXI.Sprite();
         this.addChild(this.sprite);
         let frameData: PlayerAnimations = {
@@ -149,6 +158,10 @@ export default class Player extends Actor {
         }
     }
 
+    public resetFPS() {
+        this.fps = 6;
+    }
+
     public unsetEquipmentGraphic(slot: keyof IEquipmentSlots) {
         switch (slot) {
             case "head": {
@@ -185,18 +198,36 @@ export default class Player extends Actor {
         }
     }
 
-    public play(animation: keyof PlayerAnimations, options?: IAnimatorOptions) {
-        if (this.attacking) return;
-        let partialOptions = {
-            loop: options && options.loop,
-            override: options && options.override,
-        };
+    public play(): void;
+    public play(animation: keyof PlayerAnimations, options?: IAnimatorOptions, forcePlay?: boolean): void;
+    public play(animation?: keyof PlayerAnimations, options?: IAnimatorOptions, forcePlay = false): void {
+        if (this.attacking && !forcePlay) return;
         for (let key of BODY_ANIMATION_KEYS) {
-            if (key === "head") {
-                this.body[key].play(animation, options);
+            if (!animation) {
+                this.body[key].play();
             } else {
-                this.body[key].play(animation, partialOptions);
+                let partialOptions = {
+                    loop: options && options.loop,
+                    override: options && options.override,
+                };
+                if (key === "head") {
+                    this.body[key].play(animation, options);
+                } else {
+                    this.body[key].play(animation, partialOptions);
+                }
             }
+        }
+    }
+
+    public goto(frame: number) {
+        for (let key of BODY_ANIMATION_KEYS) {
+            this.body[key].goto(frame);
+        }
+    }
+
+    public pause() {
+        for (let key of BODY_ANIMATION_KEYS) {
+            this.body[key].pause();
         }
     }
 
@@ -225,8 +256,8 @@ export default class Player extends Actor {
         if (this.isDead()) return;
 
         if (getControls) {
-            for (let i = 0; i < controlLockInputs.length; i ++) {
-                if (!controls.hasInput(controlLockInputs[i])) {
+            for (let [i, control] of enumerate(controlLockInputs)) {
+                if (!controls.hasInput(control)) {
                     this.controlLocks[i] = true;
                 }
             }
@@ -235,12 +266,12 @@ export default class Player extends Actor {
         let grounded = map.isGrounded(this);
         getControls = getControls && !this.attacking;
 
-        if (this.hasUseableInput(InputType.PRIMARY_ATTACK, getControls)) this.skillBar.useSkill(0);
-        if (this.hasUseableInput(InputType.SECONDARY_ATTACK, getControls)) this.skillBar.useSkill(1);
-        if (this.hasUseableInput(InputType.ABILITY_1, getControls)) this.skillBar.useSkill(2);
-        if (this.hasUseableInput(InputType.ABILITY_2, getControls)) this.skillBar.useSkill(3);
-        if (this.hasUseableInput(InputType.ABILITY_3, getControls)) this.skillBar.useSkill(4);
-        if (this.hasUseableInput(InputType.ABILITY_4, getControls)) this.skillBar.useSkill(5);
+        if (this.hasUseableInput(InputType.PRIMARY_ATTACK, getControls)) this.skillbar.useSkill(0);
+        if (this.hasUseableInput(InputType.SECONDARY_ATTACK, getControls)) this.skillbar.useSkill(1);
+        if (this.hasUseableInput(InputType.ABILITY_1, getControls)) this.skillbar.useSkill(2);
+        if (this.hasUseableInput(InputType.ABILITY_2, getControls)) this.skillbar.useSkill(3);
+        if (this.hasUseableInput(InputType.ABILITY_3, getControls)) this.skillbar.useSkill(4);
+        if (this.hasUseableInput(InputType.ABILITY_4, getControls)) this.skillbar.useSkill(5);
         getControls = getControls && !this.attacking;
 
         if (grounded) {
@@ -372,7 +403,7 @@ export default class Player extends Actor {
     public frameUpdate() {
         super.frameUpdate();
         this.combatTimer ++;
-        this.skillBar.update();
+        this.skillbar.update();
         this.stats.update();
 
         if (this.fallthrough && Math.abs(this.y - this.fallthrough) >= 5) {

@@ -1,6 +1,6 @@
 const RT2 = Math.sqrt(2);
 
-export default class ClockSpindown extends PIXI.Container {
+export class ClockSpindown extends PIXI.Container {
 
     private graphic: PIXI.Graphics;
     private largeRadius: number;

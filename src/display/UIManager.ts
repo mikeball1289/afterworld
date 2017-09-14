@@ -1,12 +1,12 @@
-import NPCText, { INPCLike } from "../display/NPCText";
-import QuestHUD from "../display/QuestHUD";
-import { controls, InputType, juggler, root } from "../root";
-import World from "../world/World";
-import InventoryUI from "./InventoryUI";
-import PlayerHUD from "./PlayerHUD";
-import StatUI from "./StatUI";
+import {INPCLike, NPCText} from "../display/NPCText";
+import {QuestHUD} from "../display/QuestHUD";
+import {controls, InputType, juggler, root} from "../root";
+import {World} from "../world/World";
+import {InventoryUI} from "./InventoryUI";
+import {PlayerHUD} from "./PlayerHUD";
+import {StatUI} from "./StatUI";
 
-export default class UIManager {
+export class UIManager {
 
     public static NUM_WORLD_LAYERS = 2;
 
@@ -28,7 +28,7 @@ export default class UIManager {
         this.worldLayer = new PIXI.Container();
         this.overlayLayer = new PIXI.Container();
 
-        for (let i = 0; i < UIManager.NUM_WORLD_LAYERS; i ++) {
+        for (let i of range(0, UIManager.NUM_WORLD_LAYERS)) {
             this.worldLayers[i] = new PIXI.Container();
             this.worldLayer.addChild(this.worldLayers[i]);
         }

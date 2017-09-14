@@ -1,10 +1,10 @@
-import Actor from "../actors/Actor";
-import ColorTweener from "../ColorTweener";
-import { fromTextureCache } from "../pixiTools";
-import World from "../world/World";
-import Particle from "./Particle";
+import {Actor} from "../actors/Actor";
+import {ColorTweener} from "../ColorTweener";
+import {fromTextureCache} from "../pixiTools";
+import {World} from "../world/World";
+import {Particle} from "./Particle";
 
-export default class VacuumParticle extends Particle {
+export class VacuumParticle extends Particle {
 
     private sprite: PIXI.Sprite;
 

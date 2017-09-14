@@ -1,7 +1,7 @@
-import World from "../world/World";
-import QuestStep from "./QuestStep";
+import {World} from "../world/World";
+import {QuestStep} from "./QuestStep";
 
-export default class GenericQuestStep extends QuestStep {
+export class GenericQuestStep extends QuestStep {
 
     public static GetStep(tag: string): GenericQuestStep | undefined {
         return GenericQuestStep.STEPS[tag];

@@ -1,10 +1,10 @@
-import { fromTextureCache } from "../../pixiTools";
-import Skill from "../Skill";
-import InventoryItem from "./InventoryItem";
+import {fromTextureCache} from "../../pixiTools";
+import {Skill} from "../Skill";
+import {InventoryItem} from "./InventoryItem";
 
 export type GemColor = "red" | "blue" | "black";
 
-export default class GemItem extends InventoryItem {
+export class GemItem extends InventoryItem {
 
     public static isGemItem(obj: any): obj is GemItem {
         return obj && obj.itemType === "gem_item";

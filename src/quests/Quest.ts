@@ -1,6 +1,6 @@
-import QuestStep from "./QuestStep";
+import {QuestStep} from "./QuestStep";
 
-export default class Quest {
+export class Quest {
 
     private currentStep = 0;
 

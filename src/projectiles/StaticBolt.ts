@@ -1,8 +1,8 @@
-import { fromTextureCache } from "../pixiTools";
-import World from "../world/World";
-import Projectile from "./Projectile";
+import {fromTextureCache} from "../pixiTools";
+import {World} from "../world/World";
+import {Projectile} from "./Projectile";
 
-export default class StaticBolt extends Projectile {
+export class StaticBolt extends Projectile {
 
     public damage: IDamageBundle;
     private staticTimer = 0;

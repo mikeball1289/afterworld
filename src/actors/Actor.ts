@@ -1,8 +1,8 @@
 import * as EventEmitter from "events";
-import BuffSet from "../buffs/BuffSet";
-import Map from "../world/Map";
-import { repulsionForce } from "../world/physicalConstants";
-import World from "../world/World";
+import {BuffSet} from "../buffs/BuffSet";
+import {Map} from "../world/Map";
+import {repulsionForce} from "../world/physicalConstants";
+import {World} from "../world/World";
 
 export interface IBoxLike {
     top: number;
@@ -11,7 +11,7 @@ export interface IBoxLike {
     right: number;
 }
 
-abstract class Actor extends PIXI.Sprite {
+export abstract class Actor extends PIXI.Sprite {
     private static ID_IDX = 1;
 
     public size: PIXI.Point = new PIXI.Point();
@@ -117,5 +117,3 @@ abstract class Actor extends PIXI.Sprite {
         return Math.sqrt(dx * dx + dy * dy);
     }
 }
-
-export default Actor;

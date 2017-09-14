@@ -1,9 +1,9 @@
-import Actor from "../actors/Actor";
-import Player from "../actors/Player";
-import World from "../world/World";
-import Buff, { BuffEvent, ConditionType, IStatBox } from "./Buff";
+import {Actor} from "../actors/Actor";
+import {Player} from "../actors/Player";
+import {World} from "../world/World";
+import {Buff, BuffEvent, ConditionType, IStatBox} from "./Buff";
 
-export default class BuffSet {
+export class BuffSet {
 
     private buffs: Buff[] = [];
 

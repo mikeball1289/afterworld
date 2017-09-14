@@ -1,10 +1,10 @@
-import { fromTextureCache } from "../pixiTools";
-import { controls, InputType } from "../root";
-import World from "../world/World";
-import InventoryUI from "./InventoryUI";
-import JuggledSprite from "./JuggledSprite";
+import {fromTextureCache} from "../pixiTools";
+import {controls, InputType} from "../root";
+import {World} from "../world/World";
+import {InventoryUI} from "./InventoryUI";
+import {JuggledSprite} from "./JuggledSprite";
 
-export default class StatUI extends JuggledSprite {
+export class StatUI extends JuggledSprite {
 
     private itemTextures: PIXI.Container;
     private statHeaders1: PIXI.Text;

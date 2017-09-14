@@ -1,4 +1,4 @@
-import { INPCData } from "../world/mapData";
+import {INPCData} from "../world/mapData";
 
 let textStep = 0;
 
@@ -24,7 +24,7 @@ let defaultTexts = [
 let texts = defaultTexts;
 
 // tslint:disable-next-line:variable-name
-let ArchangelNPCData = {
+export let ArchangelNPCData = {
     get texture() {
         return PIXI.loader.resources["/images/angel.png"].texture;
     },
@@ -51,5 +51,3 @@ let ArchangelNPCData = {
         },
     },
 };
-
-export default ArchangelNPCData;

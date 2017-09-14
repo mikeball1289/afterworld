@@ -1,15 +1,15 @@
-import ColorTweener from "../ColorTweener";
-import FlameParticle from "../particlesystem/FlameParticle";
-import { fromTextureCache } from "../pixiTools";
-import { soundManager } from "../root";
-import World from "../world/World";
-import Projectile from "./Projectile";
+import {ColorTweener} from "../ColorTweener";
+import {FlameParticle} from "../particlesystem/FlameParticle";
+import {fromTextureCache} from "../pixiTools";
+import {soundManager} from "../root";
+import {World} from "../world/World";
+import {Projectile} from "./Projectile";
 
 const tinter = new ColorTweener(0xBAFFF8, 0x0000FF);
 const PHASE_1_TIME = 90;
 const PHASE_2_TIME = 30;
 
-export default class WilloFlame extends Projectile {
+export class WilloFlame extends Projectile {
 
     public damage: IDamageBundle;
     private image: PIXI.Sprite;

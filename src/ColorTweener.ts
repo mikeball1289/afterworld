@@ -1,5 +1,5 @@
 // tslint:disable no-bitwise
-export default class ColorTweener {
+export class ColorTweener {
 
     private startRGB: [number, number, number];
     private endRGB: [number, number, number];

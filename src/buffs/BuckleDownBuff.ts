@@ -1,10 +1,10 @@
-import Actor from "../actors/Actor";
-import Enemy from "../actors/Enemy";
-import Player from "../actors/Player";
-import World from "../world/World";
-import Buff, { BuffEvent } from "./Buff";
+import {Actor} from "../actors/Actor";
+import {Enemy} from "../actors/Enemy";
+import {Player} from "../actors/Player";
+import {World} from "../world/World";
+import {Buff, BuffEvent} from "./Buff";
 
-export default class BuckleDownBuff extends Buff {
+export class BuckleDownBuff extends Buff {
 
     constructor(duration: number, source = "World") {
         super(4, "Hardened", source, duration);

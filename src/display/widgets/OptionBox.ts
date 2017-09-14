@@ -1,7 +1,7 @@
-import { fromTextureCache } from "../../pixiTools";
-import { controls, InputType, juggler } from "../../root";
+import {fromTextureCache} from "../../pixiTools";
+import {controls, InputType, juggler} from "../../root";
 
-export default class OptionBox extends PIXI.Container {
+export class OptionBox extends PIXI.Container {
     private background: PIXI.Graphics;
     private selectedOption: number;
     private selectArrow: PIXI.Sprite;
@@ -26,7 +26,7 @@ export default class OptionBox extends PIXI.Container {
         this.selectedOption = 0;
 
         let maxOptionLength = 1;
-        for (let i = 0; i < options.length; i ++) {
+        for (let [i, option] of enumerate(options)) {
             let option = options[i];
             let text = new PIXI.Text(option, {
                 fontFamily: DEFAULT_FONT,

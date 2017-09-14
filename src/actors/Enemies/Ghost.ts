@@ -1,7 +1,7 @@
-import Map from "../../world/Map";
-import World from "../../world/World";
-import Player from "../Player";
-import PassiveGhost, { MovementStates } from "./PassiveGhost";
+import {Map} from "../../world/Map";
+import {World} from "../../world/World";
+import {Player} from "../Player";
+import {MovementStates, PassiveGhost} from "./PassiveGhost";
 
 const VIEW_RANGE_X = 150;
 const VIEW_RANGE_Y = 50;
@@ -9,7 +9,7 @@ const ATTACK_DASH_SPEED = 3;
 const ATTACK_TOTAL_TIME = 45;
 const ATTACK_COOLDOWN_TIME = 75;
 
-export default class Ghost extends PassiveGhost {
+export class Ghost extends PassiveGhost {
 
     public static PRETTY_NAME = "Vengeful Spirit";
 

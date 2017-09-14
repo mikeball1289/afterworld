@@ -1,5 +1,5 @@
-export { default as Ghost } from "./Ghost";
-export { default as PassiveGhost } from "./PassiveGhost";
-export { default as Skelly } from "./Skelly";
-export { default as SnapTrap } from "./SnapTrap";
-export { default as WilloSpirit } from "./WilloSpirit";
+export {Ghost} from "./Ghost";
+export {PassiveGhost} from "./PassiveGhost";
+export {Skelly} from "./Skelly";
+export {SnapTrap} from "./SnapTrap";
+export {WilloSpirit} from "./WilloSpirit";

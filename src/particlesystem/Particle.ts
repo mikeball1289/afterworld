@@ -1,8 +1,8 @@
-import Map from "../world/Map";
-import World from "../world/World";
-import ParticleSystem from "./ParticleSystem";
+import {Map} from "../world/Map";
+import {World} from "../world/World";
+import {ParticleSystem} from "./ParticleSystem";
 
-abstract class Particle extends PIXI.Container {
+export abstract class Particle extends PIXI.Container {
 
     private static ID_IDX: number = 0;
 
@@ -31,7 +31,7 @@ abstract class Particle extends PIXI.Container {
         if (!this.world.map) return [false, false];
         let collisions: [boolean, boolean] = [false, false];
         let magnitude = Math.ceil(Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y));
-        for (let i = 0; i < magnitude; i ++) {
+        for (let i of range(0, magnitude)) {
             if (this.velocity.x !== 0) {
                 this.x += this.velocity.x / magnitude;
                 if (Map.isWalled(this.world.map.getPixelData(this.x, this.y))) {
@@ -57,5 +57,3 @@ abstract class Particle extends PIXI.Container {
     }
 
 }
-
-export default Particle;

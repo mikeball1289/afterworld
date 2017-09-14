@@ -1,14 +1,14 @@
-import Animator from "../../display/Animator";
-import { fromTextureCache } from "../../pixiTools";
-import Map from "../../world/Map";
-import { EPSILON, GRAVITY } from "../../world/physicalConstants";
-import World from "../../world/World";
-import Enemy from "../Enemy";
-import Player from "../Player";
+import {Animator} from "../../display/Animator";
+import {fromTextureCache} from "../../pixiTools";
+import {Map} from "../../world/Map";
+import {EPSILON, GRAVITY} from "../../world/physicalConstants";
+import {World} from "../../world/World";
+import {Enemy} from "../Enemy";
+import {Player} from "../Player";
 
 const MAX_HEALTH = 15;
 
-export default class SnapTrap extends Enemy {
+export class SnapTrap extends Enemy {
     public static PRETTY_NAME = "Snap Trap";
 
     public enemyName = SnapTrap.PRETTY_NAME;

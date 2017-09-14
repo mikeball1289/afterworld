@@ -1,11 +1,11 @@
-import Animator from "../../display/Animator";
-import DebrisParticle from "../../particlesystem/DebrisParticle";
-import { soundManager } from "../../root";
-import Map from "../../world/Map";
-import { EPSILON, GRAVITY } from "../../world/physicalConstants";
-import World from "../../world/World";
-import Enemy from "../Enemy";
-import Player from "../Player";
+import {Animator} from "../../display/Animator";
+import {DebrisParticle} from "../../particlesystem/DebrisParticle";
+import {soundManager} from "../../root";
+import {Map} from "../../world/Map";
+import {EPSILON, GRAVITY} from "../../world/physicalConstants";
+import {World} from "../../world/World";
+import {Enemy} from "../Enemy";
+import {Player} from "../Player";
 
 enum MovementStates {
     IDLE,
@@ -23,7 +23,7 @@ const FULL_HORIZONTAL_DECAY = 0.88;
 const MAX_HEALTH = 10;
 const VIEW_DISTANCE = 400;
 
-export default class Skelly extends Enemy {
+export class Skelly extends Enemy {
     public static PRETTY_NAME = "Skelly";
 
     public enemyName = Skelly.PRETTY_NAME;
@@ -122,7 +122,7 @@ export default class Skelly extends Enemy {
 
                 if (frame === 6) {
                     soundManager.playSound("/sounds/skelly_rattle.ogg");
-                    for (let i = 0; i < 6; i ++) {
+                    for (let i of range(0, 6)) {
                         let particle = new DebrisParticle(PIXI.loader.resources["/images/bone_particle.png"].texture, this.world);
                         particle.x = this.horizontalCenter;
                         particle.y = this.top + this.size.y / 2;

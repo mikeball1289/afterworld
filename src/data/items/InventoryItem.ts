@@ -1,6 +1,6 @@
-import World from "../../world/World";
+import {World} from "../../world/World";
 
-export default class InventoryItem {
+export class InventoryItem {
     private static ITEM_ID = 0;
 
     public type: "equipment" | "use" | "item" = "item";

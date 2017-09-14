@@ -1,16 +1,16 @@
-import { controls, InputType } from "../root";
-import { soundManager } from "../root";
-import { INPCData } from "../world/mapData";
-import World from "../world/World";
-import JuggledSprite from "./JuggledSprite";
-import NPC from "./NPC";
+import {controls, InputType} from "../root";
+import {soundManager} from "../root";
+import {INPCData} from "../world/mapData";
+import {World} from "../world/World";
+import {JuggledSprite} from "./JuggledSprite";
+import {NPC} from "./NPC";
 
 export interface INPCLike {
     texture: PIXI.Texture;
     npcData: INPCData;
 }
 
-export default class NPCText extends JuggledSprite {
+export class NPCText extends JuggledSprite {
 
     private talkerSprite: PIXI.Sprite;
     private textField: PIXI.Text;
@@ -75,7 +75,7 @@ export default class NPCText extends JuggledSprite {
         if (this.options) {
             // do the option stuff
             this.selectedOption = 0;
-            for (let i = 0; i < this.options.length; i ++) {
+            for (let [i, option] of enumerate(this.options)) {
                 let option = this.options[i];
                 let text = new PIXI.Text(option, { fontFamily: DEFAULT_FONT, fontSize: 17 } );
                 text.x = 166;

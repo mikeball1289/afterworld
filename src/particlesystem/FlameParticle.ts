@@ -1,9 +1,9 @@
-import ColorTweener from "../ColorTweener";
-import { fromTextureCache } from "../pixiTools";
-import World from "../world/World";
-import Particle from "./Particle";
+import {ColorTweener} from "../ColorTweener";
+import {fromTextureCache} from "../pixiTools";
+import {World} from "../world/World";
+import {Particle} from "./Particle";
 
-export default class FlameParticle extends Particle {
+export class FlameParticle extends Particle {
 
     public rotationVelocity = 0;
     private sprite: PIXI.Sprite;

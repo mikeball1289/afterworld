@@ -1,13 +1,13 @@
-import ColorTweener from "../ColorTweener";
-import FlameParticle from "../particlesystem/FlameParticle";
-import { fromTextureCache } from "../pixiTools";
-import { soundManager } from "../root";
-import World from "../world/World";
-import Projectile from "./Projectile";
+import {ColorTweener} from "../ColorTweener";
+import {FlameParticle} from "../particlesystem/FlameParticle";
+import {fromTextureCache} from "../pixiTools";
+import {soundManager} from "../root";
+import {World} from "../world/World";
+import {Projectile} from "./Projectile";
 
 const tinter = new ColorTweener(0xFFD151, 0xFF0000);
 
-export default class SentinelFlame extends Projectile {
+export class SentinelFlame extends Projectile {
 
     public damage: IDamageBundle;
     private image: PIXI.Sprite;

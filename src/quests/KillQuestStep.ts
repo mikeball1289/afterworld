@@ -1,8 +1,8 @@
-import Enemy from "../actors/Enemy";
-import World from "../world/World";
-import QuestStep from "./QuestStep";
+import {Enemy} from "../actors/Enemy";
+import {World} from "../world/World";
+import {QuestStep} from "./QuestStep";
 
-export default class KillQuestStep extends QuestStep {
+export class KillQuestStep extends QuestStep {
 
     public currentKilled: number = 0;
     private listener?: (enemy: Enemy) => void;

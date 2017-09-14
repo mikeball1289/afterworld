@@ -1,10 +1,10 @@
-import Actor from "../actors/Actor";
-import { juggler } from "../root";
-import { INPCData } from "../world/mapData";
-import Animator from "./Animator";
-import JuggledSprite from "./JuggledSprite";
+import {Actor} from "../actors/Actor";
+import {juggler} from "../root";
+import {INPCData} from "../world/mapData";
+import {Animator} from "./Animator";
+import {JuggledSprite} from "./JuggledSprite";
 
-export default class NPC extends JuggledSprite {
+export class NPC extends JuggledSprite {
 
     private interactablePrompt: Animator<{ dotdotdot: [number, number] }>;
     private interactableOpen: boolean = false;

@@ -1,6 +1,6 @@
-import Quest from "./Quest";
+import {Quest} from "./Quest";
 
-export default class QuestManager {
+export class QuestManager {
     public activeQuest?: Quest;
     private questMap: { [name: string]: Quest } = {};
 

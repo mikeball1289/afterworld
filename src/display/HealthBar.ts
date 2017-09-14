@@ -1,4 +1,4 @@
-export default class HealthBar extends PIXI.Container {
+export class HealthBar extends PIXI.Container {
 
     private background: PIXI.Graphics;
     private bar: PIXI.Sprite;

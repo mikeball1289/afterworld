@@ -1,16 +1,17 @@
-import Player from "../actors/Player";
-import World from "../world/World";
-import Cost from "./costs/Cost";
-import { WeaponType } from "./items/WeaponItem";
-import { ISkillFunction } from "./skillHelpers";
+import {Player} from "../actors/Player";
+import {World} from "../world/World";
+import {Cost} from "./costs/Cost";
+import {WeaponType} from "./items/WeaponItem";
+import {ISkillFunction} from "./skillHelpers";
 
-export default class Skill {
+export class Skill {
 
+    public cooldownTimer = 0;
     private _icon: PIXI.Texture;
     constructor(private iconFn: () => PIXI.Texture,
                 public skillFn: ISkillFunction,
                 public costs: Cost[],
-                public weaponTypes: WeaponType[] | "any",
+                public weaponTypes: WeaponType[] | "any" | "none",
                 public cooldown: number,
                 public name: string,
                 public description: string,
@@ -19,7 +20,9 @@ export default class Skill {
     }
 
     public playerCanCast(player: Player, world: World) {
-        if (!player.inventory.equipment.weapon || (this.weaponTypes !== "any" && this.weaponTypes.indexOf(player.inventory.equipment.weapon.weaponType) < 0)) return false;
+        if (this.weaponTypes !== "none" &&
+            (!player.inventory.equipment.weapon ||
+                (this.weaponTypes !== "any" && this.weaponTypes.indexOf(player.inventory.equipment.weapon.weaponType) < 0))) return false;
         for (let cost of this.costs) {
             if (!cost.playerCanPay(player)) return false;
         }
@@ -33,12 +36,23 @@ export default class Skill {
 
     public cast(player: Player, world: World) {
         if (this.skillFn(player, world)) {
+            this.putOnCooldown(player.stats.cooldownReduction);
             for (let cost of this.costs) {
                 cost.payCost(player);
             }
             return true;
         }
         return false;
+    }
+
+    public putOnCooldown(cooldownReduction: number) {
+        this.cooldownTimer = Math.ceil(this.cooldown * (1 - cooldownReduction));
+    }
+
+    public tickCooldown() {
+        if (this.cooldown > 0) {
+            this.cooldownTimer --;
+        }
     }
 
     public getName() {
@@ -53,7 +67,7 @@ export default class Skill {
         } else {
             des += ")\n";
         }
-        if (this.weaponTypes !== "any") {
+        if (this.weaponTypes !== "any" && this.weaponTypes !== "none") {
             des += "requires " + this.weaponTypes.join(" OR ") + " weapon\n";
         }
         des += "\n" + this.description;

@@ -1,6 +1,6 @@
-import Actor from "../actors/Actor";
-import { IEquipmentStats } from "../data/items/EquipmentItem";
-import World from "../world/World";
+import {Actor} from "../actors/Actor";
+import {IEquipmentStats} from "../data/items/EquipmentItem";
+import {World} from "../world/World";
 
 export type BuffStat = keyof IEquipmentStats | "jumpPower" | "criticalHitChance";
 export type BuffEvent = "dealDamage" | "takeDamage" | "die" | "attack" | "damageDealt" | "killedEnemy" | "getStats" | "frame";
@@ -11,7 +11,7 @@ export interface IStatBox {
     amount: number;
 }
 
-export default class Buff {
+export class Buff {
 
     constructor(public id: number, public name: string, public source: string, public duration: number) { }
 

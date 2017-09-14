@@ -1,11 +1,11 @@
-import ColorTweener from "../ColorTweener";
-import { fromTextureCache } from "../pixiTools";
-import Map from "../world/Map";
-import { GRAVITY } from "../world/physicalConstants";
-import World from "../world/World";
-import Particle from "./Particle";
+import {ColorTweener} from "../ColorTweener";
+import {fromTextureCache} from "../pixiTools";
+import {Map} from "../world/Map";
+import {GRAVITY} from "../world/physicalConstants";
+import {World} from "../world/World";
+import {Particle} from "./Particle";
 
-export default class FireParticle extends Particle {
+export class FireParticle extends Particle {
 
     public rotationVelocity = 0;
     private sprite: PIXI.Sprite;
@@ -22,7 +22,7 @@ export default class FireParticle extends Particle {
     public update() {
         if (!this.world.map) return this.destroy();
         let magnitude = Math.ceil(Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y));
-        for (let i = 0; i < magnitude; i ++) {
+        for (let i of range(0, magnitude)) {
             if (this.velocity.x !== 0) {
                 this.x += this.velocity.x / magnitude;
                 if (Map.isWalled(this.world.map.getPixelData(this.x, this.y))) {

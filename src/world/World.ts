@@ -1,23 +1,24 @@
 // tslint:disable:no-string-literal
 import * as PNG from "png-js";
-import Enemy from "../actors/Enemy";
-import ArchangelNPCData from "../display/ArchangelNPCData";
-import NPC from "../display/NPC";
-import UIManager from "../display/UIManager";
-import ParticleSystem from "../particlesystem/ParticleSystem";
-import QuestManager from "../quests/QuestManager";
-import { InitializeQuests } from "../quests/quests";
-import { juggler, soundManager } from "../root";
-import ActorManager from "./ActorManager";
-import Map from "./Map";
-import mapData, { IMapDataObject } from "./mapData";
-import WorldItem from "./worldobjects/WorldItem";
+import {Enemy} from "../actors/Enemy";
+import {ArchangelNPCData} from "../display/ArchangelNPCData";
+import {NPC} from "../display/NPC";
+import {UIManager} from "../display/UIManager";
+import {ParticleSystem} from "../particlesystem/ParticleSystem";
+import {QuestManager} from "../quests/QuestManager";
+import {InitializeQuests} from "../quests/quests";
+import {juggler, soundManager} from "../root";
+import {ActorManager} from "./ActorManager";
+import {Map} from "./Map";
+import {IMapDataObject, mapData} from "./mapData";
+import {Coin} from "./worldobjects/Coin";
+import {WorldItem} from "./worldobjects/WorldItem";
 
 type MapName = keyof typeof mapData;
 const TRANSITION_SPEED = 0.033;
 
 // contain the info for the game world, this doesn't include UI
-export default class World extends PIXI.Sprite {
+export class World extends PIXI.Sprite {
 
     // map and transition data
     public map?: Map;
@@ -40,7 +41,7 @@ export default class World extends PIXI.Sprite {
 
     private filterList: PIXI.Filter[] = [];
 
-    private worldItems: WorldItem[] = [];
+    private worldItems: (WorldItem | Coin)[] = [];
     private worldObjectLayer: PIXI.Container;
 
     private foregroundLayer: PIXI.Container;
@@ -81,7 +82,7 @@ export default class World extends PIXI.Sprite {
         this.currentMapData = mapData[startingMap];
 
         this.uiManager.inventoryUI.refreshInventoryIcons();
-        this.uiManager.overlayLayer.addChildAt(this.actorManager.player.skillBar, 2);
+        this.uiManager.overlayLayer.addChildAt(this.actorManager.player.skillbar, 2);
         this.grayFilter = new PIXI.GrayFilter();
 
         // load up the starting map
@@ -177,7 +178,7 @@ export default class World extends PIXI.Sprite {
         }
     }
 
-    public addWorldItem(item: WorldItem) {
+    public addWorldObject(item: WorldItem | Coin) {
         this.worldItems.push(item);
         this.worldObjectLayer.addChild(item);
     }
@@ -186,8 +187,8 @@ export default class World extends PIXI.Sprite {
     public attemptInteraction() {
         if (this.queueMapTransition) return; // but not if we're in the process of a transition
         if (this.actorManager.player.inventory.hasSpace()) {
-            for (let i = 0; i < this.worldItems.length; i ++) {
-                let item = this.worldItems[i];
+            for (let [i, item] of enumerate(this.worldItems)) {
+                if (item instanceof Coin) continue;
                 if (item.withinPickupRange(this.actorManager.player)) {
                     item.pickup(this.actorManager.player);
                     this.worldItems.splice(i, 1);
@@ -315,7 +316,7 @@ export default class World extends PIXI.Sprite {
         if (!this.map) return;
         if (this.actorManager.player.isDead()) {
             if (revivePlayer) {
-                this.actorManager.player.setAlive(0.5);
+                this.actorManager.player.setAlive(1);
                 this.removeFilter(this.grayFilter);
             } else {
                 this.fadeBlocker.visible = false;

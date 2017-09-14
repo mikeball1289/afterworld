@@ -1,5 +1,5 @@
-import { INPCData } from "../world/mapData";
-import World from "../world/World";
+import {INPCData} from "../world/mapData";
+import {World} from "../world/World";
 
 export interface IOption {
     optionText: string;
@@ -15,7 +15,7 @@ export interface IConversationPiece {
     (world: World): ITextPack;
 }
 
-export default class ConversationalNPC implements INPCData {
+export class ConversationalNPC implements INPCData {
 
     private text: ITextPack;
     private textIdx: number = 0;

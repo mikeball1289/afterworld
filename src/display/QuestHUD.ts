@@ -1,14 +1,16 @@
-import World from "../world/World";
-import JuggledSprite from "./JuggledSprite";
+import {QuestStep} from "../quests/QuestStep";
+import {World} from "../world/World";
+import {JuggledSprite} from "./JuggledSprite";
 
-let filter = new PIXI.filters.GlowFilter(0, 0.1, 0.9, 0xFFFF00);
+let filter = new PIXI.filters.GlowFilter(2, 0.1, 0.1, 0xFFFF00);
 const FLASH_TIME = 60;
 
-export default class QuestHUD extends JuggledSprite {
+export class QuestHUD extends JuggledSprite {
 
     private background: PIXI.Graphics;
     private field: PIXI.Text;
     private flashTimer: number = FLASH_TIME;
+    private currentStep?: QuestStep;
 
     constructor(public world: World) {
         super();
@@ -39,7 +41,9 @@ export default class QuestHUD extends JuggledSprite {
 
     public onEnterFrame() {
         let quest = this.world.questManager.activeQuest;
+        let currentQuestStep: QuestStep | undefined = undefined;
         if (quest) {
+            currentQuestStep = quest.questStep;
             this.field.text = "<header>" + quest.name + "</header>\n-" + quest.questStep.description;
             this.visible = true;
             let bounds = this.field.getBounds();
@@ -49,11 +53,17 @@ export default class QuestHUD extends JuggledSprite {
             this.field.text = "";
             this.visible = false;
         }
+        if (this.currentStep !== currentQuestStep) {
+            this.flash();
+            this.currentStep = currentQuestStep;
+        }
         if (this.flashTimer < FLASH_TIME) {
+            let x = (this.flashTimer) / (FLASH_TIME / 2) - 1;
+            filter.distance = Math.max((1 - x * x) * 30, 2);
+            filter.innerStrength = Math.max((1 - x * x), 0.1);
+            filter.outerStrength = Math.max((1 - x * x), 0.1);
             this.flashTimer ++;
-            let x = this.flashTimer / 30 - 1;
-            filter.distance = (1 - x * x) * 30;
-            if (this.flashTimer >= FLASH_TIME) {
+            if (this.flashTimer >= FLASH_TIME - 1) {
                 this.filters = [];
             }
         }

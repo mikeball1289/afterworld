@@ -1,8 +1,8 @@
-import Actor from "../actors/Actor";
-import World from "../world/World";
-import Buff, { ConditionType } from "./Buff";
+import {Actor} from "../actors/Actor";
+import {World} from "../world/World";
+import {Buff, ConditionType} from "./Buff";
 
-export default class StunDebuff extends Buff {
+export class StunDebuff extends Buff {
     private stunGraphic: PIXI.Sprite;
 
     constructor(duration: number, source = "World") {

@@ -1,10 +1,10 @@
-import { fromTextureCache } from "../../pixiTools";
-import Skill from "../Skill";
+import {fromTextureCache} from "../../pixiTools";
+import {Skill} from "../Skill";
 import * as skillData from "../skillData";
-import EquipmentItem from "./EquipmentItem";
-import GemItem from "./GemItem";
-import InventoryItem from "./InventoryItem";
-import WeaponItem from "./WeaponItem";
+import {EquipmentItem} from "./EquipmentItem";
+import {GemItem} from "./GemItem";
+import {InventoryItem} from "./InventoryItem";
+import {WeaponItem} from "./WeaponItem";
 
 type ItemType = "feet" | "legs" | "heavy" | "light" | "magic" | "head" | "body" | "item" | "neck" | "trinket" | "gloves" | "offhand" | "red" | "blue" | "black";
 

@@ -1,7 +1,7 @@
-import World from "../../world/World";
+import {World} from "../../world/World";
 import { IConversationPiece, IOption, ITextPack } from "../ConversationalNPC";
 import * as ItemFactory from "../items/ItemFactory";
-import WeaponItem from "../items/WeaponItem";
+import {WeaponItem} from "../items/WeaponItem";
 import * as skillData from "../skillData";
 
 let gotDev = false;

@@ -1,11 +1,11 @@
-import { fromTextureCache } from "../pixiTools";
-import World from "../world/World";
-import WorldItem from "../world/worldobjects/WorldItem";
-import EquipmentItem from "./items/EquipmentItem";
-import GemItem from "./items/GemItem";
-import InventoryItem from "./items/InventoryItem";
+import {fromTextureCache} from "../pixiTools";
+import {World} from "../world/World";
+import {WorldItem} from "../world/worldobjects/WorldItem";
+import {EquipmentItem} from "./items/EquipmentItem";
+import {GemItem} from "./items/GemItem";
+import {InventoryItem} from "./items/InventoryItem";
 import * as ItemFactory from "./items/ItemFactory";
-import WeaponItem from "./items/WeaponItem";
+import {WeaponItem} from "./items/WeaponItem";
 import * as skillData from "./skillData";
 
 export interface IEquipmentSlots {
@@ -20,70 +20,40 @@ export interface IEquipmentSlots {
     gloves: EquipmentItem | undefined;
 }
 
-export default class Inventory {
+export class Inventory {
     public static INVENTORY_SIZE = 36;
 
     public inventoryItems: (InventoryItem | undefined)[] = [
-        // ItemFactory.constructItem("weapon", ItemFactory.itemData.woodchopping_axe).fillStats(1, {
-        //     physicalDamage: 3,
+        ItemFactory.constructItem("weapon", ItemFactory.itemData.woodchopping_axe).fillStats(1, {
+            physicalDamage: 3,
+        } ).addInscription(skillData.pounce),
+        ItemFactory.constructItem("weapon", ItemFactory.itemData.iron_dagger).fillStats(5, {
+            physicalDamage: 6,
+            haste: 100,
+            attackSpeed: 10,
+        } ).addInscription(skillData.ambush),
+        ItemFactory.constructItem("weapon", ItemFactory.itemData.iron_dagger).fillStats(5, {
+            physicalDamage: 6,
+            haste: 100,
+            attackSpeed: 10,
+        } ).addInscription(skillData.quickStrike),
+        ItemFactory.constructItem("gem", {
+            type: "black",
+            name: "Angelic Malachite",
+            icon: p(7, 0),
+            description: "",
+            skill: skillData.ascention,
+        } ),
+        // ItemFactory.constructItem(, {
+// 
         // } ),
-        // ItemFactory.constructItem("weapon", ItemFactory.itemData.heros_sword).fillStats(10, {
-        //     physicalDamage: 25,
-        //     magicDamage: 15,
-        //     strength: 5,
-        //     intelligence: 5,
-        //     agility: 5,
-        //     health: 15,
-        // } ).prefix("Virtuous"),
-        // ItemFactory.constructItem("weapon", ItemFactory.itemData.woodchopping_axe).fillStats(1, {
-        //     physicalDamage: 3,
-        // } ).addInscription(skillData.cleave).prefix("Heavy"),
-        // ItemFactory.constructItem("equip", ItemFactory.itemData.wooden_buckler).fillStats(2, {
-        //     armor: 4,
-        //     health: 5,
-        // } ),
-        // ItemFactory.constructItem("weapon", ItemFactory.itemData.iron_dagger).fillStats(3, {
-        //     physicalDamage: 5,
-        //     agility: 2,
-        //     walkSpeed: 1,
-        // } ).postfix("of the Wind"),
-        // ItemFactory.constructItem("equip", ItemFactory.itemData.cloth_shirt).addSocket().fillStats(1, {
-        //     armor: 3,
-        // } ),
-        // ItemFactory.constructItem("equip", ItemFactory.itemData.leather_pants).addSocket(ItemFactory.constructItem("gem", ItemFactory.itemData.leap_gem)).fillStats(1, {
-        //     armor: 2,
-        // } ),
-        // ItemFactory.constructItem("equip", ItemFactory.itemData.leather_boots).addSocket(ItemFactory.constructItem("gem", ItemFactory.itemData.tremor_gem)).fillStats(1, {
-        //     armor: 1,
-        // } ),
-        // ItemFactory.constructItem("equip", ItemFactory.itemData.wooden_buckler).addSocket().fillStats(3, {
-        //     armor: 7,
-        //     health: 6,
-        //     strength: 2,
-        // } ).prefix("Hardy"),
-        // ItemFactory.constructItem("equip", ItemFactory.itemData.wooden_buckler).addSocket().fillStats(3, {
-        //     armor: 7,
-        //     health: 7,
-        //     healthRegen: 0.1,
-        // } ).postfix("of the Bear"),
-        // ItemFactory.constructItem("gem", ItemFactory.itemData.envenom_gem),
-        // ItemFactory.constructItem("gem", ItemFactory.itemData.buckle_down_gem),
-        // ItemFactory.constructItem("gem", ItemFactory.itemData.explosion_gem),
-        // ItemFactory.constructItem("weapon", ItemFactory.itemData.gnarled_staff).fillStats(1, {
-        //     magicDamage: 3,
-        //     intelligence: 1,
-        // } ).addInscription(skillData.staticBolts).prefix("Crackling"),
-        // ItemFactory.constructItem("weapon", ItemFactory.itemData.gnarled_staff).fillStats(1, {
-        //     magicDamage: 3,
-        //     intelligence: 1,
-        // } ).addInscription(skillData.sentinelFlames).prefix("Blazing"),
     ];
     public equipment: IEquipmentSlots = {
         head: undefined,
         neck: undefined,
         body: ItemFactory.constructItem("equip", ItemFactory.itemData.cloth_shirt).fillStats(1, {
             armor: 3,
-        } ),
+        } ).addSocket(),
         legs: ItemFactory.constructItem("equip", ItemFactory.itemData.leather_pants).fillStats(1, {
             armor: 2,
         } ),
@@ -99,7 +69,7 @@ export default class Inventory {
     constructor(private world: World) { }
 
     public addItem(item: InventoryItem) {
-        for (let i = 0; i < Inventory.INVENTORY_SIZE; i ++) {
+        for (let i of range(0, Inventory.INVENTORY_SIZE)) {
             if (this.inventoryItems[i] === undefined) {
                 this.inventoryItems[i] = item;
                 this.world.uiManager.inventoryUI.refreshInventoryIcons();
@@ -110,8 +80,8 @@ export default class Inventory {
     }
 
     public addItems(items: InventoryItem[]) {
-        for (let i = 0; i < items.length; i ++) {
-            if (this.addItem(items[i]) < 0) return i;
+        for (let [i, item] of enumerate(items)) {
+            if (this.addItem(item) < 0) return i;
         }
     }
 
@@ -158,16 +128,22 @@ export default class Inventory {
             item = i;
         }
         let oldItem = this.equipment[item.equipmentType];
-        let oldSkill = oldItem ? oldItem.getSkill() : undefined;
-        let newSkill = item.getSkill();
+        let oldSkills = oldItem ? oldItem.getSkills() : [];
+        let newSkills = item.getSkills();
         this.equipment[item.equipmentType] = item;
         this.inventoryItems[idx] = oldItem;
         item.addEquipmentGraphic(this.world.actorManager.player);
 
         let player = this.world.actorManager.player;
-        if (oldSkill !== newSkill) {
-            if (oldSkill) player.skillBar.removeSkill(oldSkill);
-            if (newSkill) player.skillBar.addSkill(newSkill);
+        for (let oldSkill of oldSkills) {
+            if (newSkills.indexOf(oldSkill) < 0) {
+                player.skillbar.removeSkill(oldSkill);
+            }
+        }
+        for (let newSkill of newSkills) {
+            if (oldSkills.indexOf(newSkill) < 0) {
+                player.skillbar.addSkill(newSkill);
+            }
         }
         this.world.uiManager.inventoryUI.refreshInventoryIcons();
         return true;
@@ -179,8 +155,10 @@ export default class Inventory {
         if (!this.hasSpace() || !item) return false;
         this.addItem(item);
         this.equipment[slot] = undefined;
-        let skill = item.getSkill();
-        if (skill) player.skillBar.removeSkill(skill);
+        let skills = item.getSkills();
+        for (let skill of (skills)) {
+            player.skillbar.removeSkill(skill);
+        }
         player.unsetEquipmentGraphic(slot);
         this.world.uiManager.inventoryUI.refreshInventoryIcons();
         return true;
@@ -201,7 +179,7 @@ export default class Inventory {
         worldItem.y = this.world.actorManager.player.verticalCenter;
         worldItem.velocity.y = -8;
         worldItem.velocity.x = Math.random() * 10 - 5;
-        this.world.addWorldItem(worldItem);
+        this.world.addWorldObject(worldItem);
         return true;
     }
 

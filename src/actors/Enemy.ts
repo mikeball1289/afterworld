@@ -1,14 +1,14 @@
-import Animator from "../display/Animator";
-import HealthBar from "../display/HealthBar";
-import DamageParticle from "../particlesystem/DamageParticle";
-import { soundManager } from "../root";
-import Map from "../world/Map";
-import { EPSILON } from "../world/physicalConstants";
-import NonPlayerActor from "./NonPlayerActor";
+import {Animator} from "../display/Animator";
+import {HealthBar} from "../display/HealthBar";
+import {DamageParticle} from "../particlesystem/DamageParticle";
+import {soundManager} from "../root";
+import {Map} from "../world/Map";
+import {EPSILON} from "../world/physicalConstants";
+import {NonPlayerActor} from "./NonPlayerActor";
 
 const smacks = ["/sounds/hit_smack1.ogg", "/sounds/hit_smack1.ogg"];
 
-abstract class Enemy extends NonPlayerActor {
+export abstract class Enemy extends NonPlayerActor {
 
     public static isEnemy(obj: any): obj is Enemy {
         return obj && obj.isAnEnemy;
@@ -91,5 +91,3 @@ abstract class Enemy extends NonPlayerActor {
         return Map.isFearless(map.getPixelData(this.left, this.bottom + EPSILON)) || Map.isFearless(map.getPixelData(this.right, this.bottom + EPSILON));
     }
 }
-
-export default Enemy;

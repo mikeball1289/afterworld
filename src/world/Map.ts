@@ -1,6 +1,6 @@
 // tslint:disable no-bitwise
-import Actor from "../actors/Actor";
-import { EPSILON } from "./physicalConstants";
+import {Actor} from "../actors/Actor";
+import {EPSILON} from "./physicalConstants";
 
 interface IPointLike {
     x: number;
@@ -26,10 +26,10 @@ export enum GroundType {
     DROPPABLE_NO_FEAR = IS_WALKABLE | IS_FEARLESS | IS_PASSABLE | IS_DROPPABLE,
 }
 
-export default class Map {
+export class Map {
 
     public static testLine(start: IPointLike, end: IPointLike, test: (x: number, y: number) => boolean, steps: number = 1) {
-        for (let i = 0; i <= steps; i ++) {
+        for (let i of range(0, steps + 1)) {
             if (test(start.x + (end.x - start.x) * i / steps, start.y + (end.y - start.y) * i / steps)) return true;
         }
         return false;
@@ -72,7 +72,7 @@ export default class Map {
 
     constructor(private mapWidth: number, private mapHeight: number, mapDataArray: Buffer, public backgroundSprite: PIXI.Sprite, public foregroundSprite: PIXI.Sprite) {
         this.mapData = new Uint8Array(mapDataArray.length / 4);
-        for (let i = 0; i < mapDataArray.length; i += 4) { // packed as RGBA, so bump by 4 each iteration
+        for (let i of range(0, mapDataArray.length, 4)) { // packed as RGBA, so bump by 4 each iteration
             if (mapDataArray[i] === 0x00 && mapDataArray[i + 1] === 0x00 && mapDataArray[i + 2] === 0x00) this.mapData[i / 4] = GroundType.SOLID;
             else if (mapDataArray[i] === 0xFF && mapDataArray[i + 1] === 0xFF && mapDataArray[i + 2] === 0xFF) this.mapData[i / 4] = GroundType.AIR;
             else if (mapDataArray[i] === 0xFF && mapDataArray[i + 1] === 0x00 && mapDataArray[i + 2] === 0x00) this.mapData[i / 4] = GroundType.PASSABLE_SOLID;
@@ -111,13 +111,13 @@ export default class Map {
     }
 
     public actorIsOnWalkableGround(actor: Actor, verticalOffset = 0): boolean {
-        return Map.testLine({ x: actor.left, y: actor.bottom + verticalOffset }, { x: actor.right - EPSILON, y: actor.bottom + verticalOffset },
+        return Map.testLine({ x: actor.left + EPSILON, y: actor.bottom + verticalOffset }, { x: actor.right - EPSILON, y: actor.bottom + verticalOffset },
                         (x, y) => Map.isWalkable(this.getPixelData(x, y)), 2 ) ||
                 Map.isPointWalkable(this.getPixelData(actor.horizontalCenter, actor.bottom + verticalOffset));
     }
 
     public actorIsOnSolidGround(actor: Actor, verticalOffset = 0): boolean {
-        return Map.testLine({ x: actor.left, y: actor.bottom + verticalOffset }, { x: actor.right - EPSILON, y: actor.bottom + verticalOffset },
+        return Map.testLine({ x: actor.left + EPSILON, y: actor.bottom + verticalOffset }, { x: actor.right - EPSILON, y: actor.bottom + verticalOffset },
                         (x, y) => Map.isSolid(this.getPixelData(x, y)), 2 );
     }
 
@@ -125,7 +125,7 @@ export default class Map {
         if (!actor.tangible) return true;
         if (actor.fallthrough !== undefined && Math.abs(actor.y - actor.fallthrough) < 5) return true;
         return Map.isPointWalkable(this.getPixelData(actor.horizontalCenter, actor.bottom - 2 + offset)) ||
-                Map.testLine({ x: actor.left, y: actor.bottom - 2 + offset }, { x: actor.right - EPSILON, y: actor.bottom - 2 + offset },
+                Map.testLine({ x: actor.left + EPSILON, y: actor.bottom - 2 + offset }, { x: actor.right - EPSILON, y: actor.bottom - 2 + offset },
                     (x, y) => Map.isPassable(this.getPixelData(x, y)), actor.right - actor.left);
     }
 
@@ -140,7 +140,7 @@ export default class Map {
             if (movingY) {
                 actor.position.y += actor.velocity.y / magnitude;
                 if (actor.velocity.y < 0) {
-                    if (Map.testLine({ x: actor.left, y: actor.top}, { x: actor.right - EPSILON, y: actor.top }, (x, y) => Map.isSolid(this.getPixelData(x, y)))) {
+                    if (Map.testLine({ x: actor.left + EPSILON, y: actor.top}, { x: actor.right - EPSILON, y: actor.top }, (x, y) => Map.isSolid(this.getPixelData(x, y)))) {
                         movingY = false;
                         collisions[1] = true;
                         actor.position.y = Math.ceil(actor.position.y);
@@ -158,12 +158,12 @@ export default class Map {
             if (movingX) {
                 actor.position.x += actor.velocity.x / magnitude;
                 if (actor.velocity.x < 0) {
-                    if (Map.testLine({ x: actor.left, y: actor.top }, { x: actor.left, y: actor.bottom - 1 - EPSILON },
+                    if (Map.testLine({ x: actor.left + EPSILON, y: actor.top }, { x: actor.left + EPSILON, y: actor.bottom - 1 - EPSILON },
                         (x, y) => Map.isWalled(this.getPixelData(x, y)) ))
                     {
                         movingX = false;
                         collisions[0] = true;
-                        actor.position.x = Math.ceil(actor.position.x);
+                        actor.position.x = Math.ceil(actor.position.x + EPSILON);
                     }
                 } else {
                     if (Map.testLine({ x: actor.right - EPSILON, y: actor.top }, { x: actor.right - EPSILON, y: actor.bottom - 1 - EPSILON },

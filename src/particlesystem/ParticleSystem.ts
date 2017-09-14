@@ -1,9 +1,9 @@
 // tslint:disable forin
-import Projectile from "../projectiles/Projectile";
-import World from "../world/World";
-import Particle from "./Particle";
+import {Projectile} from "../projectiles/Projectile";
+import {World} from "../world/World";
+import {Particle} from "./Particle";
 
-export default class ParticleSystem extends PIXI.Container {
+export class ParticleSystem extends PIXI.Container {
 
     private particles: {[id: number]: Particle} = {};
 

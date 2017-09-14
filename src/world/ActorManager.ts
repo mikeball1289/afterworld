@@ -1,13 +1,13 @@
-import Actor from "../Actors/Actor";
-import Enemy from "../Actors/Enemy";
-import Player from "../Actors/Player";
-import NPC from "../display/NPC";
-import mergeSort from "../mergeSort";
-import Map from "./Map";
-import { IMapDataObject } from "./mapData";
-import World from "./World";
+import {Actor} from "../Actors/Actor";
+import {Enemy} from "../Actors/Enemy";
+import {Player} from "../Actors/Player";
+import {NPC} from "../display/NPC";
+import {mergeSort} from "../mergeSort";
+import {Map} from "./Map";
+import {IMapDataObject} from "./mapData";
+import {World} from "./World";
 
-export default class ActorManager extends PIXI.Container {
+export class ActorManager extends PIXI.Container {
     public player: Player;
     // NPC data
     public npcs: NPC[] = [];

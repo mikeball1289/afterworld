@@ -1,9 +1,9 @@
-import Map from "../world/Map";
-import { GRAVITY } from "../world/physicalConstants";
-import World from "../world/World";
-import Particle from "./Particle";
+import {Map} from "../world/Map";
+import {GRAVITY} from "../world/physicalConstants";
+import {World} from "../world/World";
+import {Particle} from "./Particle";
 
-export default class DebrisParticle extends Particle {
+export class DebrisParticle extends Particle {
 
     public rotationVelocity = 0;
     private image: PIXI.Sprite;
@@ -21,7 +21,7 @@ export default class DebrisParticle extends Particle {
         this.velocity.y += GRAVITY;
         this.image.rotation += this.rotationVelocity;
         let magnitude = Math.ceil(Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y));
-        for (let i = 0; i < magnitude; i ++) {
+        for (let i of range(0, magnitude)) {
             if (this.velocity.x !== 0) {
                 this.x += this.velocity.x / magnitude;
                 if (Map.isWalled(this.world.map.getPixelData(this.x, this.y))) {

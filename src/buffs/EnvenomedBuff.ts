@@ -1,10 +1,10 @@
-import Actor from "../actors/Actor";
-import Player from "../actors/Player";
-import World from "../world/World";
-import Buff, { BuffEvent } from "./Buff";
-import EnemyPoisonedDebuff from "./EnemyPoisonedDebuff";
+import {Actor} from "../actors/Actor";
+import {Player} from "../actors/Player";
+import {World} from "../world/World";
+import {Buff, BuffEvent} from "./Buff";
+import {EnemyPoisonedDebuff} from "./EnemyPoisonedDebuff";
 
-export default class EnvenomedBuff extends Buff {
+export class EnvenomedBuff extends Buff {
 
     private charges = 3;
 

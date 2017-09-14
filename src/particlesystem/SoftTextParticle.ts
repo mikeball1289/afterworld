@@ -1,7 +1,7 @@
-import World from "../world/World";
-import Particle from "./Particle";
+import {World} from "../world/World";
+import {Particle} from "./Particle";
 
-export default class SoftTextParticle extends Particle {
+export class SoftTextParticle extends Particle {
 
     constructor(value: string, color: number, world: World) {
         super(40, world);

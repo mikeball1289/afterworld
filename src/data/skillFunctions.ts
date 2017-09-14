@@ -1,21 +1,22 @@
-import Enemy from "../actors/Enemy";
-import Player from "../actors/Player";
-import BuckleDownBuff from "../buffs/BuckleDownBuff";
-import EnvenomedBuff from "../buffs/EnvenomedBuff";
-import StunDebuff from "../buffs/StunDebuff";
-import ColorTweener from "../ColorTweener";
-import FireParticle from "../particlesystem/FireParticle";
-import GenericEffectParticle from "../particleSystem/GenericEffectParticle";
-import VacuumParticle from "../particlesystem/VacuumParticle";
-import { fromTextureCache } from "../pixiTools";
-import StaticBolt from "../projectiles/StaticBolt";
-import { juggler, soundManager } from "../root";
-import World from "../world/World";
-import { applyAttack, BASIC_ATTACKS, getAttackBox, swishes } from "./skillHelpers";
+import {Enemy} from "../actors/Enemy";
+import {Player} from "../actors/Player";
+import {BuckleDownBuff} from "../buffs/BuckleDownBuff";
+import {EnvenomedBuff} from "../buffs/EnvenomedBuff";
+import {StunDebuff} from "../buffs/StunDebuff";
+import {ColorTweener} from "../ColorTweener";
+import {FireParticle} from "../particlesystem/FireParticle";
+import {GenericEffectParticle} from "../particleSystem/GenericEffectParticle";
+import {VacuumParticle} from "../particlesystem/VacuumParticle";
+import {fromTextureCache} from "../pixiTools";
+import {StaticBolt} from "../projectiles/StaticBolt";
+import {juggler, soundManager} from "../root";
+import {attackSpeedFPS} from "../world/physicalConstants";
+import {World} from "../world/World";
+import {applyAttack, BASIC_ATTACKS, getAttackBox, swishes} from "./skillHelpers";
 
 let castIdx = 0;
 
-function meleeHit(player: Player, world: World, damageMultiplier = 1, knockbackPower = 4) {
+export function meleeHit(player: Player, world: World, damageMultiplier = 1, knockbackPower = 4) {
     let attackBox: PIXI.Rectangle = getAttackBox(player);
     let enemies = world.actorManager.enemies;
 
@@ -31,13 +32,13 @@ function meleeHit(player: Player, world: World, damageMultiplier = 1, knockbackP
 
     if (player.direction === -1) {
         attackBox.x -= attackBox.width;
-        for (let i = enemies.length - 1; i >= 0; i --) {
-            if (attackFn(enemies[i])) break;
+        for (let enemy of reverse(enemies)) {
+            if (attackFn(enemy)) break;
         }
     } else {
         // tslint:disable-next-line:prefer-for-of
-        for (let i = 0; i < enemies.length; i ++) {
-            if (attackFn(enemies[i])) break;
+        for (let enemy of enemies) {
+            if (attackFn(enemy)) break;
         }
     }
 }
@@ -45,7 +46,7 @@ function meleeHit(player: Player, world: World, damageMultiplier = 1, knockbackP
 function drawExplosionParticles(player: Player, world: World) {
     let startTweener = new ColorTweener(0xFFFFFF, 0xFFF191);
     let endTweener = new ColorTweener(0xFFF191, 0xD60000);
-    for (let i = 0; i < 400; i ++) {
+    for (let i of range(0, 400)) {
         let randomDirection = Math.random() * Math.PI * 2;
         let speed = (Math.random() + Math.floor(i / 100)) * 0.4 + 0.1;
         speed *= Math.abs(speed);
@@ -63,6 +64,7 @@ function drawExplosionParticles(player: Player, world: World) {
 
 export function explosion(player: Player, world: World) {
     if (!world.map || !world.map.isGrounded(player)) return false;
+    player.fps = attackSpeedFPS(6, player.stats.attackSpeed);
     player.play("cast", {
         onProgress: (frame) => {
             if (frame !== 2) return;
@@ -96,6 +98,7 @@ export function explosion(player: Player, world: World) {
 
 export function basicAttack(player: Player, world: World) {
     let randomAttack = BASIC_ATTACKS[Math.floor(Math.random() * 2)];
+    player.fps = attackSpeedFPS(6, player.stats.attackSpeed);
     player.play(randomAttack, {
         onProgress: (frame) => {
             if (frame !== 2) return;
@@ -108,10 +111,26 @@ export function basicAttack(player: Player, world: World) {
     player.attacking = true;
     return true;
 }
+export function quickStrike(player: Player, world: World) {
+    let randomAttack = BASIC_ATTACKS[Math.floor(Math.random() * 2)];
+    player.fps = attackSpeedFPS(12, player.stats.attackSpeed);
+    player.play(randomAttack, {
+        onProgress: (frame) => {
+            if (frame !== 2) return;
+            meleeHit(player, world, 0.8);
+        },
+        onComplete: () => {
+            player.attacking = false;
+        },
+    } );
+    player.attacking = true;
+    return true;
+}
 
 export function tremor(player: Player, world: World) {
     if (!world.map || !world.map.isGrounded(player)) return false;
     let idx = castIdx ++;
+    player.fps = attackSpeedFPS(6, player.stats.attackSpeed);
     player.play("cast", {
         onProgress: (frame) => {
             if (frame !== 2) return;
@@ -158,20 +177,16 @@ export function ambush(player: Player, world: World) {
         meleeHit(player, world, 0.8, 1);
     };
     let hits = 0;
-    let tempFPS = player.fps;
-    player.fps = 18;
+    player.fps = attackSpeedFPS(18, player.stats.attackSpeed);
     let completeFn = () => {
         hits ++;
         if (hits < 6) {
-            player.attacking = false;
             player.play(BASIC_ATTACKS[Math.floor(Math.random() * BASIC_ATTACKS.length)], {
                 override: true,
                 onProgress: hitFn,
                 onComplete: completeFn,
-            } );
-            player.attacking = true;
+            }, true );
         } else {
-            player.fps = tempFPS;
             player.attacking = false;
         }
     };
@@ -200,19 +215,20 @@ function splashHit(player: Player, world: World, hitFn: (enemy: Enemy) => boolea
 
     if (player.direction === -1) {
         attackBox.x -= attackBox.width;
-        for (let i = enemies.length - 1; i >= 0; i --) {
-            attackFn(enemies[i]);
+        for (let enemy of reverse(enemies)) {
+            attackFn(enemy);
         }
     } else {
         // tslint:disable-next-line:prefer-for-of
-        for (let i = 0; i < enemies.length; i ++) {
-            attackFn(enemies[i]);
+        for (let enemy of enemies) {
+            attackFn(enemy);
         }
     }
 }
 
 export function cleave(player: Player, world: World) {
     let randomAttack = BASIC_ATTACKS[Math.floor(Math.random() * 2)];
+    player.fps = attackSpeedFPS(6, player.stats.attackSpeed);
     player.play(randomAttack, {
         onProgress: (frame) => {
             if (frame !== 2) return;
@@ -232,7 +248,7 @@ export function cleave(player: Player, world: World) {
                     return true;
                 }
                 return false;
-            });
+            } );
 
             let particle = new GenericEffectParticle(20, fromTextureCache("/images/particles.png", 21, 0, 48, 17), world);
             particle.x = player.horizontalCenter + (player.inventory.equipment.weapon!.range / 2 + 10) * player.direction;
@@ -251,7 +267,7 @@ export function cleave(player: Player, world: World) {
 
 export function buckleDown(player: Player, world: World) {
     player.buffs.addBuff(new BuckleDownBuff(240, "Buckle Down"));
-    for (let i = 0; i < 100; i ++) {
+    for (let i of range(0, 200)) {
         let tinter = new ColorTweener(0x5B94A5, 0xDBDBDB);
         let angle = Math.random() * Math.PI * 2;
         let particle = new VacuumParticle(new PIXI.Point(Math.sin(angle) * 50, -Math.cos(angle) * 50),
@@ -291,6 +307,7 @@ export function envenom(player: Player, world: World) {
 
 export function staticBolt(player: Player, world: World) {
     if (!world.map || !world.map.isGrounded(player)) return false;
+    player.fps = attackSpeedFPS(6, player.stats.attackSpeed);
     player.play("cast", {
         onProgress: (frame) => {
             if (frame !== 2) return;

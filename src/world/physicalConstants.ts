@@ -15,3 +15,9 @@ export const AERIAL_HORIZONTAL_DECAY = 0.99;
 export function repulsionForce(dist: number, damper = 8.5) {
     return (Math.PI / 2 - Math.atan(Math.abs(dist / 50))) / (Math.PI * damper);
 }
+
+export function attackSpeedFPS(baseFPS: number, attackSpeed: number) {
+    let diff = 60 - baseFPS;
+    let attSpdPerc = attackSpeed / 100;
+    return baseFPS + diff * attSpdPerc / (attSpdPerc + 1);
+}

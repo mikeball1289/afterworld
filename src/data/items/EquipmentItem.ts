@@ -1,19 +1,26 @@
-import Player from "../../actors/Player";
-import World from "../../world/World";
-import { IEquipmentSlots } from "../Inventory";
-import Skill from "../Skill";
-import { basicAttack } from "../skillData";
-import GemItem from "./GemItem";
-import InventoryItem from "./InventoryItem";
+import {Player} from "../../actors/Player";
+import {World} from "../../world/World";
+import {IEquipmentSlots} from "../Inventory";
+import {Skill} from "../Skill";
+import {basicAttack} from "../skillData";
+import {GemItem} from "./GemItem";
+import {InventoryItem} from "./InventoryItem";
 
 function nID(num: number | undefined) {
     if (num !== undefined) return num;
     return 0;
 }
 
+export enum ItemRarity {
+    Common,
+    Rare,
+    Exquisite,
+}
+
 export const STAT_TYPES: (keyof IEquipmentStats)[] = [
     "physicalDamage",
     "magicDamage",
+    "attackSpeed",
     "armor",
     "strength",
     "agility",
@@ -23,12 +30,14 @@ export const STAT_TYPES: (keyof IEquipmentStats)[] = [
     "energy",
     "healthRegen",
     "energyRegen",
+    "cooldownReduction",
     "walkSpeed",
 ];
 
 export const prettyStats = {
     physicalDamage: "Physical Damage",
     magicDamage: "Magic Damage",
+    attackSpeed: "Attack Speed",
     armor: "Armor",
     health: "Health",
     energy: "Energy",
@@ -39,6 +48,7 @@ export const prettyStats = {
     intelligence: "Intelligence",
     haste: "Haste",
     walkSpeed: "Speed",
+    cooldownReduction: "CDR",
 };
 
 export interface IEquipmentStats {
@@ -54,24 +64,28 @@ export interface IEquipmentStats {
     intelligence?: number;
     haste?: number;
     walkSpeed?: number;
+    attackSpeed?: number;
+    cooldownReduction?: number;
 }
 
 type EquipmentType = keyof IEquipmentSlots;
 
 const SPRITE_ASSET_ROOT = "/sprites/";
 
-export default class EquipmentItem extends InventoryItem {
+export class EquipmentItem extends InventoryItem {
 
     public static isEquipmentItem(obj: any): obj is EquipmentItem {
         return obj && obj.type === "equipment";
     }
 
     public ilvl: number = 0;
+    public rarity: ItemRarity = ItemRarity.Common;
 
     public socket?: {
         gem?: GemItem;
     } = undefined;
     public stats: IEquipmentStats = {};
+    public inscription?: Skill;
 
     constructor(graphic: PIXI.Texture, public equipmentType: EquipmentType, name: string, public sheetName: string, description: string | ((world: World) => string)) {
         super(graphic, name, description);
@@ -99,7 +113,11 @@ export default class EquipmentItem extends InventoryItem {
     }
 
     public getDescription(world: World) {
-        let des = "LV " + this.ilvl + " " + this.prettyType + "\n\n" + super.getDescription(world) + "\n";
+        let des = "LV " + this.ilvl + " ";
+        if (this.rarity !== ItemRarity.Common) {
+            des += ItemRarity[this.rarity] + " ";
+        }
+        des += this.prettyType + "\n\n" + super.getDescription(world) + "\n";
         let otherItem = world.actorManager.player.inventory.equipment[this.equipmentType];
         let zeroes = "";
         if (otherItem === this) otherItem = undefined;
@@ -127,16 +145,23 @@ export default class EquipmentItem extends InventoryItem {
         if (this.socket && !this.socket.gem) {
             des += "\n\n(Socket)";
         }
-        let skill = this.getSkill();
-        if (skill && skill !== basicAttack) {
+        let skills = this.getSkills();
+        for (let skill of skills) {
             des += "\n\n" + skill.getName() + " - " + skill.getDescription();
         }
         return des;
     }
 
-    public getSkill(): Skill | undefined {
-        if (this.gem) return this.gem.skill;
-        return undefined;
+    public addInscription(skill: Skill): this {
+        this.inscription = skill;
+        return this;
+    }
+
+    public getSkills() {
+        let skills = [];
+        if (this.inscription) skills.push(this.inscription);
+        if (this.gem && this.gem.skill) skills.push(this.gem.skill);
+        return skills;
     }
 
     public addSocket(gem?: GemItem): this {
