@@ -189,7 +189,7 @@ export class PlayerStats {
     }
 
     private calcWalkSpeed() {
-        let speed = pc.WALK_IMPULSE + this.getEquipmentStats("walkSpeed") / 40 + this.haste / 1000;
+        let speed = pc.WALK_IMPULSE + this.getEquipmentStats("walkSpeed") / 40 + this.haste / 3000;
         speed = this.processBuffs("walkSpeed", speed);
         return speed;
     }
