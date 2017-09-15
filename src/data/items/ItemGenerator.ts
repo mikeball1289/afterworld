@@ -1,3 +1,4 @@
+// tslint:disable:object-literal-key-quotes
 import {EquipmentItem, IEquipmentStats} from "./EquipmentItem";
 
 function neverStats(item: EquipmentItem): (keyof IEquipmentStats)[] {
@@ -15,7 +16,16 @@ function neverStats(item: EquipmentItem): (keyof IEquipmentStats)[] {
     }
 }
 
-// let prefixes: 
+let prefixes: { [prefixName: string]: (keyof IEquipmentStats)[] } = {
+    "Energetic": ["energy", "energyRegen"],
+    "Virtuous": ["intelligence", "strength", "agility"],
+    "Hardy": ["health", "strength"],
+};
+
+let postfixes: { [postfixName: string]: (keyof IEquipmentStats)[] } = {
+    "of the Bear": ["health", "healthRegen"],
+    "of the Wind": ["agility", "walkSpeed"],
+};
 
 export function GenerateEquipment(item: EquipmentItem, rarity: number, level: number) {
 
